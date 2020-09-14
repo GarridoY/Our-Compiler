@@ -1,6 +1,6 @@
 Main() {
 	clock x = 0;
-	int num[5] = (0, 0, 0, 0, 0,);
+	int num[5] = (0, 0, 0, 0, 0);
 	
 	// at control structure, for simpler scheduling than if
 	at (x == 24) {
