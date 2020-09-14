@@ -1,0 +1,18 @@
+Display{
+
+   pit thursday 17-sep-1337;
+   pit circle 19-sep-1200;
+   pit square 1300;
+    
+   
+    
+    
+    {
+      Text "1337";
+   }
+
+   {
+      Fig Circle;
+   }
+
+}
