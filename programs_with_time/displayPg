@@ -1,18 +1,23 @@
+#
+# pit = point in time
+#
+
 Display{
 
-   pit thursday 17-sep-1337;
-   pit circle 19-sep-1200;
-   pit square 1300;
+   pit leetthursday 17-sep-1337;
+   pit circleDay 19-sep-1200;
+   pit squareTime 1300;
     
+   Text leet = "1337";
+   Figure Fig = Circle;
+   Figure Fig2 = Square;
    
-    
-    
-    {
-      Text "1337";
-   }
-
-   {
-      Fig Circle;
-   }
+   leetthursday display leet
+      wait 1 min;
+      clear;
+   
+   circleDay display Fig
+      wait 1 hour;
+      display Fig2;
 
 }

@@ -1,0 +1,25 @@
+Main {
+    Time triggerTime = Time.Pending;
+
+    Sched(Fanfare(), triggerTime);
+
+    Sched(Bang(), triggerTime);
+    Sched(Bang(), triggerTime + Time.Second * 0.2);
+    Sched(Bang(), triggerTime + Time.Second * 0.4);
+    Sched(Bang(), triggerTime + Time.Second * 0.6);
+
+    Sched(Bang(), triggerTime + Time.Second * 1.0);
+    Sched(Bang(), triggerTime + Time.Second * 1.2);
+
+    TriggerBind(Input.sensors[0].triggered, triggerTime);
+
+    WaitForExecution();
+}
+
+Fanfare () {
+    Audio.Play("fanfare.mp3");
+}
+
+Bang () {
+    // activate party popper
+}
