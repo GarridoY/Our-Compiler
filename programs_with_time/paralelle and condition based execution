@@ -1,0 +1,18 @@
+
+main(){
+    Do program_A() and program_B() "executes simultaneously"
+    next do program_C "only starts when both program_A&B are done"
+
+}
+
+program_A(){
+    do something
+    }
+
+program_B(){
+    do something
+    }
+
+program_C(){
+    do something
+    }
