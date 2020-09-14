@@ -1,0 +1,187 @@
+funktional, oop eller imperativ?
+
+
+comment-line: # or //?
+comment-block: /* */?
+
+
+end-of-line: 
+    ; or none?
+
+declarations:
+    int a := 1?
+    int a = 1?
+    a = value?
+    string a = "asdf"?
+    letter a = 'a'?
+    list-type[statical-allocated-size] list-name = {list-value-1, list-value-2, list-value-3, list-value-4, list-value-5}?
+    list-type[statical-allocated-size] list-name = (list-value-1, list-value-2, list-value-3, list-value-4, list-value-5)?
+    list-type(statical-allocated-size) list-name = [list-value-1, list-value-2, list-value-3, list-value-4, list-value-5]?
+
+
+    function:
+        return-type function-name (parameter-type parameter-name, parameter-type-n parameter-name-n){
+            return return-type
+        }
+
+        or
+
+        def function-name:
+            return value
+
+
+expressions:
+using + to represent all other operators such as: -, *, /, %, and more.
+
+    c = a + b?
+    c += a?
+    c++;
+    + a b?
+
+
+
+kontrol-struktur:
+- selektiv: 
+    if-else?
+    switch?
+
+
+- iterativ: 
+    while?
+    for?
+    do-until?
+    do-unless?
+    do-while?
+
+function call:
+    function-name(parameters)?
+    variable-name = function-name(parameters)?
+
+    do:
+        function-name(parameters)
+    then:
+        function-name(parameters)
+    then:
+        function-name(parameters)
+    ask:
+        function-name(parameters)?
+
+    at expression do function-name(parameters)
+
+--------------------------------------------------------------------------------------------------------------
+
+personal favorite examples:
+Example 1:
+
+# scenario: assembly line with sensor detecting objects passing through and perform actions
+
+bool detected(sensor detector){ # the variable detector returns integer higher than 1 when it senses objects
+    if dector > 1:
+        return true
+    else:
+        return false
+}
+
+void fill_bottle(string product_name){
+    switch product_name:
+        case "1":
+            fill(30)
+        case "2":
+            fill(45)
+        case "none":
+            fill(0)
+        case "pass":
+            skip
+}
+
+void move_belt(int length){
+    send_belt(length)
+}
+
+time 5 (seconds){
+    loop(3):
+        when detected():
+            fill_bottle(1)
+        else:
+            move_belt(5)
+
+} catch (time_exception e){
+    print("defined time exceeded")
+} catch (exception e){
+    print("Error occured: " + e)
+}
+
+--------------------------------------------------------------------------------------------------------------
+
+Example 2:
+// In this exmaple we use the good old java-style:
+
+// scenario: assembly line with sensor detecting objects passing through and perform actions
+
+bool detected(sensor detector){ // the variable detector returns integer higher than 1 when it senses objects
+    if (dector > 1)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void fill_bottle(string product_name){
+    switch (product_name)
+    {
+        case "1":
+            fill(30);
+        case "2":
+            fill(45);
+        case "none":
+            fill(0);
+        case "pass":
+            skip;
+    }
+}
+
+void move_belt(int length){
+    send_belt(length);
+}
+
+time 5 (seconds){
+    loop(3){
+        when (detected()){
+            fill_bottle(1);
+        }
+        else{
+            move_belt(5);
+        }
+    }
+
+} catch (time_exception e){
+    print("defined time exceeded")
+} catch (exception e){
+    print("Error occured: " + e)
+}
+
+--------------------------------------------------------------------------------------------------------------
+
+Example 3:
+
+# this one is more straight-forward compared to the previous ones:
+
+# scenario: assembly line with sensor detecting objects passing through and perform actions
+
+time 10s
+{
+    # condition_1 is a function that returns boolean value
+    when condition_1():
+        do:
+            function_1(parameters)
+        then:
+            iterate 10:
+                function_2(parameters)
+        then:
+            function_3(parameters)
+        final:
+            function_4(parameters)
+}
