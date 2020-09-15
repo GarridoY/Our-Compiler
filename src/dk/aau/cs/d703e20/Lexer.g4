@@ -71,4 +71,5 @@ fragment DIGIT_NEGATIVE_RULE: '(-'('1'..'9') ('0'..'9')*')';
 
 // MISC
 COMMENT_STRING: '//' ~( '\r' | '\n' | '\t')* -> skip;
+COMMENT_BLOCK : '/*' .*? '*/' -> skip;
 WS: [ \t\r\n]+ -> skip;
