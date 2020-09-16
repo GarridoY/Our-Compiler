@@ -1,99 +1,106 @@
 parser grammar OurParser;
 options { tokenVocab=OurLexer; }
 
-prog: MAIN LEFT_BRACKET (stmt)+ RIGHT_BRACKET (func_decl)*;
+// Program rule, has to consist of a main rule, can be followed by function declarations.
+// variableName is used to catch outside of the program
+program
+    : main (functionDecl | variableName)*;
 
-stmt: vari_decl
-    | func_call SEMICOLON
-    | assign SEMICOLON
-    | if
-    | for_loop
-    | RETURN ID SEMICOLON;
+// main start keyword followed by a block
+main
+    : MAIN block;
 
-func_decl: (type | VOID) ID LEFT_PAREN parameter? RIGHT_PAREN LEFT_BRACKET (stmt)+ RIGHT_BRACKET;
+// Encapsulation of code by brackets
+block
+    : LEFT_BRACKET (statement)* RIGHT_BRACKET;
 
-vari_decl: type assign SEMICOLON;
+// FUNCTIONS
+// Function declaration, optional argument followed by more optional arguments prefixed by comma TODO: Check if ANTLR can figure out which functionArg is in use
+functionDecl
+    : (VOID | datatype) functionName LEFT_PAREN functionParam? ( COMMA functionParam)* RIGHT_PAREN block;
 
-func_call: ID LEFT_PAREN ( arguments (COMMA arguments)*)? RIGHT_PAREN;
+// Function parameters
+functionParam
+    : datatype variableName;
 
-assign: ID ASSIGN (expr | literal);
+// Call function given optional arguments (expr)
+functionCall
+    : functionName LEFT_PAREN expr? ( COMMA expr)* RIGHT_PAREN SEMICOLON;
 
-parameter: type ID (COMMA type ID)*;
+// Statements available in main
+statement
+    : variableDecl
+    | assignment
+    | functionCall
+    | ifElseStatement //conditionalStatement
+    | iterativeStatement;
+//    | returnStatement // something about typechecking
 
-expr: expr_arit
-    | expr_bool
-    | func_call;
+// CONDITIONAL
+// any IF statement require blocks
+ifElseStatement
+    : ifStatement elseIfStatement* elseStatement?;
 
-expr_arit: lowPrecedence;
+ifStatement: IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
+elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
+elseStatement: ELSE block;
 
-expr_bool: bool_ops;
+conditionalExpression: boolExpr | NOT? variableName | functionCall;
 
-arithOperand: (integer | double)
-            | ID
-            | func_call;
+// ITERATIVE
+iterativeStatement
+    : forStatement;
 
-//Precedence, goes through low to high, ends at atom
-lowPrecedence: highPrecedence (lowOperator highPrecedence)*;
+// for (* to *) {}
+forStatement
+    : FOR LEFT_PAREN expr TO expr RIGHT_PAREN block;
 
-highPrecedence: atomPrecedence (highOperator atomPrecedence)*;
+// EXPRESSIONS
 
-atomPrecedence: SUB? arithOperand
-              | LEFT_PAREN lowPrecedence RIGHT_PAREN;
+expr
+    : expr op=(ADD | SUB | MOD | DIV | MUL) expr // Precedence handled by target
+    | numLiteral | '('expr')'
+    | variableName;
 
-// Recursive boolean operations
-bool_ops: NOT? bool_op bool_op_ex*
-        | NOT? expr_arit bool_op_ex+;
+// TODO: Check ambiguity
+// TODO: typecheck operator for expr (only pure bools can AND, OR)
+boolExpr
+    : boolSymbol
+    | //boolExpr op=(EQUAL | AND | OR | NOT_EQUAL) boolExpr
+    | (expr | BOOL_LITERAL) op=(EQUAL | NOT_EQUAL | GREATER_THAN | GREATER_OR_EQUAL | LESS_THAN | LESS_OR_EQUAL) (BOOL_LITERAL | expr)
+    | LEFT_PAREN boolExpr RIGHT_PAREN;
+//
+boolSymbol
+    : BOOL_LITERAL
+    | variableName;
 
-// Boolean operations
-bool_op: BOOL_LITERAL
-       | LEFT_PAREN bool_ops RIGHT_PAREN;
+// Declaration of variable, all variables must be initialized
+variableDecl
+    : datatype assignment;
 
-bool_op_ex: boolOperator NOT? (bool_op | expr_arit);
+assignment
+    : variableName ASSIGN (expr | literal) SEMICOLON;
 
-highOperator
-    : MUL
-    | DIV
-    | MOD;
 
-lowOperator
-    : ADD
-    | SUB;
 
-boolOperator
-    : EQUAL
-    | OR
-    | AND
-    | NOT_EQUAL
-    | GREATER_THAN
-    | GREATER_OR_EQUAL
-    | LESS_THAN
-    | LESS_OR_EQUAL;
+// Names
+variableName
+    : ID;
+functionName
+    : ID;
 
-type: INT
-    | BOOLEAN
+datatype
+    : INT
     | DOUBLE
-    | CLOCK
-    | PIT
-    | STRING;
+    | BOOLEAN
+    | CLOCK;
 
-arguments: expr
-         | ID
-         | integer
-         | double;
+literal
+    : STRING_LITERAL
+    | BOOL_LITERAL;
 
-if: IF LEFT_PAREN (expr) RIGHT_PAREN LEFT_BRACKET (stmt)+ RIGHT_BRACKET (else | else_if)?;
-
-else: ELSE LEFT_BRACKET (stmt)+ RIGHT_BRACKET;
-
-else_if: ELSE if;
-
-for_loop: FOR LEFT_PAREN arguments TO arguments RIGHT_PAREN LEFT_BRACKET (stmt)+ RIGHT_BRACKET;
-
-integer: DIGIT
-       | DIGIT_NEGATIVE;
-
-double: integer
-      | DOUBLE_DIGIT
-      | DOUBLE_DIGIT_NEGATIVE;
-
-literal : STRING_LITERAL | BOOL_LITERAL;
+numLiteral
+    : DIGIT
+    | DIGIT_NEGATIVE
+    | DOUBLE_DIGIT
+    | DOUBLE_DIGIT_NEGATIVE;
