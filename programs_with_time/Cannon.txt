@@ -1,0 +1,46 @@
+Main() {
+	clock x = 0;
+	int num[5] = (0, 0, 0, 0, 0);
+	
+	// at control structure, for simpler scheduling than if
+	at (x == 24) {
+		updateList(num[]);
+	}
+	
+	// Shoot cannon, open door
+	int ballTime = shootCannon();
+	openDoor(ballTime);
+	// Return program time
+	return x;
+}
+
+void updateList(int[] list){
+	int i = 0;
+	for (i to list.size) {
+		num[i] = 1
+	}
+}
+
+void openDoor(int time) {
+	clock x = 0;
+	bool closed = true;
+	
+	while (closed) {
+		// Door takes 1 to open
+		at (x == time - 1) {
+			door.open;
+			closed = false;
+		}
+	}
+}
+
+// Shoot cannon and return halfway time
+int shootCannon() {
+	int constTime = 0;
+	clock time = 0;
+	cannon.shoot();
+	if (sensor) {
+		constTime = time;
+		return constTime;
+	}
+}

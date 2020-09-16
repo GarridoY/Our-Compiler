@@ -1,0 +1,4 @@
+Main () {
+    Pog pog = new Pog();
+    Display(pog);
+}
