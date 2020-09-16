@@ -1,5 +1,5 @@
-parser grammar Parser;
-options { tokenVocab=Lexer; }
+parser grammar OurParser;
+options { tokenVocab=OurLexer; }
 
 // Program rule, has to consist of a main rule, can be followed by function declarations.
 // variableName is used to catch outside of the program
@@ -25,7 +25,7 @@ functionParam
 
 // Call function given optional arguments (expr)
 functionCall
-    : functionName LEFT_PAREN expr? ( COMMA expr)* RIGHT_PAREN SEMICOLON;
+    : functionName LEFT_PAREN LEFT_PAREN? ( COMMA LEFT_PAREN)* RIGHT_PAREN SEMICOLON;
 
 // Statements available in main
 statement
@@ -41,9 +41,9 @@ statement
 ifElseStatement
     : ifStatement elseIfStatement* elseStatement?;
 
-ifStatement: IF LEFT_PAREN conditionalExpression RIGHT_PAREN Block;
-elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN Block;
-elseStatement: ELSE Block;
+ifStatement: IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
+elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
+elseStatement: ELSE block;
 
 conditionalExpression: boolExpr | NOT? variableName | functionCall;
 
@@ -52,7 +52,7 @@ iterativeStatement
     : forStatement;
 
 forStatement
-    : FOR LEFT_PAREN expr TO expr RIGHT_PAREN block;
+    : FOR LEFT_PAREN LEFT_PAREN TO LEFT_PAREN RIGHT_PAREN block;
 
 // EXPRESSIONS
 // TODO: Check ambiguity
@@ -72,7 +72,7 @@ variableDecl
     : datatype assignment;
 
 assignment
-    : variableName ASSIGN expr SEMICOLON;
+    : variableName ASSIGN LEFT_PAREN SEMICOLON;
 
 
 

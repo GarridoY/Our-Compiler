@@ -1,4 +1,4 @@
-lexer grammar Lexer;
+lexer grammar OurLexer;
 
 // Data Types
 INT: 'int';
