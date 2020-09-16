@@ -8,7 +8,6 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
-        // TODO: Draw the rest of the owl
         String inputFileName = null;
 
         // Set file name which is to be compiled.
