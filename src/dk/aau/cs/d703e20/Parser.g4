@@ -41,9 +41,9 @@ statement
 ifElseStatement
     : ifStatement elseIfStatement* elseStatement?;
 
-ifStatement: IF LEFT_PAREN conditionalExpression RIGHT_PAREN Block;
-elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN Block;
-elseStatement: ELSE Block;
+ifStatement: IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
+elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
+elseStatement: ELSE block;
 
 conditionalExpression: boolExpr | NOT? variableName | functionCall;
 
@@ -51,28 +51,35 @@ conditionalExpression: boolExpr | NOT? variableName | functionCall;
 iterativeStatement
     : forStatement;
 
+// for (* to *) {}
 forStatement
     : FOR LEFT_PAREN expr TO expr RIGHT_PAREN block;
 
 // EXPRESSIONS
-// TODO: Check ambiguity
-boolExpr
-    : boolOperation
-    | LEFT_PAREN boolOperation RIGHT_PAREN;
-//
-boolOperand
-    : BOOL_LITERAL
+
+expr
+    : expr op=(ADD | SUB | MOD | DIV | MUL) expr // Precedence handled by target
+    | numLiteral | '('expr')'
     | variableName;
 
-boolOperation
-    : boolOperand (boolOperator boolOperand)*;
+// TODO: Check ambiguity
+// TODO: typecheck operator for expr (only pure bools can AND, OR)
+boolExpr
+    : boolSymbol
+    | //boolExpr op=(EQUAL | AND | OR | NOT_EQUAL) boolExpr
+    | (expr | BOOL_LITERAL) op=(EQUAL | NOT_EQUAL | GREATER_THAN | GREATER_OR_EQUAL | LESS_THAN | LESS_OR_EQUAL) (BOOL_LITERAL | expr)
+    | LEFT_PAREN boolExpr RIGHT_PAREN;
+//
+boolSymbol
+    : BOOL_LITERAL
+    | variableName;
 
 // Declaration of variable, all variables must be initialized
 variableDecl
     : datatype assignment;
 
 assignment
-    : variableName ASSIGN expr SEMICOLON;
+    : variableName ASSIGN (expr | literal) SEMICOLON;
 
 
 
@@ -82,19 +89,18 @@ variableName
 functionName
     : ID;
 
-// Boolean operators, NOT does not fit here (True ! False)
-boolOperator
-    : EQUAL
-    | OR
-    | AND
-    | NOT_EQUAL
-    | GREATER_THAN
-    | GREATER_OR_EQUAL
-    | LESS_THAN
-    | LESS_OR_EQUAL;
-
 datatype
     : INT
     | DOUBLE
     | BOOLEAN
     | CLOCK;
+
+literal
+    : STRING_LITERAL
+    | BOOL_LITERAL;
+
+numLiteral
+    : DIGIT
+    | DIGIT_NEGATIVE
+    | DOUBLE_DIGIT
+    | DOUBLE_DIGIT_NEGATIVE;

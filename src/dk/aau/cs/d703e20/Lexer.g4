@@ -5,6 +5,7 @@ INT: 'int';
 BOOLEAN: 'bool';
 DOUBLE: 'double';
 CLOCK: 'clock';
+STRING: 'string';
 
 // Return/Function type
 VOID: 'void';
@@ -17,6 +18,7 @@ ELSE_IF: 'else if';
 ELSE: 'else';
 TO: 'to';
 FOR: 'for';
+AT: 'at';
 // Possible other: delay, wait, sleep, loop, pause
 
 //Numbers and booleans
@@ -29,6 +31,10 @@ DOUBLE_DIGIT_NEGATIVE: DIGIT_NEGATIVE'.'DIGIT+;
 BOOL_LITERAL
     : 'true'
     | 'false';
+
+// How do work?
+STRING_LITERAL
+    : '"' (~["\\\r\n])* '"';
 
 // Separators
 LEFT_BRACKET: '{';
