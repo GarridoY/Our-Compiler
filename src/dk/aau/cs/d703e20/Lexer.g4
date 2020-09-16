@@ -70,6 +70,7 @@ fragment DIGIT_RULE
 fragment DIGIT_NEGATIVE_RULE: '(-'('1'..'9') ('0'..'9')*')';
 
 // MISC
+NEWLINE : [\r\n]+ ;
 COMMENT_STRING: '//' ~( '\r' | '\n' | '\t')* -> skip;
 COMMENT_BLOCK : '/*' .*? '*/' -> skip;
 WS: [ \t\r\n]+ -> skip;
