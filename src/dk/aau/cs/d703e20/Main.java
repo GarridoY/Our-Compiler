@@ -1,6 +1,6 @@
 package dk.aau.cs.d703e20;
 
-import dk.aau.cs.d703e20.lexer.OurLexer;
+import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;

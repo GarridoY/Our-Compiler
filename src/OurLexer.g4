@@ -5,6 +5,7 @@ INT: 'int';
 BOOLEAN: 'bool';
 DOUBLE: 'double';
 CLOCK: 'clock';
+STRING: 'string';
 PIT: 'pit';
 
 // Return/Function type
@@ -18,6 +19,7 @@ ELSE_IF: 'else if';
 ELSE: 'else';
 TO: 'to';
 FOR: 'for';
+AT: 'at';
 // Possible other: delay, wait, sleep, loop, pause
 
 //Numbers and booleans
@@ -27,9 +29,9 @@ DIGIT_NEGATIVE: DIGIT_NEGATIVE_RULE;
 DOUBLE_DIGIT: DIGIT'.'DIGIT+;
 DOUBLE_DIGIT_NEGATIVE: DIGIT_NEGATIVE'.'DIGIT+;
 
-BOOL_LITERAL
-    : 'true'
-    | 'false';
+BOOL_LITERAL: 'true' | 'false';
+
+STRING_LITERAL: '"' (~["\\\r\n])* '"';
 
 // Separators
 LEFT_BRACKET: '{';
@@ -71,7 +73,6 @@ fragment DIGIT_RULE
 fragment DIGIT_NEGATIVE_RULE: '(-'('1'..'9') ('0'..'9')*')';
 
 // MISC
-NEWLINE : [\r\n]+ ;
 COMMENT_STRING: '//' ~( '\r' | '\n' | '\t')* -> skip;
 COMMENT_BLOCK : '/*' .*? '*/' -> skip;
 WS: [ \t\r\n]+ -> skip;

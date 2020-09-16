@@ -9,7 +9,7 @@
           <option name="outputDir" value="$PROJECT_DIR$/src" />
           <option name="libDir" value="" />
           <option name="encoding" value="" />
-          <option name="pkg" value="dk.aau.cs.d703e20.lexer" />
+          <option name="pkg" value="dk.aau.cs.d703e20.parser" />
           <option name="language" value="" />
           <option name="generateVisitor" value="true" />
         </PerGrammarGenerationSettings>
