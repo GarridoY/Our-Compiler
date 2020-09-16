@@ -5,6 +5,7 @@ INT: 'int';
 BOOLEAN: 'bool';
 DOUBLE: 'double';
 CLOCK: 'clock';
+PIT: 'pit';
 
 // Return/Function type
 VOID: 'void';
