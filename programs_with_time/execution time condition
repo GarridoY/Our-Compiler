@@ -1,8 +1,0 @@
-
-delay((x) prg() )"delays execution by x amount of seconds"
-
-halt(x) "halts execution for x amount of seconds"
-
-loop((y) prg() ) "loops program till time y (time of day)"
-
-pause(x) "pauses till specific time is reached"
