@@ -1,6 +1,8 @@
 package dk.aau.cs.d703e20.ast;
 
 import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
+import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.ConditionalExpressionNode;
 import dk.aau.cs.d703e20.ast.expressions.ExpressionNode;
 import dk.aau.cs.d703e20.ast.expressions.FunctionParameterNode;
 import dk.aau.cs.d703e20.ast.statements.*;
@@ -149,7 +151,22 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitConditionalExpression(OurParser.ConditionalExpressionContext ctx) {
-        return super.visitConditionalExpression(ctx);
+        ConditionalExpressionNode conditionalExpressionNode;
+
+        if (ctx.boolExpr() != null) {
+            BoolExpressionNode boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+            conditionalExpressionNode = new ConditionalExpressionNode(boolExpressionNode);
+        } else if (ctx.variableName() != null) {
+            conditionalExpressionNode = new ConditionalExpressionNode(ctx.variableName().getText());
+        } else if (ctx.functionCall() != null) {
+            FunctionCallNode functionCallNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
+            conditionalExpressionNode = new ConditionalExpressionNode(functionCallNode);
+        } else {
+            throw new CompilerException("Invalid conditional expression", getCodePosition(ctx));
+        }
+
+        conditionalExpressionNode.setCodePosition(getCodePosition(ctx));
+        return conditionalExpressionNode;
     }
 
     @Override
