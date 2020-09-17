@@ -10,9 +10,11 @@ public class Main {
     public static void main(String[] args) {
         String inputFileName = null;
 
+        System.out.println(args[0]);
+
         // Set file name which is to be compiled.
         if (args.length > 0) {
-            inputFileName = args[1];
+            inputFileName = args[0];
         }
 
         if (inputFileName == null) {
