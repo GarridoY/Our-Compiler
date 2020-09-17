@@ -3,8 +3,7 @@ package dk.aau.cs.d703e20.ast;
 import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
 import dk.aau.cs.d703e20.ast.expressions.ExpressionNode;
 import dk.aau.cs.d703e20.ast.expressions.FunctionParameterNode;
-import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
-import dk.aau.cs.d703e20.ast.statements.StatementNode;
+import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.MainNode;
@@ -98,22 +97,54 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitIfElseStatement(OurParser.IfElseStatementContext ctx) {
-        return super.visitIfElseStatement(ctx);
+        IfStatementNode ifStatementNode = (IfStatementNode) visitIfStatement(ctx.ifStatement());
+        ArrayList<ElseIfStatementNode> elseIfStatementNode = null;
+        ElseStatementNode elseStatementNode = null;
+
+        // ElseIf nodes
+        if (ctx.elseIfStatement() != null) {
+            elseIfStatementNode = new ArrayList<>();
+            for (OurParser.ElseIfStatementContext elseIfStatement : ctx.elseIfStatement()) {
+                elseIfStatementNode.add((ElseIfStatementNode) visitElseIfStatement(elseIfStatement));
+            }
+        }
+        // Else nodes
+        if (ctx.elseStatement() != null) {
+            elseStatementNode = (ElseStatementNode) visitElseStatement(ctx.elseStatement());
+        }
+
+        IfElseStatementNode ifElseStatementNode = new IfElseStatementNode(ifStatementNode, elseIfStatementNode, elseStatementNode);
+        ifElseStatementNode.setCodePosition(getCodePosition(ctx));
+        return ifElseStatementNode;
     }
 
     @Override
     public ASTNode visitIfStatement(OurParser.IfStatementContext ctx) {
-        return super.visitIfStatement(ctx);
+        ExpressionNode expressionNode = (ExpressionNode) visitConditionalExpression(ctx.conditionalExpression());
+        BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+
+        IfStatementNode ifStatementNode = new IfStatementNode(expressionNode, blockNode);
+        ifStatementNode.setCodePosition(getCodePosition(ctx));
+        return ifStatementNode;
     }
 
     @Override
     public ASTNode visitElseIfStatement(OurParser.ElseIfStatementContext ctx) {
-        return super.visitElseIfStatement(ctx);
+        ExpressionNode expressionNode = (ExpressionNode) visitConditionalExpression(ctx.conditionalExpression());
+        BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+
+        ElseIfStatementNode elseIfStatementNode = new ElseIfStatementNode(expressionNode, blockNode);
+        elseIfStatementNode.setCodePosition(getCodePosition(ctx));
+        return elseIfStatementNode;
     }
 
     @Override
     public ASTNode visitElseStatement(OurParser.ElseStatementContext ctx) {
-        return super.visitElseStatement(ctx);
+        BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+
+        ElseStatementNode elseStatementNode = new ElseStatementNode(blockNode);
+        elseStatementNode.setCodePosition(getCodePosition(ctx));
+        return elseStatementNode;
     }
 
     @Override
