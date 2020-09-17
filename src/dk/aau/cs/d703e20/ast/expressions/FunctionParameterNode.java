@@ -4,7 +4,7 @@ import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
 
-public class FunctionParameterNode implements ASTNode {
+public class FunctionParameterNode extends ExpressionNode {
     private final Enums.DataType dataType;
     private final String variableName;
 

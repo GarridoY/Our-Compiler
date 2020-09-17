@@ -1,5 +1,9 @@
 package dk.aau.cs.d703e20.ast;
 
+import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
+import dk.aau.cs.d703e20.ast.expressions.ExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.FunctionParameterNode;
+import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 import dk.aau.cs.d703e20.ast.statements.StatementNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
@@ -14,12 +18,12 @@ import java.util.List;
 
 public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
-    public ProgramNode visitProgram(OurParser.ProgramContext ctx) {
-        MainNode mainNode = visitMain(ctx.main());
+    public ASTNode visitProgram(OurParser.ProgramContext ctx) {
+        MainNode mainNode = (MainNode) visitMain(ctx.main());
 
         List<FunctionDeclarationNode> functionDeclarationNodes = new ArrayList<>();
         for (OurParser.FunctionDeclContext functionDecl : ctx.functionDecl()) {
-            functionDeclarationNodes.add(visitFunctionDecl(functionDecl));
+            functionDeclarationNodes.add((FunctionDeclarationNode) visitFunctionDecl(functionDecl));
         }
 
         ProgramNode programNode = new ProgramNode(mainNode, functionDeclarationNodes);
@@ -28,8 +32,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     }
 
     @Override
-    public MainNode visitMain(OurParser.MainContext ctx) {
-        BlockNode blockNode = visitBlock(ctx.block());
+    public ASTNode visitMain(OurParser.MainContext ctx) {
+        BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
 
         MainNode mainNode = new MainNode(blockNode);
         mainNode.setCodePosition(getCodePosition(ctx));
@@ -37,11 +41,11 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     }
 
     @Override
-    public BlockNode visitBlock(OurParser.BlockContext ctx) {
+    public ASTNode visitBlock(OurParser.BlockContext ctx) {
         List<StatementNode> statementNodes = new ArrayList<>();
 
         for (OurParser.StatementContext statement : ctx.statement()) {
-            statementNodes.add(visitStatement(statement));
+            statementNodes.add((StatementNode) visitStatement(statement));
         }
         BlockNode blockNode = new BlockNode(statementNodes);
         blockNode.setCodePosition(getCodePosition(ctx));
@@ -50,22 +54,46 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitFunctionDecl(OurParser.FunctionDeclContext ctx) {
-        return super.visitFunctionDecl(ctx);
+        BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+        List<FunctionParameterNode> functionParameterNodes = new ArrayList<>();
+        for (OurParser.FunctionParamContext parameter : ctx.functionParam()) {
+            functionParameterNodes.add((FunctionParameterNode) visitFunctionParam(parameter));
+        }
+        FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), functionParameterNodes, blockNode);
+        functionDeclarationNode.setCodePosition(getCodePosition(ctx));
+        return functionDeclarationNode;
     }
 
     @Override
     public ASTNode visitFunctionParam(OurParser.FunctionParamContext ctx) {
-        return super.visitFunctionParam(ctx);
+        FunctionParameterNode functionParameterNode = new FunctionParameterNode(getDataType(ctx.datatype()), ctx.variableName().getText());
+        functionParameterNode.setCodePosition(getCodePosition(ctx));
+        return functionParameterNode;
     }
 
     @Override
     public ASTNode visitStatement(OurParser.StatementContext ctx) {
-        return super.visitStatement(ctx);
+        if (ctx.variableDecl() != null)
+            return visitVariableDecl(ctx.variableDecl());
+        else if (ctx.assignment() != null)
+            return visitAssignment(ctx.assignment());
+        else if (ctx.functionCall() != null)
+            return visitFunctionCall(ctx.functionCall());
+        else if (ctx.iterativeStatement() != null)
+            return visitForStatement(ctx.iterativeStatement().forStatement());
+        else
+            throw new CompilerException("Invalid statement", getCodePosition(ctx));
     }
 
     @Override
     public ASTNode visitFunctionCall(OurParser.FunctionCallContext ctx) {
-        return super.visitFunctionCall(ctx);
+        List<ExpressionNode> expressionNodes = new ArrayList<>();
+        for (OurParser.ExprContext expr : ctx.expr()) {
+            expressionNodes.add((ExpressionNode) visitExpr(expr));
+        }
+        FunctionCallNode functionCallNode = new FunctionCallNode(ctx.functionName().getText(), expressionNodes);
+        functionCallNode.setCodePosition(getCodePosition(ctx));
+        return functionCallNode;
     }
 
     @Override
@@ -151,6 +179,21 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitNumLiteral(OurParser.NumLiteralContext ctx) {
         return super.visitNumLiteral(ctx);
+    }
+
+    private Enums.DataType getDataType(OurParser.DatatypeContext ctx) {
+        Enums.DataType dataType;
+
+        if (ctx.INT() != null)
+            dataType = Enums.DataType.INT;
+        else if (ctx.BOOLEAN() != null)
+            dataType = Enums.DataType.BOOL;
+        else if (ctx.CLOCK() != null)
+            dataType = Enums.DataType.CLOCK;
+        else
+            throw new CompilerException("DataType is unknown", getCodePosition(ctx));
+
+        return dataType;
     }
 
     private CodePosition getCodePosition(ParserRuleContext ctx) {
