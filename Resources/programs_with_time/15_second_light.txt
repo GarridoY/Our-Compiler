@@ -1,0 +1,39 @@
+# Activate light every 15 seconds
+Main {
+	int LED_red = 3;			// Variable to remember LED
+	pinMode(LED_red, OUT);		// Set LED to output mode
+	time timer = 15 * second;	// Sugar type seconds
+	clock x = 0;				// clock for at structure
+	
+	// Would need loop wrapper for at(), otherwisse x is never 15
+	// if main is looped clocks need to be declared elsewhere or atleast not re-declared/reset
+	
+	at (x == 15s) {
+		lightAct(LED);			// Activate light
+		wait(1 * second) 		// wait 1 second
+		lightDeac(LED);			// Light deactivated by default
+	}
+}
+
+void lightAct(LED){
+	digitalWrite(LED, HIGH); // Turn LED on, digitalWrite from Arduino library
+}
+
+void lightDeac(LED) {
+	digitalWrite(LED, LOW);	// Turn LED off, digitalWrite from Arduino library
+}
+
+C generation thoughts:
+	Time type might be milliseconds by standard, introduce defines for syntactic suger (seconds, minutes, hours)
+	Wait (or whatever name) becomes sleep(1) in C for 1 second
+	If main is a loop C's main can wrap everything except clocks in a while (true) loop
+		In case of setup() everthing included in setup() can be placed outside the loop
+		
+		DEFINE second = 1000;	// 1000 ms = 1 second
+		
+		int main(void){
+			// everything from setup()
+			While (true) {
+				// Rest of main
+			}
+		}
