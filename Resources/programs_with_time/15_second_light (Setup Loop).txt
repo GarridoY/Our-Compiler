@@ -12,8 +12,9 @@ Setup() {
 Loop(){
 	at (x == timer) {
 		lightAct(LED);			// Activate light
-		wait(1 * second) 		// wait 1 second
+		wait(1 * second); 		// wait 1 second
 		lightDeac(LED);			// Light deactivated by default
+		x = 0;
 	}
 }
 
@@ -41,11 +42,14 @@ int main(void) {
 	/* Loop() */
 	while (true) {
 		if (x == timer) {
-			lightAct(LED);			// Activate light
-			Sleep(1) 				// wait 1 second
-			lightDeac(LED);			// Light deactivated by default
+			lightAct(LED);			/* Activate light */
+			Sleep(1) 				/* wait 1 second */
+			lightDeac(LED);			/* Light deactivated by default */
+			x = 0;
 		}
-	}	
+		x++;						/* Somehow increment clock */
+	}
+	return 0;
 }
 
 void lightAct(int LED){

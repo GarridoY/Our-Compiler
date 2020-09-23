@@ -12,8 +12,9 @@ Main {
 	
 	at (x == timer) {
 		lightAct(LED);			// Activate light
-		wait(1 * second) 		// wait 1 second
+		wait(1 * second); 		// wait 1 second
 		lightDeac(LED);			// Light deactivated by default
+		x = 0;
 	}
 }
 
@@ -26,11 +27,11 @@ void lightDeac(int LED) {
 }
 
 C generation thoughts:
-	Time type might be milliseconds by standard, introduce defines for syntactic suger (seconds, minutes, hours)
+	Time type might be milliseconds by standard, introduce defines for syntactic sugar (seconds, minutes, hours)
 	Wait (or whatever name) becomes sleep(1) in C for 1 second
 	
 	If main is a loop, C's main can wrap everything except clocks in a while (true) loop
-		In case of setup() everthing included in setup() can be placed outside the loop
+		In case of setup() everything included in setup() can be placed outside the loop
 		This seems like poor language design as the programmer cannot tell what is looped and has to remember special rules for clocks
 			It should be clear if our main is a loop and it should loop all the content
 		
