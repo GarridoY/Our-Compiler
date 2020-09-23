@@ -12,10 +12,8 @@ public class Main {
     public static void main(String[] args) {
         String inputFileName = null;
 
-        System.out.println(args[0]);
-
-        // Set file name which is to be compiled.
         if (args.length > 0) {
+            // Set file name which is to be compiled.
             inputFileName = args[0];
         }
 
@@ -23,24 +21,26 @@ public class Main {
             throw new RuntimeException("No input file specified");
         }
 
-        // LEXER / PARSER
-        OurParser.ProgramContext parseTree = null;
         try {
+            System.out.println("Compiling: " + inputFileName);
+
+            // LEXER
             OurLexer lexer = new OurLexer(CharStreams.fromFileName(inputFileName));
+            System.out.println("Lexer ok");
+
+            // PARSER
             OurParser parser = new OurParser(new CommonTokenStream(lexer));
             parser.setErrorHandler(new ReasonableErrorStrategy());
-            parseTree = parser.program();
+            OurParser.ProgramContext parseTree = parser.program();
+            System.out.println("Parser ok");
+
+            // AST
+            ASTBuilder astBuilder = new ASTBuilder();
+            astBuilder.visitProgram(parseTree);
+            System.out.println("AST ok");
         }
         catch (IOException e) {
             e.printStackTrace();
-        }
-
-        // AST
-        ASTBuilder astBuilder = new ASTBuilder();
-        if (parseTree != null) {
-            astBuilder.visitProgram(parseTree);
-        } else {
-            throw new RuntimeException("AST ERROR.");
         }
     }
 }
