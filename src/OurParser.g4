@@ -80,9 +80,7 @@ variableDecl
     : datatype assignment;
 
 assignment
-    : variableName ASSIGN (expr | literal) SEMICOLON;
-
-
+    : variableName ASSIGN (expr | literal | functionName LEFT_PAREN functionArgs? RIGHT_PAREN) SEMICOLON;
 
 // Names
 variableName
