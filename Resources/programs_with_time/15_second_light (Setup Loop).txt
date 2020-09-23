@@ -42,9 +42,9 @@ int main(void) {
 	/* Loop() */
 	while (true) {
 		if (x == timer) {
-			lightAct(LED_red);			/* Activate light */
-			Sleep(1) 				/* wait 1 second */
-			lightDeac(LED_red);			/* Light deactivated by default */
+			lightAct(LED_red);		/* Activate light */
+			delay(1000); 			/* wait 1 second */
+			lightDeac(LED_red);		/* Light deactivated by default */
 			x = 0;
 		}
 		x++;						/* Somehow increment clock */
