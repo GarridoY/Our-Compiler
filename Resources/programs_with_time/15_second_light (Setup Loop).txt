@@ -1,0 +1,57 @@
+// Activate light every 15 seconds
+
+// Code split into two segments. Setup() for declarations, Loop() for main body) (Loop is clearly visible, programmer can tell which clocks will be reset)
+
+Setup() {
+	int LED_red = 3;			// Variable to remember LED (Would normally be DEFINE in C)
+	pinMode(LED_red, OUT);		// Set LED to output mode
+	time timer = 15 * second;	// Sugar type seconds, time can be int in C (time type used for typechecking)
+	clock x = 0;				// clock for at structure
+}
+
+Loop(){
+	at (x == timer) {
+		lightAct(LED);			// Activate light
+		wait(1 * second) 		// wait 1 second
+		lightDeac(LED);			// Light deactivated by default
+	}
+}
+
+void lightAct(int LED){
+	digitalWrite(LED, HIGH); // Turn LED on, digitalWrite from Arduino library
+}
+
+void lightDeac(int LED) {
+	digitalWrite(LED, LOW);	// Turn LED off, digitalWrite from Arduino library
+}
+
+C code generation
+
+#define second 1000 			/* 1 second is 1000 ms */
+void lightAct(int LED)			/* Function Prototyping */
+void lightDeac(int LED)			/* Function Prototyping */
+
+int main(void) {
+	/* Setup() */
+	int LED_red = 3;			/* Variable to remember LED, could be #define */
+	pinMode(LED_red, output);	/* Set LED to output */
+	int timer = 15 * second;	/* int to match clock */
+	int x = 0;					/* How do clock in C? */
+	
+	/* Loop() */
+	while (true) {
+		if (x == timer) {
+			lightAct(LED);			// Activate light
+			Sleep(1) 				// wait 1 second
+			lightDeac(LED);			// Light deactivated by default
+		}
+	}	
+}
+
+void lightAct(int LED){
+	digitalWrite(LED, HIGH); // Turn LED on, digitalWrite from Arduino library
+}
+
+void lightDeac(int LED) {
+	digitalWrite(LED, LOW);	// Turn LED off, digitalWrite from Arduino library
+}

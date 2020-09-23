@@ -1,27 +1,27 @@
-# Activate light every 15 seconds
+// Activate light every 15 seconds
 
-# First example the main is looped indefinitely, clock instantiations are not (poor language design, programmer cannot tell what is looped based on the the code)
+// First example the main is looped indefinitely (Not visible for programmer), clock instantiations are placed outside loop (poor language design, programmer cannot tell what is looped based on the the code)
 Main {
 	int LED_red = 3;			// Variable to remember LED
 	pinMode(LED_red, OUT);		// Set LED to output mode
-	time timer = 15 * second;	// Sugar type seconds
+	time timer = 15 * second;	// Sugar type seconds (#define second 1000, if time is in ms)
 	clock x = 0;				// clock for at structure
 	
 	// Would need loop wrapper for at(), otherwise x is never 15
 	// if main is looped clocks need to be declared elsewhere or atleast not re-declared/reset
 	
-	at (x == 15s) {
+	at (x == timer) {
 		lightAct(LED);			// Activate light
 		wait(1 * second) 		// wait 1 second
 		lightDeac(LED);			// Light deactivated by default
 	}
 }
 
-void lightAct(LED){
+void lightAct(int LED){
 	digitalWrite(LED, HIGH); // Turn LED on, digitalWrite from Arduino library
 }
 
-void lightDeac(LED) {
+void lightDeac(int LED) {
 	digitalWrite(LED, LOW);	// Turn LED off, digitalWrite from Arduino library
 }
 
