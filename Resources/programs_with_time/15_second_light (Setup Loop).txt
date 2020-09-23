@@ -29,8 +29,8 @@ void lightDeac(int LED) {
 C code generation
 
 #define second 1000 			/* 1 second is 1000 ms */
-void lightAct(int LED)			/* Function Prototyping */
-void lightDeac(int LED)			/* Function Prototyping */
+void lightAct(int LED);			/* Function Prototyping */
+void lightDeac(int LED);		/* Function Prototyping */
 
 int main(void) {
 	/* Setup() */
