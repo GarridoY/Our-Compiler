@@ -10,10 +10,8 @@ public class Main {
     public static void main(String[] args) {
         String inputFileName = null;
 
-        System.out.println(args[0]);
-
-        // Set file name which is to be compiled.
         if (args.length > 0) {
+            // Set file name which is to be compiled.
             inputFileName = args[0];
         }
 
@@ -22,8 +20,13 @@ public class Main {
         }
 
         try {
+            System.out.println("Compiling: " + inputFileName);
+
             OurLexer lexer = new OurLexer(CharStreams.fromFileName(inputFileName));
+            System.out.println("Lexer ok");
+
             OurParser parser = new OurParser(new CommonTokenStream(lexer));
+            System.out.println("Parser ok");
         }
         catch (IOException e) {
             e.printStackTrace();
