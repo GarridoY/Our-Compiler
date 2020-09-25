@@ -17,15 +17,19 @@ block
 // FUNCTIONS
 // Function declaration, optional argument followed by more optional arguments prefixed by comma TODO: Check if ANTLR can figure out which functionArg is in use
 functionDecl
-    : (VOID | datatype) functionName LEFT_PAREN functionParam? ( COMMA functionParam)* RIGHT_PAREN block;
+    : (VOID | datatype) functionName LEFT_PAREN functionParam? RIGHT_PAREN block;
 
 // Function parameters
 functionParam
-    : datatype variableName;
+    : datatype variableName ( COMMA functionParam)*;
 
 // Call function given optional arguments (expr)
 functionCall
-    : functionName LEFT_PAREN expr? ( COMMA expr)* RIGHT_PAREN SEMICOLON;
+    : functionName LEFT_PAREN functionArgs? RIGHT_PAREN SEMICOLON;
+
+// Function arguments for calling function(s)
+functionArgs
+    : (expr | boolExpr) ( COMMA (expr | boolExpr))*;
 
 // Statements available in main
 statement
@@ -65,14 +69,11 @@ expr
 // TODO: Check ambiguity
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr
-    : boolSymbol
+    : BOOL_LITERAL
     | //boolExpr op=(EQUAL | AND | OR | NOT_EQUAL) boolExpr
     | (expr | BOOL_LITERAL) op=(EQUAL | NOT_EQUAL | GREATER_THAN | GREATER_OR_EQUAL | LESS_THAN | LESS_OR_EQUAL) (BOOL_LITERAL | expr)
-    | LEFT_PAREN boolExpr RIGHT_PAREN;
-//
-boolSymbol
-    : BOOL_LITERAL
-    | variableName;
+    | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
+
 
 // Declaration of variable, all variables must be initialized
 variableDecl

@@ -47,6 +47,12 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFunctionCall(OurParser.FunctionCallContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link OurParser#functionArgs}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunctionArgs(OurParser.FunctionArgsContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link OurParser#statement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -106,12 +112,6 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitBoolExpr(OurParser.BoolExprContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link OurParser#boolSymbol}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBoolSymbol(OurParser.BoolSymbolContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link OurParser#variableDecl}.
 	 * @param ctx the parse tree
