@@ -13,16 +13,14 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitProgram(OurParser.ProgramContext ctx) {
         MainNode mainNode = (MainNode) visitMain(ctx.main());
 
-        List<FunctionDeclarationNode> functionDeclarationNodes = new ArrayList<>();
-        for (OurParser.FunctionDeclContext functionDecl : ctx.functionDecl()) {
-            functionDeclarationNodes.add((FunctionDeclarationNode) visitFunctionDecl(functionDecl));
-        }
+        List<FunctionDeclarationNode> functionDeclarationNodes = visitList(FunctionDeclarationNode.class, ctx.functionDecl(), this::visitFunctionDecl);
 
         ProgramNode programNode = new ProgramNode(mainNode, functionDeclarationNodes);
         setCodePos(programNode, ctx);
@@ -40,11 +38,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitBlock(OurParser.BlockContext ctx) {
-        List<StatementNode> statementNodes = new ArrayList<>();
+        List<StatementNode> statementNodes = visitList(StatementNode.class, ctx.statement(), this::visitStatement);
 
-        for (OurParser.StatementContext statement : ctx.statement()) {
-            statementNodes.add((StatementNode) visitStatement(statement));
-        }
         BlockNode blockNode = new BlockNode(statementNodes);
         setCodePos(blockNode, ctx);
         return blockNode;
@@ -60,10 +55,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitFunctionParam(OurParser.FunctionParamContext ctx) {
-        List<FunctionParameterNode> functionParameterNodes = new ArrayList<>();
-        for (OurParser.FunctionParamContext parameter : ctx.functionParam()) {
-            functionParameterNodes.add((FunctionParameterNode) visitFunctionParam(parameter));
-        }
+        List<FunctionParameterNode> functionParameterNodes = visitList(FunctionParameterNode.class, ctx.functionParam(), this::visitFunctionParam);
+
         FunctionParameterNode functionParameterNode = new FunctionParameterNode(getDataType(ctx.datatype()), functionParameterNodes, ctx.variableName().getText());
         setCodePos(functionParameterNode, ctx);
         return functionParameterNode;
@@ -92,14 +85,10 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitFunctionArgs(OurParser.FunctionArgsContext ctx) {
-        List<ExpressionNode> expressionNodes = new ArrayList<>();
-        for (OurParser.ExprContext expr : ctx.expr()) {
-            expressionNodes.add((ExpressionNode) visitExpr(expr));
-        }
-        List<BoolExpressionNode> boolExpressionNodes = new ArrayList<>();
-        for (OurParser.BoolExprContext boolExpr : ctx.boolExpr()) {
-            boolExpressionNodes.add((BoolExpressionNode) visitBoolExpr(boolExpr));
-        }
+        List<ExpressionNode> expressionNodes = visitList(ExpressionNode.class, ctx.expr(), this::visitExpr);
+
+        List<BoolExpressionNode> boolExpressionNodes = visitList(BoolExpressionNode.class, ctx.boolExpr(), this::visitBoolExpr);
+
         FunctionArgsNode functionArgsNode = new FunctionArgsNode(expressionNodes, boolExpressionNodes);
         setCodePos(functionArgsNode, ctx);
         return functionArgsNode;
@@ -108,15 +97,12 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitIfElseStatement(OurParser.IfElseStatementContext ctx) {
         IfStatementNode ifStatementNode = (IfStatementNode) visitIfStatement(ctx.ifStatement());
-        ArrayList<ElseIfStatementNode> elseIfStatementNode = null;
+        List<ElseIfStatementNode> elseIfStatementNode = null;
         ElseStatementNode elseStatementNode = null;
 
         // ElseIf nodes
         if (ctx.elseIfStatement() != null) {
-            elseIfStatementNode = new ArrayList<>();
-            for (OurParser.ElseIfStatementContext elseIfStatement : ctx.elseIfStatement()) {
-                elseIfStatementNode.add((ElseIfStatementNode) visitElseIfStatement(elseIfStatement));
-            }
+            elseIfStatementNode = visitList(ElseIfStatementNode.class, ctx.elseIfStatement(), this::visitElseIfStatement);
         }
         // Else nodes
         if (ctx.elseStatement() != null) {
@@ -247,6 +233,19 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         return dataType;
     }
 
+    // Creates a list of T (ASTNodes), then visits all contexts in S using func
+    // All the results from visiting are added to the list which gets returned.
+    // Usage example:
+    // List<StatementNode> statementNodes = visitList(StatementNode.class, ctx.statement(), this::visitStatement);
+    private <T,S> List<T> visitList(Class<T> tClass, List<S> ctxs, Function<S, ASTNode> func) {
+        List<T> nodes = new ArrayList<>();
+        for (S ctx : ctxs) {
+            nodes.add(tClass.cast(func.apply(ctx)));
+        }
+        return nodes;
+    }
+
+    // Set codePosition of a Node using ctx
     private void setCodePos(ASTNode node, ParserRuleContext ctx) {
         node.setCodePosition(getCodePosition(ctx));
     }
