@@ -1,10 +1,7 @@
 package dk.aau.cs.d703e20.ast;
 
 import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
-import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
-import dk.aau.cs.d703e20.ast.expressions.ConditionalExpressionNode;
-import dk.aau.cs.d703e20.ast.expressions.ExpressionNode;
-import dk.aau.cs.d703e20.ast.expressions.FunctionParameterNode;
+import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
@@ -56,18 +53,18 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFunctionDecl(OurParser.FunctionDeclContext ctx) {
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
-        List<FunctionParameterNode> functionParameterNodes = new ArrayList<>();
-        for (OurParser.FunctionParamContext parameter : ctx.functionParam()) {
-            functionParameterNodes.add((FunctionParameterNode) visitFunctionParam(parameter));
-        }
-        FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), functionParameterNodes, blockNode);
+        FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), blockNode);
         functionDeclarationNode.setCodePosition(getCodePosition(ctx));
         return functionDeclarationNode;
     }
 
     @Override
     public ASTNode visitFunctionParam(OurParser.FunctionParamContext ctx) {
-        FunctionParameterNode functionParameterNode = new FunctionParameterNode(getDataType(ctx.datatype()), ctx.variableName().getText());
+        List<FunctionParameterNode> functionParameterNodes = new ArrayList<>();
+        for (OurParser.FunctionParamContext parameter : ctx.functionParam()) {
+            functionParameterNodes.add((FunctionParameterNode) visitFunctionParam(parameter));
+        }
+        FunctionParameterNode functionParameterNode = new FunctionParameterNode(getDataType(ctx.datatype()), functionParameterNodes, ctx.variableName().getText());
         functionParameterNode.setCodePosition(getCodePosition(ctx));
         return functionParameterNode;
     }
@@ -88,13 +85,23 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitFunctionCall(OurParser.FunctionCallContext ctx) {
+        FunctionCallNode functionCallNode = new FunctionCallNode(ctx.functionName().getText(), (FunctionArgsNode) visitFunctionArgs(ctx.functionArgs()));
+        functionCallNode.setCodePosition(getCodePosition(ctx));
+        return functionCallNode;
+    }
+
+    @Override
+    public ASTNode visitFunctionArgs(OurParser.FunctionArgsContext ctx) {
         List<ExpressionNode> expressionNodes = new ArrayList<>();
         for (OurParser.ExprContext expr : ctx.expr()) {
             expressionNodes.add((ExpressionNode) visitExpr(expr));
         }
-        FunctionCallNode functionCallNode = new FunctionCallNode(ctx.functionName().getText(), expressionNodes);
-        functionCallNode.setCodePosition(getCodePosition(ctx));
-        return functionCallNode;
+        List<BoolExpressionNode> boolExpressionNodes = new ArrayList<>();
+        for (OurParser.BoolExprContext boolExpr : ctx.boolExpr()) {
+            boolExpressionNodes.add((BoolExpressionNode) visitBoolExpr(boolExpr));
+        }
+        FunctionArgsNode functionArgsNode = new FunctionArgsNode(expressionNodes, boolExpressionNodes);
+        return functionArgsNode;
     }
 
     @Override
@@ -187,11 +194,6 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitBoolExpr(OurParser.BoolExprContext ctx) {
         return super.visitBoolExpr(ctx);
-    }
-
-    @Override
-    public ASTNode visitBoolSymbol(OurParser.BoolSymbolContext ctx) {
-        return super.visitBoolSymbol(ctx);
     }
 
     @Override

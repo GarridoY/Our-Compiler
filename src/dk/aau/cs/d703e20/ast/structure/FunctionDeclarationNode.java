@@ -10,15 +10,13 @@ import java.util.List;
 public class FunctionDeclarationNode implements ASTNode {
     private final Enums.DataType dataType;
     private final String functionName;
-    private final List<FunctionParameterNode> functionParameterNodes;
     private final BlockNode blockNode;
 
     private CodePosition codePosition;
 
-    public FunctionDeclarationNode(Enums.DataType dataType, String functionName, List<FunctionParameterNode> functionParameterNodes, BlockNode blockNode) {
+    public FunctionDeclarationNode(Enums.DataType dataType, String functionName, BlockNode blockNode) {
         this.dataType = dataType;
         this.functionName = functionName;
-        this.functionParameterNodes = functionParameterNodes;
         this.blockNode = blockNode;
     }
 
@@ -28,10 +26,6 @@ public class FunctionDeclarationNode implements ASTNode {
 
     public String getFunctionName() {
         return functionName;
-    }
-
-    public List<FunctionParameterNode> getFunctionParameterNodes() {
-        return functionParameterNodes;
     }
 
     public BlockNode getBlockNode() {
