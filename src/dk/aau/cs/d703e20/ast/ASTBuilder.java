@@ -25,7 +25,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         }
 
         ProgramNode programNode = new ProgramNode(mainNode, functionDeclarationNodes);
-        programNode.setCodePosition(getCodePosition(ctx));
+        setCodePos(programNode, ctx);
         return programNode;
     }
 
@@ -34,7 +34,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
 
         MainNode mainNode = new MainNode(blockNode);
-        mainNode.setCodePosition(getCodePosition(ctx));
+        setCodePos(mainNode, ctx);
         return mainNode;
     }
 
@@ -46,7 +46,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             statementNodes.add((StatementNode) visitStatement(statement));
         }
         BlockNode blockNode = new BlockNode(statementNodes);
-        blockNode.setCodePosition(getCodePosition(ctx));
+        setCodePos(blockNode, ctx);
         return blockNode;
     }
 
@@ -54,7 +54,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitFunctionDecl(OurParser.FunctionDeclContext ctx) {
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
         FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), blockNode);
-        functionDeclarationNode.setCodePosition(getCodePosition(ctx));
+        setCodePos(functionDeclarationNode, ctx);
         return functionDeclarationNode;
     }
 
@@ -65,7 +65,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             functionParameterNodes.add((FunctionParameterNode) visitFunctionParam(parameter));
         }
         FunctionParameterNode functionParameterNode = new FunctionParameterNode(getDataType(ctx.datatype()), functionParameterNodes, ctx.variableName().getText());
-        functionParameterNode.setCodePosition(getCodePosition(ctx));
+        setCodePos(functionParameterNode, ctx);
         return functionParameterNode;
     }
 
@@ -86,7 +86,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFunctionCall(OurParser.FunctionCallContext ctx) {
         FunctionCallNode functionCallNode = new FunctionCallNode(ctx.functionName().getText(), (FunctionArgsNode) visitFunctionArgs(ctx.functionArgs()));
-        functionCallNode.setCodePosition(getCodePosition(ctx));
+        setCodePos(functionCallNode, ctx);
         return functionCallNode;
     }
 
@@ -101,6 +101,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             boolExpressionNodes.add((BoolExpressionNode) visitBoolExpr(boolExpr));
         }
         FunctionArgsNode functionArgsNode = new FunctionArgsNode(expressionNodes, boolExpressionNodes);
+        setCodePos(functionArgsNode, ctx);
         return functionArgsNode;
     }
 
@@ -123,7 +124,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         }
 
         IfElseStatementNode ifElseStatementNode = new IfElseStatementNode(ifStatementNode, elseIfStatementNode, elseStatementNode);
-        ifElseStatementNode.setCodePosition(getCodePosition(ctx));
+        setCodePos(ifStatementNode, ctx);
         return ifElseStatementNode;
     }
 
@@ -133,7 +134,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
 
         IfStatementNode ifStatementNode = new IfStatementNode(expressionNode, blockNode);
-        ifStatementNode.setCodePosition(getCodePosition(ctx));
+        setCodePos(ifStatementNode, ctx);
         return ifStatementNode;
     }
 
@@ -143,7 +144,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
 
         ElseIfStatementNode elseIfStatementNode = new ElseIfStatementNode(expressionNode, blockNode);
-        elseIfStatementNode.setCodePosition(getCodePosition(ctx));
+        setCodePos(elseIfStatementNode, ctx);
         return elseIfStatementNode;
     }
 
@@ -152,7 +153,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
 
         ElseStatementNode elseStatementNode = new ElseStatementNode(blockNode);
-        elseStatementNode.setCodePosition(getCodePosition(ctx));
+        setCodePos(elseStatementNode, ctx);
         return elseStatementNode;
     }
 
@@ -172,7 +173,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             throw new CompilerException("Invalid conditional expression", getCodePosition(ctx));
         }
 
-        conditionalExpressionNode.setCodePosition(getCodePosition(ctx));
+        setCodePos(conditionalExpressionNode, ctx);
         return conditionalExpressionNode;
     }
 
@@ -244,6 +245,10 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             throw new CompilerException("DataType is unknown", getCodePosition(ctx));
 
         return dataType;
+    }
+
+    private void setCodePos(ASTNode node, ParserRuleContext ctx) {
+        node.setCodePosition(getCodePosition(ctx));
     }
 
     private CodePosition getCodePosition(ParserRuleContext ctx) {
