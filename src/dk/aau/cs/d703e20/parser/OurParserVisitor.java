@@ -59,6 +59,12 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitStatement(OurParser.StatementContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link OurParser#returnStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitReturnStatement(OurParser.ReturnStatementContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link OurParser#ifElseStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
