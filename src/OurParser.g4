@@ -38,6 +38,7 @@ statement
     | functionCall
     | ifElseStatement //conditionalStatement
     | iterativeStatement
+    | atStatement
     | returnStatement;
 
 returnStatement
@@ -53,6 +54,10 @@ elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseStatement: ELSE block;
 
 conditionalExpression: boolExpr | NOT? variableName | functionCall;
+
+// at statement for clock and timing purposes
+atStatement
+    : AT LEFT_PAREN variableName op=(EQUAL | LESS_THAN | GREATER_THAN | GREATER_OR_EQUAL | LESS_OR_EQUAL | NOT_EQUAL) expr RIGHT_PAREN block;
 
 // ITERATIVE
 iterativeStatement
