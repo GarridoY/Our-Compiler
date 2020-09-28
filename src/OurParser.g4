@@ -71,7 +71,8 @@ forStatement
 
 expr
     : expr op=(ADD | SUB | MOD | DIV | MUL) expr // Precedence handled by target
-    | numLiteral | '('expr')'
+    | numLiteral
+    | '('expr')'
     | variableName;
 
 // TODO: Check ambiguity

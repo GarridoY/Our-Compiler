@@ -3,7 +3,7 @@ package dk.aau.cs.d703e20.ast.expressions;
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 
-public class BoolExpressionNode implements ASTNode {
+public class BoolExpressionNode extends ExpressionNode {
     // TODO Add boolSymbol
     private ExpressionNode expressionNode;
     private BoolExpressionNode boolExpressionNode;

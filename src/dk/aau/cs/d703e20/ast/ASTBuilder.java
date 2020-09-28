@@ -165,12 +165,19 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitIterativeStatement(OurParser.IterativeStatementContext ctx) {
-        return super.visitIterativeStatement(ctx);
+        return visitForStatement(ctx.forStatement());
     }
 
     @Override
     public ASTNode visitForStatement(OurParser.ForStatementContext ctx) {
-        return super.visitForStatement(ctx);
+        ArithExpressionNode arithExpressionNode1 = (ArithExpressionNode) visitExpr(ctx.expr(0));
+        ArithExpressionNode arithExpressionNode2 = (ArithExpressionNode) visitExpr(ctx.expr(1));
+        BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+
+        ForStatementNode forStatementNode = new ForStatementNode(arithExpressionNode1, arithExpressionNode2, blockNode);
+        setCodePos(forStatementNode, ctx);
+
+        return forStatementNode;
     }
 
     @Override
@@ -201,6 +208,16 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFunctionName(OurParser.FunctionNameContext ctx) {
         return super.visitFunctionName(ctx);
+    }
+
+    @Override
+    public ASTNode visitReturnStatement(OurParser.ReturnStatementContext ctx) {
+        return super.visitReturnStatement(ctx);
+    }
+
+    @Override
+    public ASTNode visitAtStatement(OurParser.AtStatementContext ctx) {
+        return super.visitAtStatement(ctx);
     }
 
     @Override
