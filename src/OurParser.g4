@@ -25,7 +25,7 @@ functionParam
 
 // Call function given optional arguments (expr)
 functionCall
-    : functionName LEFT_PAREN functionArgs? RIGHT_PAREN SEMICOLON;
+    : functionName LEFT_PAREN functionArgs? RIGHT_PAREN;
 
 // Function arguments for calling function(s)
 functionArgs
@@ -35,7 +35,7 @@ functionArgs
 statement
     : variableDecl
     | assignment
-    | functionCall
+    | functionCall SEMICOLON
     | ifElseStatement //conditionalStatement
     | iterativeStatement;
 //    | returnStatement // something about typechecking
@@ -80,7 +80,7 @@ variableDecl
     : datatype assignment;
 
 assignment
-    : variableName ASSIGN (expr | literal | functionName LEFT_PAREN functionArgs? RIGHT_PAREN) SEMICOLON;
+    : variableName ASSIGN (expr | literal | functionCall) SEMICOLON;
 
 // Names
 variableName
