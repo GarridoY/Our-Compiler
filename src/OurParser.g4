@@ -37,8 +37,11 @@ statement
     | assignment
     | functionCall
     | ifElseStatement //conditionalStatement
-    | iterativeStatement;
-//    | returnStatement // something about typechecking
+    | iterativeStatement
+    | returnStatement;
+
+returnStatement
+    : RETURN variableName SEMICOLON;
 
 // CONDITIONAL
 // any IF statement require blocks
