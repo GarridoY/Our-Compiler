@@ -37,8 +37,12 @@ statement
     | assignment
     | functionCall SEMICOLON
     | ifElseStatement //conditionalStatement
-    | iterativeStatement;
-//    | returnStatement // something about typechecking
+    | iterativeStatement
+    | atStatement
+    | returnStatement;
+
+returnStatement
+    : RETURN variableName SEMICOLON;
 
 // CONDITIONAL
 // any IF statement require blocks
@@ -50,6 +54,10 @@ elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseStatement: ELSE block;
 
 conditionalExpression: boolExpr | NOT? variableName | functionCall;
+
+// at statement for clock and timing purposes
+atStatement
+    : AT LEFT_PAREN variableName op=(EQUAL | LESS_THAN | GREATER_THAN | GREATER_OR_EQUAL | LESS_OR_EQUAL | NOT_EQUAL) expr RIGHT_PAREN block;
 
 // ITERATIVE
 iterativeStatement
