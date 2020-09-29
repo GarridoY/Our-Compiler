@@ -182,31 +182,56 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitExpr(OurParser.ExprContext ctx) {
-        return super.visitExpr(ctx);
+        ExpressionNode expressionNode;
+
+        if (ctx.expr(0) != null){
+            if(ctx.expr(1) != null){
+                ArithExpressionNode node1 = (ArithExpressionNode) visitExpr(ctx.expr(0));
+                ArithExpressionNode node2 = (ArithExpressionNode) visitExpr(ctx.expr(1));
+                expressionNode = new ArithExpressionNode(node1 , node2, getArithOperator(ctx.arit_op()));
+            } else {
+                ArithExpressionNode node = (ArithExpressionNode) visitExpr(ctx.expr(0));
+                expressionNode = new ArithExpressionNode(node);
+            }
+        } else if (ctx.numLiteral() != null) {
+            expressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
+        } else if (ctx.variableName() != null) {
+            expressionNode = new ArithExpressionNode(ctx.variableName().getText());
+        } else {
+            throw new CompilerException("Invalid Expression", getCodePosition(ctx));
+        }
+
+        setCodePos(expressionNode, ctx);
+        return expressionNode;
     }
 
     @Override
     public ASTNode visitBoolExpr(OurParser.BoolExprContext ctx) {
+
         return super.visitBoolExpr(ctx);
     }
 
     @Override
     public ASTNode visitVariableDecl(OurParser.VariableDeclContext ctx) {
+
         return super.visitVariableDecl(ctx);
     }
 
     @Override
     public ASTNode visitAssignment(OurParser.AssignmentContext ctx) {
+
         return super.visitAssignment(ctx);
     }
 
     @Override
     public ASTNode visitVariableName(OurParser.VariableNameContext ctx) {
+
         return super.visitVariableName(ctx);
     }
 
     @Override
     public ASTNode visitFunctionName(OurParser.FunctionNameContext ctx) {
+
         return super.visitFunctionName(ctx);
     }
 
@@ -248,6 +273,51 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             throw new CompilerException("DataType is unknown", getCodePosition(ctx));
 
         return dataType;
+    }
+
+    private Enums.Operator getArithOperator(OurParser.Arit_opContext ctx) {
+        Enums.Operator operator;
+
+        if (ctx.ADD() != null){
+            operator = Enums.Operator.ADD;
+        } else if (ctx.SUB() != null) {
+            operator = Enums.Operator.SUB;
+        } else if (ctx.MOD() != null) {
+            operator = Enums.Operator.MOD;
+        } else if (ctx.DIV() != null) {
+            operator = Enums.Operator.DIV;
+        } else if (ctx.MUL() != null) {
+            operator = Enums.Operator.MUL;
+        } else {
+            throw new CompilerException("Operator is unknown", getCodePosition(ctx));
+        }
+        return operator;
+    }
+
+    private  Enums.BoolOperator getBoolOperator(OurParser.Bool_opContext ctx) {
+        Enums.BoolOperator operator;
+
+        if (ctx.EQUAL() != null){
+            operator = Enums.BoolOperator.EQUAL;
+        } else if (ctx.NOT_EQUAL() != null) {
+            operator = Enums.BoolOperator.NOT_EQUAL;
+        } else if (ctx.GREATER_THAN() != null) {
+            operator = Enums.BoolOperator.GREATER_THAN;
+        } else if (ctx.GREATER_OR_EQUAL() != null) {
+            operator = Enums.BoolOperator.GREATER_OR_EQUAL;
+        } else if (ctx.LESS_THAN() != null) {
+            operator = Enums.BoolOperator.LESS_THAN;
+        } else if (ctx.LESS_OR_EQUAL() != null) {
+            operator = Enums.BoolOperator.LESS_OR_EQUAL;
+        } else {
+            throw new CompilerException("Operator is unknown", getCodePosition(ctx));
+        }
+
+        return  operator;
+    }
+
+    private Double getNumLiteralValue (OurParser.NumLiteralContext ctx){
+        return Double.valueOf(ctx.getText());
     }
 
     // Creates a list of T (ASTNodes), then visits all contexts in S using func

@@ -1,4 +1,4 @@
-// Generated from /Users/Garrido/Documents/GitHub/P7/src/OurParser.g4 by ANTLR 4.8
+// Generated from /Users/ruofanwu/Projects/P7/src/OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -166,4 +166,16 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitNumLiteral(OurParser.NumLiteralContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#arit_op}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArit_op(OurParser.Arit_opContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#bool_op}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBool_op(OurParser.Bool_opContext ctx);
 }

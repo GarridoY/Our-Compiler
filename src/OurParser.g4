@@ -70,7 +70,7 @@ forStatement
 // EXPRESSIONS
 
 expr
-    : expr op=(ADD | SUB | MOD | DIV | MUL) expr // Precedence handled by target
+    : expr arit_op expr // Precedence handled by target
     | numLiteral
     | '('expr')'
     | variableName;
@@ -80,7 +80,7 @@ expr
 boolExpr
     : BOOL_LITERAL
     | //boolExpr op=(EQUAL | AND | OR | NOT_EQUAL) boolExpr
-    | (expr | BOOL_LITERAL) op=(EQUAL | NOT_EQUAL | GREATER_THAN | GREATER_OR_EQUAL | LESS_THAN | LESS_OR_EQUAL) (BOOL_LITERAL | expr)
+    | (expr | BOOL_LITERAL) bool_op (BOOL_LITERAL | expr)
     | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
 
 
@@ -114,3 +114,20 @@ numLiteral
     | DIGIT_NEGATIVE
     | DOUBLE_DIGIT
     | DOUBLE_DIGIT_NEGATIVE;
+
+arit_op
+    : ADD
+    | SUB
+    | MOD
+    | DIV
+    | MUL
+    ;
+
+bool_op
+    : EQUAL
+    | NOT_EQUAL
+    | GREATER_THAN
+    | GREATER_OR_EQUAL
+    | LESS_THAN
+    | LESS_OR_EQUAL
+    ;

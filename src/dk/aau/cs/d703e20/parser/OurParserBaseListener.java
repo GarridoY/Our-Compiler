@@ -1,4 +1,4 @@
-// Generated from /Users/Garrido/Documents/GitHub/P7/src/OurParser.g4 by ANTLR 4.8
+// Generated from /Users/ruofanwu/Projects/P7/src/OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -323,6 +323,30 @@ public class OurParserBaseListener implements OurParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitNumLiteral(OurParser.NumLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterArit_op(OurParser.Arit_opContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArit_op(OurParser.Arit_opContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterBool_op(OurParser.Bool_opContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitBool_op(OurParser.Bool_opContext ctx) { }
 
 	/**
 	 * {@inheritDoc}
