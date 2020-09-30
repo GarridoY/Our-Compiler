@@ -207,20 +207,44 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitBoolExpr(OurParser.BoolExprContext ctx) {
+        BoolExpressionNode boolExpressionNode;
 
-        return super.visitBoolExpr(ctx);
+        if (ctx.boolExpr() != null) {
+            boolExpressionNode = ;
+        }
+        else if (ctx.b)
+        else {
+            throw new  CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
+        }
+
+        return boolExpressionNode;
     }
 
     @Override
     public ASTNode visitVariableDecl(OurParser.VariableDeclContext ctx) {
+        VariableDeclarationNode variableDeclarationNode;
 
-        return super.visitVariableDecl(ctx);
+        try {
+            Enums.DataType dataType = ;
+            variableDeclarationNode = new VariableDeclarationNode();
+        } catch (CompilerException e){
+            throw new CompilerException("Invalid Variable Declaration Statement", getCodePosition(ctx));
+        }
+
+        return variableDeclarationNode;
     }
 
     @Override
     public ASTNode visitAssignment(OurParser.AssignmentContext ctx) {
+        AssignmentNode assignmentNode;
 
-        return super.visitAssignment(ctx);
+        if () {
+
+        } else {
+            throw new CompilerException("Invalid Assignment Statement", getCodePosition(ctx));
+        }
+
+        return assignmentNode;
     }
 
     @Override
@@ -319,6 +343,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     private Double getNumLiteralValue (OurParser.NumLiteralContext ctx){
         return Double.valueOf(ctx.getText());
     }
+
+
 
     // Creates a list of T (ASTNodes), then visits all contexts in S using func
     // All the results from visiting are added to the list which gets returned.
