@@ -1,0 +1,29 @@
+// Simple example of a traffic T-junction where
+// the lights either show green or red
+
+Setup{
+    int LED_RED_EAST_WEST = 3;
+    int LED_RED_SOUTH = 4;
+    int LED_GREEN_EAST_WEST = 6;
+    int LED_GREEN_SOUTH = 7;
+
+    pinMode(LED_RED_EAST_WEST, OUT);
+    pinMode(LED_RED_SOUTH, OUT);
+    pinMode(LED_GREEN_EAST_WEST, OUT);
+    pinMode(LED_GREEN_SOUTH, OUT);
+
+    double sensorDistanceEast = 20.00; // meter
+    double sensorDistanceWest = 40.50;
+    double sensorDistanceSouth = 40.50;
+    clock x;
+
+
+}
+
+Loop{
+
+//NOT done
+
+
+
+}

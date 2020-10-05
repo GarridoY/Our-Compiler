@@ -12,7 +12,8 @@ PIT: 'pit';
 VOID: 'void';
 
 // Keywords
-MAIN: 'Main';
+LOOP: 'Loop';
+SETUP: 'Setup';
 RETURN: 'return';
 IF: 'if';
 ELSE_IF: 'else if';
