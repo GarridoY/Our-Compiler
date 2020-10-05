@@ -7,23 +7,38 @@ Setup{
     int LED_GREEN_EAST_WEST = 6;
     int LED_GREEN_SOUTH = 7;
 
+    int SENSOR_WEST = 10;
+    int SENSOR_EAST = 11;
+    int SENSOR_SOUTH = 12;
+
     pinMode(LED_RED_EAST_WEST, OUT);
     pinMode(LED_RED_SOUTH, OUT);
     pinMode(LED_GREEN_EAST_WEST, OUT);
     pinMode(LED_GREEN_SOUTH, OUT);
+    pinMode(SENSOR_EAST, IN);
+    pinMode(SENSOR_WEST, IN);
+    pinMode(SENSOR_SOUTH, IN);
 
     double sensorDistanceEast = 20.00; // meter
     double sensorDistanceWest = 40.50;
     double sensorDistanceSouth = 40.50;
-    clock x;
+    clock x = 0;
 
+    int eastTriggerTime = 5;
+    int westTriggerTime = 2;
+    int southTriggerTime = 2;
 
 }
 
 Loop{
+    digitalWrite(LED_GREEN_EAST, HIGH);
+    digitalWrite(LED_GREEN_WEST, HIGH);
 
-//NOT done
+    if (x > southTriggerTime + duration(sensorDistanceSouth)) {
+        digitalWrite(LED_GREEN_SOUTH, HIGH);
+    }
+}
 
-
+int duration(distance) {
 
 }

@@ -75,7 +75,8 @@ forStatement
 expr
     : expr op=(ADD | SUB | MOD | DIV | MUL) expr // Precedence handled by target
     | numLiteral | '('expr')'
-    | variableName;
+    | variableName
+    | functionCall;
 
 // TODO: Check ambiguity
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
