@@ -74,7 +74,7 @@ forStatement
 
 expr
     : expr op=(ADD | SUB | MOD | DIV | MUL) expr // Precedence handled by target
-    | numLiteral | '('expr')'
+    | numLiteral | NOT?'('expr')'
     | variableName
     | functionCall;
 

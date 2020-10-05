@@ -31,14 +31,27 @@ Setup{
 }
 
 Loop{
-    digitalWrite(LED_GREEN_EAST, HIGH);
-    digitalWrite(LED_GREEN_WEST, HIGH);
+
+    lightSwitch(false);
 
     if (x > southTriggerTime + duration(sensorDistanceSouth)) {
-        digitalWrite(LED_GREEN_SOUTH, HIGH);
+        lightsSwitch(true);
+        delay(200);
     }
 }
 
-int duration(distance) {
+int duration(double distance) {
+    double duration = distance * (0.5 * 4);
+    return duration;
+}
+
+void lightSwitch(bool greenSouth) {
+    digitalWrite(LED_GREEN_SOUTH, greenSouth);
+    digitalWrite(LED_RED_SOUTH, !(greenSouth));
+
+    digitalWrite(LED_GREEN_EAST, !(greenSouth));
+    digitalWrite(LED_GREEN_WEST, !(greenSouth));
+    digitalWrite(LED_RED_EAST, greenSouth);
+    digitalWrite(LED_RED_WEST, greenSouth);
 
 }
