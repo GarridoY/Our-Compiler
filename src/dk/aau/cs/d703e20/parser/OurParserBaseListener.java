@@ -1,4 +1,4 @@
-// Generated from C:/Users/htmle/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from /home/rynke/P7/src/OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -28,13 +28,25 @@ public class OurParserBaseListener implements OurParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMain(OurParser.MainContext ctx) { }
+	@Override public void enterLoop(OurParser.LoopContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMain(OurParser.MainContext ctx) { }
+	@Override public void exitLoop(OurParser.LoopContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSetup(OurParser.SetupContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSetup(OurParser.SetupContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

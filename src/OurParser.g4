@@ -4,11 +4,14 @@ options { tokenVocab=OurLexer; }
 // Program rule, has to consist of a main rule, can be followed by function declarations.
 // variableName is used to catch outside of the program
 program
-    : main (functionDecl | variableName)*;
+    : setup loop (functionDecl | variableName)*;
 
 // main start keyword followed by a block
-main
-    : MAIN block;
+loop
+    : LOOP block;
+
+setup
+    : SETUP block;
 
 // Encapsulation of code by brackets
 block
