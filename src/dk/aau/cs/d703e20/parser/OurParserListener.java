@@ -68,6 +68,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitFunctionCall(OurParser.FunctionCallContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link OurParser#functionArgs}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunctionArgs(OurParser.FunctionArgsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#functionArgs}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunctionArgs(OurParser.FunctionArgsContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link OurParser#statement}.
 	 * @param ctx the parse tree
 	 */
@@ -77,6 +87,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitStatement(OurParser.StatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#returnStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterReturnStatement(OurParser.ReturnStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#returnStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitReturnStatement(OurParser.ReturnStatementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#ifElseStatement}.
 	 * @param ctx the parse tree
@@ -128,6 +148,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitConditionalExpression(OurParser.ConditionalExpressionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link OurParser#atStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterAtStatement(OurParser.AtStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#atStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitAtStatement(OurParser.AtStatementContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link OurParser#iterativeStatement}.
 	 * @param ctx the parse tree
 	 */
@@ -167,16 +197,6 @@ public interface OurParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBoolExpr(OurParser.BoolExprContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link OurParser#boolSymbol}.
-	 * @param ctx the parse tree
-	 */
-	void enterBoolSymbol(OurParser.BoolSymbolContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link OurParser#boolSymbol}.
-	 * @param ctx the parse tree
-	 */
-	void exitBoolSymbol(OurParser.BoolSymbolContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#variableDecl}.
 	 * @param ctx the parse tree
