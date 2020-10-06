@@ -28,13 +28,25 @@ public class OurParserBaseListener implements OurParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMain(OurParser.MainContext ctx) { }
+	@Override public void enterLoop(OurParser.LoopContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMain(OurParser.MainContext ctx) { }
+	@Override public void exitLoop(OurParser.LoopContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSetup(OurParser.SetupContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSetup(OurParser.SetupContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -5,7 +5,8 @@ import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
-import dk.aau.cs.d703e20.ast.structure.MainNode;
+import dk.aau.cs.d703e20.ast.structure.SetupNode;
+import dk.aau.cs.d703e20.ast.structure.LoopNode;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.parser.OurParserBaseVisitor;
@@ -18,22 +19,32 @@ import java.util.function.Function;
 public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitProgram(OurParser.ProgramContext ctx) {
-        MainNode mainNode = (MainNode) visitMain(ctx.main());
+        SetupNode setupNode = (SetupNode) visitSetup(ctx.setup());
+        LoopNode loopNode = (LoopNode) visitLoop(ctx.loop());
 
         List<FunctionDeclarationNode> functionDeclarationNodes = visitList(FunctionDeclarationNode.class, ctx.functionDecl(), this::visitFunctionDecl);
 
-        ProgramNode programNode = new ProgramNode(mainNode, functionDeclarationNodes);
+        ProgramNode programNode = new ProgramNode(setupNode, loopNode, functionDeclarationNodes);
         setCodePos(programNode, ctx);
         return programNode;
     }
 
     @Override
-    public ASTNode visitMain(OurParser.MainContext ctx) {
+    public ASTNode visitSetup(OurParser.SetupContext ctx) {
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
 
-        MainNode mainNode = new MainNode(blockNode);
-        setCodePos(mainNode, ctx);
-        return mainNode;
+        SetupNode setupNode = new SetupNode(blockNode);
+        setCodePos(setupNode, ctx);
+        return setupNode;
+    }
+
+    @Override
+    public ASTNode visitLoop(OurParser.LoopContext ctx) {
+        BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+
+        LoopNode loopNode = new LoopNode(blockNode);
+        setCodePos(loopNode, ctx);
+        return loopNode;
     }
 
     @Override

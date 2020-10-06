@@ -4,11 +4,14 @@ options { tokenVocab=OurLexer; }
 // Program rule, has to consist of a main rule, can be followed by function declarations.
 // variableName is used to catch outside of the program
 program
-    : main (functionDecl | variableName)*;
+    : setup loop (functionDecl | variableName)*;
 
 // main start keyword followed by a block
-main
-    : MAIN block;
+loop
+    : LOOP block;
+
+setup
+    : SETUP block;
 
 // Encapsulation of code by brackets
 block
@@ -25,7 +28,7 @@ functionParam
 
 // Call function given optional arguments (expr)
 functionCall
-    : functionName LEFT_PAREN functionArgs? RIGHT_PAREN SEMICOLON;
+    : functionName LEFT_PAREN functionArgs? RIGHT_PAREN;
 
 // Function arguments for calling function(s)
 functionArgs
@@ -35,7 +38,7 @@ functionArgs
 statement
     : variableDecl
     | assignment
-    | functionCall
+    | functionCall SEMICOLON
     | ifElseStatement //conditionalStatement
     | iterativeStatement
     | atStatement
@@ -70,16 +73,16 @@ forStatement
 // EXPRESSIONS
 
 expr
-    : expr arit_op expr // Precedence handled by target
-    | numLiteral
-    | '('expr')'
-    | variableName;
+    : expr op=(ADD | SUB | MOD | DIV | MUL) expr // Precedence handled by target
+    | numLiteral | NOT?'('expr')'
+    | variableName
+    | functionCall;
 
 // TODO: Check ambiguity
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr
     : BOOL_LITERAL
-    | (expr | BOOL_LITERAL) bool_op (BOOL_LITERAL | expr)
+    | (expr | BOOL_LITERAL) op=(EQUAL | NOT_EQUAL | GREATER_THAN | GREATER_OR_EQUAL | LESS_THAN | LESS_OR_EQUAL) (BOOL_LITERAL | expr)
     | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
 
 
@@ -88,9 +91,7 @@ variableDecl
     : datatype assignment;
 
 assignment
-    : variableName ASSIGN (expr | literal) SEMICOLON;
-
-
+    : variableName ASSIGN (expr | literal | functionCall) SEMICOLON;
 
 // Names
 variableName
@@ -102,7 +103,8 @@ datatype
     : INT
     | DOUBLE
     | BOOLEAN
-    | CLOCK;
+    | CLOCK
+    | STRING;
 
 literal
     : STRING_LITERAL

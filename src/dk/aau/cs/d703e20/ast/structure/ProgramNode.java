@@ -6,18 +6,24 @@ import dk.aau.cs.d703e20.ast.CodePosition;
 import java.util.List;
 
 public class ProgramNode implements ASTNode {
-    private final MainNode mainNode;
+    private final SetupNode setupNode;
+    private final LoopNode loopNode;
     private final List<FunctionDeclarationNode> functionDeclarationNode;
 
     private CodePosition codePosition;
 
-    public ProgramNode(MainNode mainNode, List<FunctionDeclarationNode> functionDeclarationNode) {
-        this.mainNode = mainNode;
+    public ProgramNode(SetupNode setupNode, LoopNode loopNode, List<FunctionDeclarationNode> functionDeclarationNode) {
+        this.setupNode = setupNode;
+        this.loopNode = loopNode;
         this.functionDeclarationNode = functionDeclarationNode;
     }
 
-    public MainNode getMainNode() {
-        return mainNode;
+    public SetupNode getSetupNode() {
+        return setupNode;
+    }
+
+    public LoopNode getLoopNode() {
+        return loopNode;
     }
 
     public List<FunctionDeclarationNode> getFunctionDeclarationNode() {
