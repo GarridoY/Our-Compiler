@@ -57,7 +57,7 @@ conditionalExpression: boolExpr | NOT? variableName | functionCall;
 
 // at statement for clock and timing purposes
 atStatement
-    : AT LEFT_PAREN variableName op=(EQUAL | LESS_THAN | GREATER_THAN | GREATER_OR_EQUAL | LESS_OR_EQUAL | NOT_EQUAL) expr RIGHT_PAREN block;
+    : AT LEFT_PAREN variableName bool_op expr RIGHT_PAREN block;
 
 // ITERATIVE
 iterativeStatement

@@ -263,14 +263,18 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitReturnStatement(OurParser.ReturnStatementContext ctx) {
-
-        return new ReturnStatementNode();
+        return new ReturnStatementNode(ctx.variableName().getText());
     }
 
     @Override
     public ASTNode visitAtStatement(OurParser.AtStatementContext ctx) {
-
-        return new AtStatementNode();
+        try {
+            ExpressionNode expressionNode = (ExpressionNode) visitExpr(ctx.expr());
+            BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+            return new AtStatementNode(ctx.variableName().getText(), expressionNode, getBoolOperator(ctx.bool_op()), blockNode);
+        } catch (CompilerException e) {
+            throw new CompilerException("Invalid At Statement", getCodePosition(ctx));
+        }
     }
 
     private Enums.DataType getDataType(OurParser.DatatypeContext ctx) {
