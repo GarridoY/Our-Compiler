@@ -9,17 +9,22 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 // Match list of tokens to correct parser rule
 public class parserTest {
+    final TestToken l_paren = new TestToken("Left_Paren", OurLexer.LEFT_PAREN);
+    final TestToken r_paren = new TestToken("Right_Paren", OurLexer.RIGHT_PAREN);
+    final TestToken l_bracket = new TestToken("Left_Bracket", OurLexer.LEFT_BRACKET);
+    final TestToken r_bracket = new TestToken("Right_Bracket", OurLexer.RIGHT_BRACKET);
+
 
     private OurParser createParser(List<TestToken> tokens) {
         ListTokenSource tokenSource = new ListTokenSource(tokens);
         CommonTokenStream cts = new CommonTokenStream(tokenSource);
         OurParser parser = new OurParser(cts);
-        parser.addErrorListener(new OurErrorListener());
+        parser.addErrorListener(new OurErrorListener()); // Not expecting any syntax error
         return parser;
     }
 
@@ -28,11 +33,11 @@ public class parserTest {
         // Create list of program tokens
         List<TestToken> tokens = List.of(
                 new TestToken("Setup", OurLexer.SETUP),
-                new TestToken("L_Bracket0", OurLexer.LEFT_BRACKET),
-                new TestToken("R_Bracket0", OurLexer.RIGHT_BRACKET),
+                l_bracket,
+                r_bracket,
                 new TestToken("Loop", OurLexer.LOOP),
-                new TestToken("L_Bracket1", OurLexer.LEFT_BRACKET),
-                new TestToken("L_Bracket1", OurLexer.RIGHT_BRACKET)
+                l_bracket,
+                r_bracket
         );
         // Create parser based on tokens
         OurParser parser = createParser(tokens);
@@ -44,20 +49,100 @@ public class parserTest {
     }
 
     @Test
-    void testFunction() {
+    void testFunctionDecl() {
+        String fname = "myFunction";
         // Create list of functionDecl tokens
         List<TestToken> tokens = List.of(
                 new TestToken("type", OurLexer.VOID),
-                new TestToken("myFunction", OurLexer.ID),
-                new TestToken("L_Paren", OurLexer.LEFT_PAREN),
-                new TestToken("R_Paren", OurLexer.RIGHT_PAREN),
-                new TestToken("L_Bracket1", OurLexer.LEFT_BRACKET),
-                new TestToken("L_Bracket1", OurLexer.RIGHT_BRACKET)
-
+                new TestToken(fname, OurLexer.ID),
+                l_paren,
+                r_paren,
+                l_bracket,
+                r_bracket
         );
         OurParser parser = createParser(tokens);
         OurParser.FunctionDeclContext func = parser.functionDecl();
-        assertNotNull(func.functionName());
+        assertEquals(func.functionName().getText(), fname);
     }
 
+    @Test
+    void testFunctionDeclParam() {
+        List<TestToken> tokens = List.of(
+                new TestToken("type", OurLexer.VOID),
+                new TestToken("myFunction", OurLexer.ID),
+                l_paren,
+                new TestToken("Param_type", OurLexer.INT),
+                new TestToken("Param2", OurLexer.ID),
+                r_paren,
+                l_bracket,
+                r_bracket
+        );
+        OurParser parser = createParser(tokens);
+        OurParser.FunctionDeclContext func = parser.functionDecl();
+        assertNotNull(func.functionParam().datatype().INT());
+    }
+
+    @Test
+    void testFunctionCall() {
+        String fname = "Function";
+        List<TestToken> tokens = List.of(
+                new TestToken(fname, OurLexer.ID),
+                l_paren,
+                new TestToken("IntArg", OurLexer.DIGIT),
+                new TestToken("Comma", OurLexer.COMMA),
+                new TestToken("DoubleArg", OurLexer.DOUBLE_DIGIT),
+                r_paren
+        );
+        OurParser parser = createParser(tokens);
+        OurParser.FunctionCallContext fcall = parser.functionCall();
+        assertEquals(fcall.functionName().getText(), fname);
+        assertEquals(fcall.functionArgs().expr().size(), 2);
+    }
+
+    @Test
+    void testFunctionCallEmptyArg() {
+        String fname = "Function";
+        List<TestToken> tokens = List.of(
+                new TestToken(fname, OurLexer.ID),
+                l_paren,
+                r_paren
+        );
+        OurParser parser = createParser(tokens);
+        OurParser.FunctionCallContext fcall = parser.functionCall();
+        assertNull(fcall.functionArgs());
+    }
+
+    @Test
+    void testVariableDecl() {
+        String varname = "Var1";
+        List<TestToken> tokens = List.of(
+                new TestToken("Var_Type", OurLexer.STRING),
+                new TestToken(varname, OurLexer.ID),
+                new TestToken("Assign", OurLexer.ASSIGN),
+                new TestToken("Literal", OurLexer.STRING_LITERAL),
+                new TestToken("Semicolon", OurLexer.SEMICOLON)
+        );
+        OurParser parser = createParser(tokens);
+        OurParser.VariableDeclContext varDeclctx = parser.variableDecl();
+        assertNotNull(varDeclctx.assignment().literal().STRING_LITERAL());
+    }
+
+    @Test
+    void testAtStatement() {
+        String var_name = "Var_name";
+        List<TestToken> tokens = List.of(
+                new TestToken("At", OurLexer.AT),
+                l_paren,
+                new TestToken(var_name, OurLexer.ID),
+                new TestToken("Operator", OurLexer.LESS_THAN),
+                new TestToken("Expr", OurLexer.DIGIT),
+                r_paren,
+                l_bracket,
+                r_bracket
+        );
+        OurParser parser = createParser(tokens);
+        OurParser.AtStatementContext atCtx = parser.atStatement();
+        assertNotNull(atCtx.expr().numLiteral().DIGIT());
+        assertEquals(atCtx.op.getType(), OurLexer.LESS_THAN);
+    }
 }
