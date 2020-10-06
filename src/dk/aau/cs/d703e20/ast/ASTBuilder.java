@@ -5,7 +5,8 @@ import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
-import dk.aau.cs.d703e20.ast.structure.MainNode;
+import dk.aau.cs.d703e20.ast.structure.SetupNode;
+import dk.aau.cs.d703e20.ast.structure.LoopNode;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.parser.OurParserBaseVisitor;
@@ -18,22 +19,32 @@ import java.util.function.Function;
 public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitProgram(OurParser.ProgramContext ctx) {
-        MainNode mainNode = (MainNode) visitMain(ctx.main());
+        SetupNode setupNode = (SetupNode) visitSetup(ctx.setup());
+        LoopNode loopNode = (LoopNode) visitLoop(ctx.loop());
 
         List<FunctionDeclarationNode> functionDeclarationNodes = visitList(FunctionDeclarationNode.class, ctx.functionDecl(), this::visitFunctionDecl);
 
-        ProgramNode programNode = new ProgramNode(mainNode, functionDeclarationNodes);
+        ProgramNode programNode = new ProgramNode(setupNode, loopNode, functionDeclarationNodes);
         setCodePos(programNode, ctx);
         return programNode;
     }
 
     @Override
-    public ASTNode visitMain(OurParser.MainContext ctx) {
+    public ASTNode visitSetup(OurParser.SetupContext ctx) {
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
 
-        MainNode mainNode = new MainNode(blockNode);
-        setCodePos(mainNode, ctx);
-        return mainNode;
+        SetupNode setupNode = new SetupNode(blockNode);
+        setCodePos(setupNode, ctx);
+        return setupNode;
+    }
+
+    @Override
+    public ASTNode visitLoop(OurParser.LoopContext ctx) {
+        BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+
+        LoopNode loopNode = new LoopNode(blockNode);
+        setCodePos(loopNode, ctx);
+        return loopNode;
     }
 
     @Override
@@ -78,7 +89,12 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitFunctionCall(OurParser.FunctionCallContext ctx) {
-        FunctionCallNode functionCallNode = new FunctionCallNode(ctx.functionName().getText(), (FunctionArgsNode) visitFunctionArgs(ctx.functionArgs()));
+        FunctionCallNode functionCallNode;
+        if (ctx.functionArgs() != null)
+            functionCallNode = new FunctionCallNode(ctx.functionName().getText(), (FunctionArgsNode) visitFunctionArgs(ctx.functionArgs()));
+        else
+            functionCallNode = new FunctionCallNode(ctx.functionName().getText());
+
         setCodePos(functionCallNode, ctx);
         return functionCallNode;
     }
@@ -184,19 +200,23 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitExpr(OurParser.ExprContext ctx) {
         ExpressionNode expressionNode;
 
-        if (ctx.expr(0) != null){
-            if(ctx.expr(1) != null){
-                ArithExpressionNode node1 = (ArithExpressionNode) visitExpr(ctx.expr(0));
-                ArithExpressionNode node2 = (ArithExpressionNode) visitExpr(ctx.expr(1));
-                expressionNode = new ArithExpressionNode(node1 , node2, getArithOperator(ctx.arit_op()));
+        if (ctx.expr() != null) {
+            if (ctx.expr(0) != null){
+                if(ctx.expr(1) != null){
+                    ArithExpressionNode node1 = (ArithExpressionNode) visitExpr(ctx.expr(0));
+                    ArithExpressionNode node2 = (ArithExpressionNode) visitExpr(ctx.expr(1));
+                    expressionNode = new ArithExpressionNode(node1 , node2, getArithOperator(ctx.op.getText(), ctx));
+                } else {
+                    ArithExpressionNode node = (ArithExpressionNode) visitExpr(ctx.expr(0));
+                    expressionNode = new ArithExpressionNode(node);
+                }
+            } else if (ctx.numLiteral() != null) {
+                expressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
+            } else if (ctx.variableName() != null) {
+                expressionNode = new ArithExpressionNode(ctx.variableName().getText());
             } else {
-                ArithExpressionNode node = (ArithExpressionNode) visitExpr(ctx.expr(0));
-                expressionNode = new ArithExpressionNode(node);
+                throw new CompilerException("Invalid Expression", getCodePosition(ctx));
             }
-        } else if (ctx.numLiteral() != null) {
-            expressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
-        } else if (ctx.variableName() != null) {
-            expressionNode = new ArithExpressionNode(ctx.variableName().getText());
         } else {
             throw new CompilerException("Invalid Expression", getCodePosition(ctx));
         }
@@ -207,57 +227,74 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitBoolExpr(OurParser.BoolExprContext ctx) {
+        BoolExpressionNode boolExpressionNode;
 
-        return super.visitBoolExpr(ctx);
+        if (ctx.boolExpr() != null) {
+            if (ctx.NOT() != null) {
+                //if there is 'NOT' before the expression
+            }
+            boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+            return boolExpressionNode;
+        } else if (ctx.BOOL_LITERAL() != null) {
+            if (ctx.BOOL_LITERAL(1) != null) {
+
+                ExpressionNode node1 = (ExpressionNode) visitExpr(ctx.expr(0));
+                ExpressionNode node2 = (ExpressionNode) visitExpr(ctx.expr(1));
+
+                return new BoolExpressionNode(node1, node2, getBoolOperator(ctx.op.getText(), ctx));
+            } else if (ctx.expr(0) != null){
+                ExpressionNode expressionNode = (ExpressionNode) visitExpr(ctx.expr(0));
+                return new BoolExpressionNode(expressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.op.getText(), ctx));
+            } else {
+                return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
+            }
+        } else {
+            throw new  CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
+        }
     }
 
     @Override
     public ASTNode visitVariableDecl(OurParser.VariableDeclContext ctx) {
+        VariableDeclarationNode variableDeclarationNode;
 
-        return super.visitVariableDecl(ctx);
+        try {
+            Enums.DataType dataType = getDataType(ctx.datatype());
+            AssignmentNode assignmentNode = (AssignmentNode) visitAssignment(ctx.assignment());
+            variableDeclarationNode = new VariableDeclarationNode(dataType, assignmentNode);
+        } catch (CompilerException e){
+            throw new CompilerException("Invalid Variable Declaration Statement", getCodePosition(ctx));
+        }
+
+        return variableDeclarationNode;
     }
 
     @Override
     public ASTNode visitAssignment(OurParser.AssignmentContext ctx) {
-
-        return super.visitAssignment(ctx);
-    }
-
-    @Override
-    public ASTNode visitVariableName(OurParser.VariableNameContext ctx) {
-
-        return super.visitVariableName(ctx);
-    }
-
-    @Override
-    public ASTNode visitFunctionName(OurParser.FunctionNameContext ctx) {
-
-        return super.visitFunctionName(ctx);
+        if (ctx.literal() != null) {
+            return new AssignmentNode(ctx.variableName().getText(), ctx.literal().getText());
+        } else if (ctx.expr() != null) {
+            ExpressionNode expressionNode = (ExpressionNode) visitExpr(ctx.expr());
+            return new AssignmentNode(ctx.variableName().getText(), expressionNode);
+        }
+        else {
+            throw new CompilerException("Invalid Assignment Statement", getCodePosition(ctx));
+        }
     }
 
     @Override
     public ASTNode visitReturnStatement(OurParser.ReturnStatementContext ctx) {
-        return super.visitReturnStatement(ctx);
+        return new ReturnStatementNode(ctx.variableName().getText());
     }
 
     @Override
     public ASTNode visitAtStatement(OurParser.AtStatementContext ctx) {
-        return super.visitAtStatement(ctx);
-    }
-
-    @Override
-    public ASTNode visitDatatype(OurParser.DatatypeContext ctx) {
-        return super.visitDatatype(ctx);
-    }
-
-    @Override
-    public ASTNode visitLiteral(OurParser.LiteralContext ctx) {
-        return super.visitLiteral(ctx);
-    }
-
-    @Override
-    public ASTNode visitNumLiteral(OurParser.NumLiteralContext ctx) {
-        return super.visitNumLiteral(ctx);
+        try {
+            ExpressionNode expressionNode = (ExpressionNode) visitExpr(ctx.expr());
+            BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+            return new AtStatementNode(ctx.variableName().getText(), expressionNode, getBoolOperator(ctx.bool_op()), blockNode);
+        } catch (CompilerException e) {
+            throw new CompilerException("Invalid At Statement", getCodePosition(ctx));
+        }
     }
 
     private Enums.DataType getDataType(OurParser.DatatypeContext ctx) {
@@ -273,6 +310,32 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             throw new CompilerException("DataType is unknown", getCodePosition(ctx));
 
         return dataType;
+    }
+
+    private Enums.Operator getArithOperator(String token, ParserRuleContext ctx) {
+        Enums.Operator operator;
+
+        switch (token) {
+            case "+":
+                operator = Enums.Operator.ADD;
+                break;
+            case "-":
+                operator = Enums.Operator.SUB;
+                break;
+            case "%":
+                operator = Enums.Operator.MOD;
+                break;
+            case "/":
+                operator = Enums.Operator.DIV;
+                break;
+            case "*":
+                operator = Enums.Operator.MUL;
+                break;
+            default:
+                throw new CompilerException("Operator is unknown", getCodePosition(ctx));
+        }
+
+        return operator;
     }
 
     private Enums.Operator getArithOperator(OurParser.Arit_opContext ctx) {
@@ -291,6 +354,35 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         } else {
             throw new CompilerException("Operator is unknown", getCodePosition(ctx));
         }
+        return operator;
+    }
+
+    private Enums.BoolOperator getBoolOperator(String token, ParserRuleContext ctx) {
+        Enums.BoolOperator operator;
+
+        switch (token) {
+            case "==":
+                operator = Enums.BoolOperator.EQUAL;
+                break;
+            case "!=":
+                operator = Enums.BoolOperator.NOT_EQUAL;
+                break;
+            case ">":
+                operator = Enums.BoolOperator.GREATER_THAN;
+                break;
+            case ">=":
+                operator = Enums.BoolOperator.GREATER_OR_EQUAL;
+                break;
+            case "<":
+                operator = Enums.BoolOperator.LESS_THAN;
+                break;
+            case "<=":
+                operator = Enums.BoolOperator.LESS_OR_EQUAL;
+                break;
+            default:
+                throw new CompilerException("Operator is unknown", getCodePosition(ctx));
+        }
+
         return operator;
     }
 

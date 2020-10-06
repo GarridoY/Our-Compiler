@@ -1,4 +1,4 @@
-// Generated from /Users/ruofanwu/Projects/P7/src/OurParser.g4 by ANTLR 4.8
+// Generated from D:/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
@@ -24,7 +24,14 @@ public class OurParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> impleme
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMain(OurParser.MainContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLoop(OurParser.LoopContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitSetup(OurParser.SetupContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

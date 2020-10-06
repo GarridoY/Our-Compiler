@@ -12,6 +12,11 @@ public class FunctionCallNode extends StatementNode {
 
     private CodePosition codePosition;
 
+    public FunctionCallNode(String functionName) {
+        this.functionName = functionName;
+        this.functionargsNode = null;
+    }
+
     public FunctionCallNode(String functionName, FunctionArgsNode functionargsNode) {
         this.functionName = functionName;
         this.functionargsNode = functionargsNode;

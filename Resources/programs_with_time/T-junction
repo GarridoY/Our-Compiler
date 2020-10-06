@@ -1,0 +1,57 @@
+// Simple example of a traffic T-junction where
+// the lights either show green or red
+
+Setup{
+    int LED_RED_EAST_WEST = 3;
+    int LED_RED_SOUTH = 4;
+    int LED_GREEN_EAST_WEST = 6;
+    int LED_GREEN_SOUTH = 7;
+
+    int SENSOR_WEST = 10;
+    int SENSOR_EAST = 11;
+    int SENSOR_SOUTH = 12;
+
+    pinMode(LED_RED_EAST_WEST, OUT);
+    pinMode(LED_RED_SOUTH, OUT);
+    pinMode(LED_GREEN_EAST_WEST, OUT);
+    pinMode(LED_GREEN_SOUTH, OUT);
+    pinMode(SENSOR_EAST, IN);
+    pinMode(SENSOR_WEST, IN);
+    pinMode(SENSOR_SOUTH, IN);
+
+    double sensorDistanceEast = 20.00; // meter
+    double sensorDistanceWest = 40.50;
+    double sensorDistanceSouth = 40.50;
+    clock x = 0;
+
+    int eastTriggerTime = 5;
+    int westTriggerTime = 2;
+    int southTriggerTime = 2;
+
+}
+
+Loop{
+
+    lightSwitch(false);
+
+    if (x > southTriggerTime + duration(sensorDistanceSouth)) {
+        lightsSwitch(true);
+        delay(200);
+    }
+}
+
+int duration(double distance) {
+    double duration = distance * (0.5 * 4);
+    return duration;
+}
+
+void lightSwitch(bool greenSouth) {
+    digitalWrite(LED_GREEN_SOUTH, greenSouth);
+    digitalWrite(LED_RED_SOUTH, !(greenSouth));
+
+    digitalWrite(LED_GREEN_EAST, !(greenSouth));
+    digitalWrite(LED_GREEN_WEST, !(greenSouth));
+    digitalWrite(LED_RED_EAST, greenSouth);
+    digitalWrite(LED_RED_WEST, greenSouth);
+
+}
