@@ -1,5 +1,7 @@
 package dk.aau.cs.d703e20;
 
+import dk.aau.cs.d703e20.ast.ASTBuilder;
+import dk.aau.cs.d703e20.ast.errorhandling.ReasonableErrorStrategy;
 import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
 import org.antlr.v4.runtime.CharStreams;
@@ -22,11 +24,20 @@ public class Main {
         try {
             System.out.println("Compiling: " + inputFileName);
 
+            // LEXER
             OurLexer lexer = new OurLexer(CharStreams.fromFileName(inputFileName));
             System.out.println("Lexer ok");
 
+            // PARSER
             OurParser parser = new OurParser(new CommonTokenStream(lexer));
+            parser.setErrorHandler(new ReasonableErrorStrategy());
+            OurParser.ProgramContext parseTree = parser.program();
             System.out.println("Parser ok");
+
+            // AST
+            ASTBuilder astBuilder = new ASTBuilder();
+            astBuilder.visitProgram(parseTree);
+            System.out.println("AST ok");
         }
         catch (IOException e) {
             e.printStackTrace();
