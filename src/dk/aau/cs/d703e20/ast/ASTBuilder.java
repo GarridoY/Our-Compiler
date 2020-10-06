@@ -210,14 +210,27 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         BoolExpressionNode boolExpressionNode;
 
         if (ctx.boolExpr() != null) {
-            boolExpressionNode = ;
-        }
-        else if (ctx.b)
-        else {
+            if (ctx.NOT() != null) {
+                //if there is 'NOT' before the expression
+            }
+            boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+            return boolExpressionNode;
+        } else if (ctx.BOOL_LITERAL() != null) {
+            if (ctx.BOOL_LITERAL(1) != null) {
+
+                ExpressionNode node1 = (ExpressionNode) visitExpr(ctx.expr(0));
+                ExpressionNode node2 = (ExpressionNode) visitExpr(ctx.expr(1));
+
+                return new BoolExpressionNode(node1, node2, getBoolOperator(ctx.bool_op()));
+            } else if (ctx.expr() != null){
+                ExpressionNode expressionNode = (ExpressionNode) visitExpr(ctx.expr(0));
+                return new BoolExpressionNode(expressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.bool_op()));
+            } else {
+                return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
+            }
+        } else {
             throw new  CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
         }
-
-        return boolExpressionNode;
     }
 
     @Override
@@ -225,8 +238,9 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         VariableDeclarationNode variableDeclarationNode;
 
         try {
-            Enums.DataType dataType = ;
-            variableDeclarationNode = new VariableDeclarationNode();
+            Enums.DataType dataType = getDataType(ctx.datatype());
+            AssignmentNode assignmentNode = (AssignmentNode) visitAssignment(ctx.assignment());
+            variableDeclarationNode = new VariableDeclarationNode(dataType, assignmentNode);
         } catch (CompilerException e){
             throw new CompilerException("Invalid Variable Declaration Statement", getCodePosition(ctx));
         }
@@ -236,52 +250,27 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitAssignment(OurParser.AssignmentContext ctx) {
-        AssignmentNode assignmentNode;
-
-        if () {
-
-        } else {
+        if (ctx.literal() != null) {
+            return new AssignmentNode(ctx.variableName().getText(), ctx.literal().getText());
+        } else if (ctx.expr() != null) {
+            ExpressionNode expressionNode = (ExpressionNode) visitAssignment(ctx);
+            return new AssignmentNode(ctx.variableName().getText(), expressionNode);
+        }
+        else {
             throw new CompilerException("Invalid Assignment Statement", getCodePosition(ctx));
         }
-
-        return assignmentNode;
-    }
-
-    @Override
-    public ASTNode visitVariableName(OurParser.VariableNameContext ctx) {
-
-        return super.visitVariableName(ctx);
-    }
-
-    @Override
-    public ASTNode visitFunctionName(OurParser.FunctionNameContext ctx) {
-
-        return super.visitFunctionName(ctx);
     }
 
     @Override
     public ASTNode visitReturnStatement(OurParser.ReturnStatementContext ctx) {
-        return super.visitReturnStatement(ctx);
+
+        return new ReturnStatementNode();
     }
 
     @Override
     public ASTNode visitAtStatement(OurParser.AtStatementContext ctx) {
-        return super.visitAtStatement(ctx);
-    }
 
-    @Override
-    public ASTNode visitDatatype(OurParser.DatatypeContext ctx) {
-        return super.visitDatatype(ctx);
-    }
-
-    @Override
-    public ASTNode visitLiteral(OurParser.LiteralContext ctx) {
-        return super.visitLiteral(ctx);
-    }
-
-    @Override
-    public ASTNode visitNumLiteral(OurParser.NumLiteralContext ctx) {
-        return super.visitNumLiteral(ctx);
+        return new AtStatementNode();
     }
 
     private Enums.DataType getDataType(OurParser.DatatypeContext ctx) {
@@ -343,8 +332,6 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     private Double getNumLiteralValue (OurParser.NumLiteralContext ctx){
         return Double.valueOf(ctx.getText());
     }
-
-
 
     // Creates a list of T (ASTNodes), then visits all contexts in S using func
     // All the results from visiting are added to the list which gets returned.

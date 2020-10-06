@@ -6,7 +6,8 @@ import dk.aau.cs.d703e20.ast.expressions.ExpressionNode;
 public class AssignmentNode extends StatementNode {
 
     private final String variableName;
-    private final ExpressionNode expressionNode;
+    private String literalValue;
+    private ExpressionNode expressionNode;
 
     private  CodePosition codePosition;
 
@@ -15,9 +16,18 @@ public class AssignmentNode extends StatementNode {
         this.expressionNode = expressionNode;
     }
 
+    public AssignmentNode(String variableName, String literalValue) {
+        this.variableName = variableName;
+        this.literalValue = literalValue;
+    }
+
     public String getVariableName() { return variableName; }
 
     public ExpressionNode getExpressionNode() { return expressionNode; }
+
+    public String getLiteralValue() {
+        return literalValue;
+    }
 
     @Override
     public String prettyPrint(int indentation) { return null; }
