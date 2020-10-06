@@ -173,7 +173,7 @@ public class OurParser extends Parser {
 			setState(60);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << BOOLEAN) | (1L << DOUBLE) | (1L << CLOCK) | (1L << VOID) | (1L << ID))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << BOOLEAN) | (1L << DOUBLE) | (1L << CLOCK) | (1L << STRING) | (1L << VOID) | (1L << ID))) != 0)) {
 				{
 				setState(58);
 				_errHandler.sync(this);
@@ -182,6 +182,7 @@ public class OurParser extends Parser {
 				case BOOLEAN:
 				case DOUBLE:
 				case CLOCK:
+				case STRING:
 				case VOID:
 					{
 					setState(56);
@@ -349,7 +350,7 @@ public class OurParser extends Parser {
 			setState(73);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << BOOLEAN) | (1L << DOUBLE) | (1L << CLOCK) | (1L << RETURN) | (1L << IF) | (1L << FOR) | (1L << AT) | (1L << ID))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << BOOLEAN) | (1L << DOUBLE) | (1L << CLOCK) | (1L << STRING) | (1L << RETURN) | (1L << IF) | (1L << FOR) | (1L << AT) | (1L << ID))) != 0)) {
 				{
 				{
 				setState(70);
@@ -430,6 +431,7 @@ public class OurParser extends Parser {
 			case BOOLEAN:
 			case DOUBLE:
 			case CLOCK:
+			case STRING:
 				{
 				setState(79);
 				datatype();
@@ -445,7 +447,7 @@ public class OurParser extends Parser {
 			setState(85);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << BOOLEAN) | (1L << DOUBLE) | (1L << CLOCK))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << BOOLEAN) | (1L << DOUBLE) | (1L << CLOCK) | (1L << STRING))) != 0)) {
 				{
 				setState(84);
 				functionParam();
@@ -1915,6 +1917,7 @@ public class OurParser extends Parser {
 		public TerminalNode DOUBLE() { return getToken(OurParser.DOUBLE, 0); }
 		public TerminalNode BOOLEAN() { return getToken(OurParser.BOOLEAN, 0); }
 		public TerminalNode CLOCK() { return getToken(OurParser.CLOCK, 0); }
+		public TerminalNode STRING() { return getToken(OurParser.STRING, 0); }
 		public DatatypeContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -1943,7 +1946,7 @@ public class OurParser extends Parser {
 			{
 			setState(242);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << BOOLEAN) | (1L << DOUBLE) | (1L << CLOCK))) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << BOOLEAN) | (1L << DOUBLE) | (1L << CLOCK) | (1L << STRING))) != 0)) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {
@@ -2106,7 +2109,7 @@ public class OurParser extends Parser {
 		"\3\26\3\26\3\26\3\27\3\27\3\27\3\27\3\27\5\27\u00ed\n\27\3\27\3\27\3\30"+
 		"\3\30\3\31\3\31\3\32\3\32\3\33\3\33\3\34\3\34\3\34\2\3&\35\2\4\6\b\n\f"+
 		"\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\66\2\7\5\2((++-\60\3\2#"+
-		"\'\3\2\3\6\3\2\27\30\3\2\23\26\2\u0100\28\3\2\2\2\4A\3\2\2\2\6D\3\2\2"+
+		"\'\3\2\3\7\3\2\27\30\3\2\23\26\2\u0100\28\3\2\2\2\4A\3\2\2\2\6D\3\2\2"+
 		"\2\bG\3\2\2\2\nR\3\2\2\2\f\\\3\2\2\2\16e\3\2\2\2\20n\3\2\2\2\22\u0083"+
 		"\3\2\2\2\24\u0085\3\2\2\2\26\u0089\3\2\2\2\30\u0093\3\2\2\2\32\u0099\3"+
 		"\2\2\2\34\u009f\3\2\2\2\36\u00a8\3\2\2\2 \u00aa\3\2\2\2\"\u00b2\3\2\2"+

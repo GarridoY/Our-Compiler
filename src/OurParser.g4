@@ -103,7 +103,8 @@ datatype
     : INT
     | DOUBLE
     | BOOLEAN
-    | CLOCK;
+    | CLOCK
+    | STRING;
 
 literal
     : STRING_LITERAL
