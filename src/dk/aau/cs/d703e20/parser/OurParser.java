@@ -1,4 +1,4 @@
-// Generated from /Users/ruofanwu/Projects/P7/src/OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/htmle/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -527,6 +527,7 @@ public class OurParser extends Parser {
 	public final FunctionCallContext functionCall() throws RecognitionException {
 		FunctionCallContext _localctx = new FunctionCallContext(_ctx, getState());
 		enterRule(_localctx, 10, RULE_functionCall);
+		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -536,14 +537,14 @@ public class OurParser extends Parser {
 			match(LEFT_PAREN);
 			setState(100);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,6,_ctx) ) {
-			case 1:
+			_la = _input.LA(1);
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << DIGIT) | (1L << DIGIT_NEGATIVE) | (1L << DOUBLE_DIGIT) | (1L << DOUBLE_DIGIT_NEGATIVE) | (1L << BOOL_LITERAL) | (1L << LEFT_PAREN) | (1L << NOT) | (1L << ID))) != 0)) {
 				{
 				setState(99);
 				functionArgs();
 				}
-				break;
 			}
+
 			setState(102);
 			match(RIGHT_PAREN);
 			setState(103);
@@ -1147,11 +1148,13 @@ public class OurParser extends Parser {
 	}
 
 	public static class AtStatementContext extends ParserRuleContext {
-		public Token op;
 		public TerminalNode AT() { return getToken(OurParser.AT, 0); }
 		public TerminalNode LEFT_PAREN() { return getToken(OurParser.LEFT_PAREN, 0); }
 		public VariableNameContext variableName() {
 			return getRuleContext(VariableNameContext.class,0);
+		}
+		public Bool_opContext bool_op() {
+			return getRuleContext(Bool_opContext.class,0);
 		}
 		public ExprContext expr() {
 			return getRuleContext(ExprContext.class,0);
@@ -1160,12 +1163,6 @@ public class OurParser extends Parser {
 		public BlockContext block() {
 			return getRuleContext(BlockContext.class,0);
 		}
-		public TerminalNode EQUAL() { return getToken(OurParser.EQUAL, 0); }
-		public TerminalNode LESS_THAN() { return getToken(OurParser.LESS_THAN, 0); }
-		public TerminalNode GREATER_THAN() { return getToken(OurParser.GREATER_THAN, 0); }
-		public TerminalNode GREATER_OR_EQUAL() { return getToken(OurParser.GREATER_OR_EQUAL, 0); }
-		public TerminalNode LESS_OR_EQUAL() { return getToken(OurParser.LESS_OR_EQUAL, 0); }
-		public TerminalNode NOT_EQUAL() { return getToken(OurParser.NOT_EQUAL, 0); }
 		public AtStatementContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -1188,7 +1185,6 @@ public class OurParser extends Parser {
 	public final AtStatementContext atStatement() throws RecognitionException {
 		AtStatementContext _localctx = new AtStatementContext(_ctx, getState());
 		enterRule(_localctx, 28, RULE_atStatement);
-		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -1199,16 +1195,7 @@ public class OurParser extends Parser {
 			setState(167);
 			variableName();
 			setState(168);
-			((AtStatementContext)_localctx).op = _input.LT(1);
-			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EQUAL) | (1L << NOT_EQUAL) | (1L << GREATER_THAN) | (1L << GREATER_OR_EQUAL) | (1L << LESS_THAN) | (1L << LESS_OR_EQUAL))) != 0)) ) {
-				((AtStatementContext)_localctx).op = (Token)_errHandler.recoverInline(this);
-			}
-			else {
-				if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
-				_errHandler.reportMatch(this);
-				consume();
-			}
+			bool_op();
 			setState(169);
 			expr(0);
 			setState(170);
@@ -1503,7 +1490,7 @@ public class OurParser extends Parser {
 		enterRule(_localctx, 36, RULE_boolExpr);
 		int _la;
 		try {
-			setState(219);
+			setState(218);
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,20,_ctx) ) {
 			case 1:
@@ -1516,79 +1503,74 @@ public class OurParser extends Parser {
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
+				setState(204);
+				_errHandler.sync(this);
+				switch (_input.LA(1)) {
+				case DIGIT:
+				case DIGIT_NEGATIVE:
+				case DOUBLE_DIGIT:
+				case DOUBLE_DIGIT_NEGATIVE:
+				case LEFT_PAREN:
+				case ID:
+					{
+					setState(202);
+					expr(0);
+					}
+					break;
+				case BOOL_LITERAL:
+					{
+					setState(203);
+					match(BOOL_LITERAL);
+					}
+					break;
+				default:
+					throw new NoViableAltException(this);
+				}
+				setState(206);
+				bool_op();
+				setState(209);
+				_errHandler.sync(this);
+				switch (_input.LA(1)) {
+				case BOOL_LITERAL:
+					{
+					setState(207);
+					match(BOOL_LITERAL);
+					}
+					break;
+				case DIGIT:
+				case DIGIT_NEGATIVE:
+				case DOUBLE_DIGIT:
+				case DOUBLE_DIGIT_NEGATIVE:
+				case LEFT_PAREN:
+				case ID:
+					{
+					setState(208);
+					expr(0);
+					}
+					break;
+				default:
+					throw new NoViableAltException(this);
+				}
 				}
 				break;
 			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(205);
-				_errHandler.sync(this);
-				switch (_input.LA(1)) {
-				case DIGIT:
-				case DIGIT_NEGATIVE:
-				case DOUBLE_DIGIT:
-				case DOUBLE_DIGIT_NEGATIVE:
-				case LEFT_PAREN:
-				case ID:
-					{
-					setState(203);
-					expr(0);
-					}
-					break;
-				case BOOL_LITERAL:
-					{
-					setState(204);
-					match(BOOL_LITERAL);
-					}
-					break;
-				default:
-					throw new NoViableAltException(this);
-				}
-				setState(207);
-				bool_op();
-				setState(210);
-				_errHandler.sync(this);
-				switch (_input.LA(1)) {
-				case BOOL_LITERAL:
-					{
-					setState(208);
-					match(BOOL_LITERAL);
-					}
-					break;
-				case DIGIT:
-				case DIGIT_NEGATIVE:
-				case DOUBLE_DIGIT:
-				case DOUBLE_DIGIT_NEGATIVE:
-				case LEFT_PAREN:
-				case ID:
-					{
-					setState(209);
-					expr(0);
-					}
-					break;
-				default:
-					throw new NoViableAltException(this);
-				}
-				}
-				break;
-			case 4:
-				enterOuterAlt(_localctx, 4);
-				{
-				setState(213);
+				setState(212);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				if (_la==NOT) {
 					{
-					setState(212);
+					setState(211);
 					match(NOT);
 					}
 				}
 
-				setState(215);
+				setState(214);
 				match(LEFT_PAREN);
-				setState(216);
+				setState(215);
 				boolExpr();
-				setState(217);
+				setState(216);
 				match(RIGHT_PAREN);
 				}
 				break;
@@ -1637,9 +1619,9 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(221);
+			setState(220);
 			datatype();
-			setState(222);
+			setState(221);
 			assignment();
 			}
 		}
@@ -1691,11 +1673,11 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(224);
+			setState(223);
 			variableName();
-			setState(225);
+			setState(224);
 			match(ASSIGN);
-			setState(228);
+			setState(227);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case DIGIT:
@@ -1705,21 +1687,21 @@ public class OurParser extends Parser {
 			case LEFT_PAREN:
 			case ID:
 				{
-				setState(226);
+				setState(225);
 				expr(0);
 				}
 				break;
 			case BOOL_LITERAL:
 			case STRING_LITERAL:
 				{
-				setState(227);
+				setState(226);
 				literal();
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
 			}
-			setState(230);
+			setState(229);
 			match(SEMICOLON);
 			}
 		}
@@ -1761,7 +1743,7 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(232);
+			setState(231);
 			match(ID);
 			}
 		}
@@ -1803,7 +1785,7 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(234);
+			setState(233);
 			match(ID);
 			}
 		}
@@ -1849,7 +1831,7 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(236);
+			setState(235);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << BOOLEAN) | (1L << DOUBLE) | (1L << CLOCK))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -1901,7 +1883,7 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(238);
+			setState(237);
 			_la = _input.LA(1);
 			if ( !(_la==BOOL_LITERAL || _la==STRING_LITERAL) ) {
 			_errHandler.recoverInline(this);
@@ -1955,7 +1937,7 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(240);
+			setState(239);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << DIGIT) | (1L << DIGIT_NEGATIVE) | (1L << DOUBLE_DIGIT) | (1L << DOUBLE_DIGIT_NEGATIVE))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -2010,7 +1992,7 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(242);
+			setState(241);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ADD) | (1L << SUB) | (1L << MOD) | (1L << DIV) | (1L << MUL))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -2066,7 +2048,7 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(244);
+			setState(243);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EQUAL) | (1L << NOT_EQUAL) | (1L << GREATER_THAN) | (1L << GREATER_OR_EQUAL) | (1L << LESS_THAN) | (1L << LESS_OR_EQUAL))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -2105,7 +2087,7 @@ public class OurParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\63\u00f9\4\2\t\2"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\63\u00f8\4\2\t\2"+
 		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -2120,18 +2102,18 @@ public class OurParser extends Parser {
 		"\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\21\3\21\3\22\3\22\3\22\3\22\3"+
 		"\22\3\22\3\22\3\22\3\23\3\23\3\23\3\23\3\23\3\23\3\23\5\23\u00c1\n\23"+
 		"\3\23\3\23\3\23\3\23\7\23\u00c7\n\23\f\23\16\23\u00ca\13\23\3\24\3\24"+
-		"\3\24\3\24\5\24\u00d0\n\24\3\24\3\24\3\24\5\24\u00d5\n\24\3\24\5\24\u00d8"+
-		"\n\24\3\24\3\24\3\24\3\24\5\24\u00de\n\24\3\25\3\25\3\25\3\26\3\26\3\26"+
-		"\3\26\5\26\u00e7\n\26\3\26\3\26\3\27\3\27\3\30\3\30\3\31\3\31\3\32\3\32"+
+		"\3\24\5\24\u00cf\n\24\3\24\3\24\3\24\5\24\u00d4\n\24\3\24\5\24\u00d7\n"+
+		"\24\3\24\3\24\3\24\3\24\5\24\u00dd\n\24\3\25\3\25\3\25\3\26\3\26\3\26"+
+		"\3\26\5\26\u00e6\n\26\3\26\3\26\3\27\3\27\3\30\3\30\3\31\3\31\3\32\3\32"+
 		"\3\33\3\33\3\34\3\34\3\35\3\35\3\35\2\3$\36\2\4\6\b\n\f\16\20\22\24\26"+
-		"\30\32\34\36 \"$&(*,.\60\62\64\668\2\7\5\2\'\'**,/\3\2\3\6\3\2\26\27\3"+
-		"\2\22\25\3\2\"&\2\u00fb\2:\3\2\2\2\4B\3\2\2\2\6E\3\2\2\2\bP\3\2\2\2\n"+
+		"\30\32\34\36 \"$&(*,.\60\62\64\668\2\7\3\2\3\6\3\2\26\27\3\2\22\25\3\2"+
+		"\"&\5\2\'\'**,/\2\u00f9\2:\3\2\2\2\4B\3\2\2\2\6E\3\2\2\2\bP\3\2\2\2\n"+
 		"Z\3\2\2\2\fc\3\2\2\2\16m\3\2\2\2\20\u0080\3\2\2\2\22\u0082\3\2\2\2\24"+
 		"\u0086\3\2\2\2\26\u0090\3\2\2\2\30\u0096\3\2\2\2\32\u009c\3\2\2\2\34\u00a5"+
 		"\3\2\2\2\36\u00a7\3\2\2\2 \u00af\3\2\2\2\"\u00b1\3\2\2\2$\u00c0\3\2\2"+
-		"\2&\u00dd\3\2\2\2(\u00df\3\2\2\2*\u00e2\3\2\2\2,\u00ea\3\2\2\2.\u00ec"+
-		"\3\2\2\2\60\u00ee\3\2\2\2\62\u00f0\3\2\2\2\64\u00f2\3\2\2\2\66\u00f4\3"+
-		"\2\2\28\u00f6\3\2\2\2:?\5\4\3\2;>\5\b\5\2<>\5,\27\2=;\3\2\2\2=<\3\2\2"+
+		"\2&\u00dc\3\2\2\2(\u00de\3\2\2\2*\u00e1\3\2\2\2,\u00e9\3\2\2\2.\u00eb"+
+		"\3\2\2\2\60\u00ed\3\2\2\2\62\u00ef\3\2\2\2\64\u00f1\3\2\2\2\66\u00f3\3"+
+		"\2\2\28\u00f5\3\2\2\2:?\5\4\3\2;>\5\b\5\2<>\5,\27\2=;\3\2\2\2=<\3\2\2"+
 		"\2>A\3\2\2\2?=\3\2\2\2?@\3\2\2\2@\3\3\2\2\2A?\3\2\2\2BC\7\n\2\2CD\5\6"+
 		"\4\2D\5\3\2\2\2EI\7\30\2\2FH\5\20\t\2GF\3\2\2\2HK\3\2\2\2IG\3\2\2\2IJ"+
 		"\3\2\2\2JL\3\2\2\2KI\3\2\2\2LM\7\31\2\2M\7\3\2\2\2NQ\7\t\2\2OQ\5\60\31"+
@@ -2158,7 +2140,7 @@ public class OurParser extends Parser {
 		"\u00a1\u00a0\3\2\2\2\u00a1\u00a2\3\2\2\2\u00a2\u00a3\3\2\2\2\u00a3\u00a6"+
 		"\5,\27\2\u00a4\u00a6\5\f\7\2\u00a5\u009f\3\2\2\2\u00a5\u00a1\3\2\2\2\u00a5"+
 		"\u00a4\3\2\2\2\u00a6\35\3\2\2\2\u00a7\u00a8\7\21\2\2\u00a8\u00a9\7\32"+
-		"\2\2\u00a9\u00aa\5,\27\2\u00aa\u00ab\t\2\2\2\u00ab\u00ac\5$\23\2\u00ac"+
+		"\2\2\u00a9\u00aa\5,\27\2\u00aa\u00ab\58\35\2\u00ab\u00ac\5$\23\2\u00ac"+
 		"\u00ad\7\33\2\2\u00ad\u00ae\5\6\4\2\u00ae\37\3\2\2\2\u00af\u00b0\5\"\22"+
 		"\2\u00b0!\3\2\2\2\u00b1\u00b2\7\20\2\2\u00b2\u00b3\7\32\2\2\u00b3\u00b4"+
 		"\5$\23\2\u00b4\u00b5\7\17\2\2\u00b5\u00b6\5$\23\2\u00b6\u00b7\7\33\2\2"+
@@ -2168,22 +2150,22 @@ public class OurParser extends Parser {
 		"\3\2\2\2\u00c0\u00bf\3\2\2\2\u00c1\u00c8\3\2\2\2\u00c2\u00c3\f\6\2\2\u00c3"+
 		"\u00c4\5\66\34\2\u00c4\u00c5\5$\23\7\u00c5\u00c7\3\2\2\2\u00c6\u00c2\3"+
 		"\2\2\2\u00c7\u00ca\3\2\2\2\u00c8\u00c6\3\2\2\2\u00c8\u00c9\3\2\2\2\u00c9"+
-		"%\3\2\2\2\u00ca\u00c8\3\2\2\2\u00cb\u00de\7\26\2\2\u00cc\u00de\3\2\2\2"+
-		"\u00cd\u00d0\5$\23\2\u00ce\u00d0\7\26\2\2\u00cf\u00cd\3\2\2\2\u00cf\u00ce"+
-		"\3\2\2\2\u00d0\u00d1\3\2\2\2\u00d1\u00d4\58\35\2\u00d2\u00d5\7\26\2\2"+
-		"\u00d3\u00d5\5$\23\2\u00d4\u00d2\3\2\2\2\u00d4\u00d3\3\2\2\2\u00d5\u00de"+
-		"\3\2\2\2\u00d6\u00d8\7+\2\2\u00d7\u00d6\3\2\2\2\u00d7\u00d8\3\2\2\2\u00d8"+
-		"\u00d9\3\2\2\2\u00d9\u00da\7\32\2\2\u00da\u00db\5&\24\2\u00db\u00dc\7"+
-		"\33\2\2\u00dc\u00de\3\2\2\2\u00dd\u00cb\3\2\2\2\u00dd\u00cc\3\2\2\2\u00dd"+
-		"\u00cf\3\2\2\2\u00dd\u00d7\3\2\2\2\u00de\'\3\2\2\2\u00df\u00e0\5\60\31"+
-		"\2\u00e0\u00e1\5*\26\2\u00e1)\3\2\2\2\u00e2\u00e3\5,\27\2\u00e3\u00e6"+
-		"\7!\2\2\u00e4\u00e7\5$\23\2\u00e5\u00e7\5\62\32\2\u00e6\u00e4\3\2\2\2"+
-		"\u00e6\u00e5\3\2\2\2\u00e7\u00e8\3\2\2\2\u00e8\u00e9\7\36\2\2\u00e9+\3"+
-		"\2\2\2\u00ea\u00eb\7\60\2\2\u00eb-\3\2\2\2\u00ec\u00ed\7\60\2\2\u00ed"+
-		"/\3\2\2\2\u00ee\u00ef\t\3\2\2\u00ef\61\3\2\2\2\u00f0\u00f1\t\4\2\2\u00f1"+
-		"\63\3\2\2\2\u00f2\u00f3\t\5\2\2\u00f3\65\3\2\2\2\u00f4\u00f5\t\6\2\2\u00f5"+
-		"\67\3\2\2\2\u00f6\u00f7\t\2\2\2\u00f79\3\2\2\2\30=?IPU`fmrv\u0080\u008a"+
-		"\u008e\u00a1\u00a5\u00c0\u00c8\u00cf\u00d4\u00d7\u00dd\u00e6";
+		"%\3\2\2\2\u00ca\u00c8\3\2\2\2\u00cb\u00dd\7\26\2\2\u00cc\u00cf\5$\23\2"+
+		"\u00cd\u00cf\7\26\2\2\u00ce\u00cc\3\2\2\2\u00ce\u00cd\3\2\2\2\u00cf\u00d0"+
+		"\3\2\2\2\u00d0\u00d3\58\35\2\u00d1\u00d4\7\26\2\2\u00d2\u00d4\5$\23\2"+
+		"\u00d3\u00d1\3\2\2\2\u00d3\u00d2\3\2\2\2\u00d4\u00dd\3\2\2\2\u00d5\u00d7"+
+		"\7+\2\2\u00d6\u00d5\3\2\2\2\u00d6\u00d7\3\2\2\2\u00d7\u00d8\3\2\2\2\u00d8"+
+		"\u00d9\7\32\2\2\u00d9\u00da\5&\24\2\u00da\u00db\7\33\2\2\u00db\u00dd\3"+
+		"\2\2\2\u00dc\u00cb\3\2\2\2\u00dc\u00ce\3\2\2\2\u00dc\u00d6\3\2\2\2\u00dd"+
+		"\'\3\2\2\2\u00de\u00df\5\60\31\2\u00df\u00e0\5*\26\2\u00e0)\3\2\2\2\u00e1"+
+		"\u00e2\5,\27\2\u00e2\u00e5\7!\2\2\u00e3\u00e6\5$\23\2\u00e4\u00e6\5\62"+
+		"\32\2\u00e5\u00e3\3\2\2\2\u00e5\u00e4\3\2\2\2\u00e6\u00e7\3\2\2\2\u00e7"+
+		"\u00e8\7\36\2\2\u00e8+\3\2\2\2\u00e9\u00ea\7\60\2\2\u00ea-\3\2\2\2\u00eb"+
+		"\u00ec\7\60\2\2\u00ec/\3\2\2\2\u00ed\u00ee\t\2\2\2\u00ee\61\3\2\2\2\u00ef"+
+		"\u00f0\t\3\2\2\u00f0\63\3\2\2\2\u00f1\u00f2\t\4\2\2\u00f2\65\3\2\2\2\u00f3"+
+		"\u00f4\t\5\2\2\u00f4\67\3\2\2\2\u00f5\u00f6\t\6\2\2\u00f69\3\2\2\2\30"+
+		"=?IPU`fmrv\u0080\u008a\u008e\u00a1\u00a5\u00c0\u00c8\u00ce\u00d3\u00d6"+
+		"\u00dc\u00e5";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

@@ -79,7 +79,6 @@ expr
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr
     : BOOL_LITERAL
-    | //boolExpr op=(EQUAL | AND | OR | NOT_EQUAL) boolExpr
     | (expr | BOOL_LITERAL) bool_op (BOOL_LITERAL | expr)
     | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
 
