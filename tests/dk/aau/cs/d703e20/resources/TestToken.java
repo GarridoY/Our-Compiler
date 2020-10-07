@@ -1,4 +1,4 @@
-package dk.aau.cs.d703e20;
+package dk.aau.cs.d703e20.resources;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;

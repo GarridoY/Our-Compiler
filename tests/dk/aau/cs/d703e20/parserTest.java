@@ -1,8 +1,9 @@
 package dk.aau.cs.d703e20;
 
-import dk.aau.cs.d703e20.errorhandling.OurErrorListener;
 import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
+import dk.aau.cs.d703e20.resources.FailTestErrorListener;
+import dk.aau.cs.d703e20.resources.TestToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ListTokenSource;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,7 @@ public class parserTest {
         ListTokenSource tokenSource = new ListTokenSource(tokens);
         CommonTokenStream cts = new CommonTokenStream(tokenSource);
         OurParser parser = new OurParser(cts);
-        parser.addErrorListener(new OurErrorListener()); // Not expecting any syntax error
+        parser.addErrorListener(new FailTestErrorListener()); // Not expecting any syntax error, fails test if any
         return parser;
     }
 
