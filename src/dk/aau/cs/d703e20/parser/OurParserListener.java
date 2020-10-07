@@ -1,4 +1,4 @@
-// Generated from D:/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/htmle/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -278,23 +278,23 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitNumLiteral(OurParser.NumLiteralContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link OurParser#arit_op}.
+	 * Enter a parse tree produced by {@link OurParser#arithOp}.
 	 * @param ctx the parse tree
 	 */
-	void enterArit_op(OurParser.Arit_opContext ctx);
+	void enterArithOp(OurParser.ArithOpContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link OurParser#arit_op}.
+	 * Exit a parse tree produced by {@link OurParser#arithOp}.
 	 * @param ctx the parse tree
 	 */
-	void exitArit_op(OurParser.Arit_opContext ctx);
+	void exitArithOp(OurParser.ArithOpContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link OurParser#bool_op}.
+	 * Enter a parse tree produced by {@link OurParser#boolOp}.
 	 * @param ctx the parse tree
 	 */
-	void enterBool_op(OurParser.Bool_opContext ctx);
+	void enterBoolOp(OurParser.BoolOpContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link OurParser#bool_op}.
+	 * Exit a parse tree produced by {@link OurParser#boolOp}.
 	 * @param ctx the parse tree
 	 */
-	void exitBool_op(OurParser.Bool_opContext ctx);
+	void exitBoolOp(OurParser.BoolOpContext ctx);
 }

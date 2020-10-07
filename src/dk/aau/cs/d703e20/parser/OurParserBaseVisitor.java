@@ -1,4 +1,4 @@
-// Generated from D:/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/htmle/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
@@ -206,12 +206,12 @@ public class OurParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> impleme
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArit_op(OurParser.Arit_opContext ctx) { return visitChildren(ctx); }
+	@Override public T visitArithOp(OurParser.ArithOpContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitBool_op(OurParser.Bool_opContext ctx) { return visitChildren(ctx); }
+	@Override public T visitBoolOp(OurParser.BoolOpContext ctx) { return visitChildren(ctx); }
 }
