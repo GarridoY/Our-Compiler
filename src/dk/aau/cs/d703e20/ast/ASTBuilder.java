@@ -205,7 +205,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                 if(ctx.expr(1) != null){
                     ArithExpressionNode node1 = (ArithExpressionNode) visitExpr(ctx.expr(0));
                     ArithExpressionNode node2 = (ArithExpressionNode) visitExpr(ctx.expr(1));
-                    expressionNode = new ArithExpressionNode(node1 , node2, getArithOperator(ctx.op.getText(), ctx));
+                    expressionNode = new ArithExpressionNode(node1 , node2, getArithOperator(ctx.arithOp()));
                 } else {
                     ArithExpressionNode node = (ArithExpressionNode) visitExpr(ctx.expr(0));
                     expressionNode = new ArithExpressionNode(node);
@@ -241,10 +241,10 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                 ExpressionNode node1 = (ExpressionNode) visitExpr(ctx.expr(0));
                 ExpressionNode node2 = (ExpressionNode) visitExpr(ctx.expr(1));
 
-                return new BoolExpressionNode(node1, node2, getBoolOperator(ctx.op.getText(), ctx));
+                return new BoolExpressionNode(node1, node2, getBoolOperator(ctx.boolOp()));
             } else if (ctx.expr(0) != null){
                 ExpressionNode expressionNode = (ExpressionNode) visitExpr(ctx.expr(0));
-                return new BoolExpressionNode(expressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.op.getText(), ctx));
+                return new BoolExpressionNode(expressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.boolOp()));
             } else {
                 return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
             }
@@ -291,7 +291,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         try {
             ExpressionNode expressionNode = (ExpressionNode) visitExpr(ctx.expr());
             BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
-            return new AtStatementNode(ctx.variableName().getText(), expressionNode, getBoolOperator(ctx.bool_op()), blockNode);
+            return new AtStatementNode(ctx.variableName().getText(), expressionNode, getBoolOperator(ctx.boolOp()), blockNode);
         } catch (CompilerException e) {
             throw new CompilerException("Invalid At Statement", getCodePosition(ctx));
         }
@@ -312,33 +312,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         return dataType;
     }
 
-    private Enums.Operator getArithOperator(String token, ParserRuleContext ctx) {
-        Enums.Operator operator;
-
-        switch (token) {
-            case "+":
-                operator = Enums.Operator.ADD;
-                break;
-            case "-":
-                operator = Enums.Operator.SUB;
-                break;
-            case "%":
-                operator = Enums.Operator.MOD;
-                break;
-            case "/":
-                operator = Enums.Operator.DIV;
-                break;
-            case "*":
-                operator = Enums.Operator.MUL;
-                break;
-            default:
-                throw new CompilerException("Operator is unknown", getCodePosition(ctx));
-        }
-
-        return operator;
-    }
-
-    private Enums.Operator getArithOperator(OurParser.Arit_opContext ctx) {
+    private Enums.Operator getArithOperator(OurParser.ArithOpContext ctx) {
         Enums.Operator operator;
 
         if (ctx.ADD() != null){
@@ -357,36 +331,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         return operator;
     }
 
-    private Enums.BoolOperator getBoolOperator(String token, ParserRuleContext ctx) {
-        Enums.BoolOperator operator;
-
-        switch (token) {
-            case "==":
-                operator = Enums.BoolOperator.EQUAL;
-                break;
-            case "!=":
-                operator = Enums.BoolOperator.NOT_EQUAL;
-                break;
-            case ">":
-                operator = Enums.BoolOperator.GREATER_THAN;
-                break;
-            case ">=":
-                operator = Enums.BoolOperator.GREATER_OR_EQUAL;
-                break;
-            case "<":
-                operator = Enums.BoolOperator.LESS_THAN;
-                break;
-            case "<=":
-                operator = Enums.BoolOperator.LESS_OR_EQUAL;
-                break;
-            default:
-                throw new CompilerException("Operator is unknown", getCodePosition(ctx));
-        }
-
-        return operator;
-    }
-
-    private  Enums.BoolOperator getBoolOperator(OurParser.Bool_opContext ctx) {
+    private  Enums.BoolOperator getBoolOperator(OurParser.BoolOpContext ctx) {
         Enums.BoolOperator operator;
 
         if (ctx.EQUAL() != null){

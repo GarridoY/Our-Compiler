@@ -144,6 +144,6 @@ public class parserTest {
         OurParser parser = createParser(tokens);
         OurParser.AtStatementContext atCtx = parser.atStatement();
         assertNotNull(atCtx.expr().numLiteral().DIGIT());
-        assertEquals(atCtx.bool_op().LESS_THAN().getSymbol().getType(), OurLexer.LESS_THAN);
+        assertEquals(atCtx.boolOp().LESS_THAN().getSymbol().getType(), OurLexer.LESS_THAN);
     }
 }

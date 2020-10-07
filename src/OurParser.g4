@@ -60,7 +60,7 @@ conditionalExpression: boolExpr | NOT? variableName | functionCall;
 
 // at statement for clock and timing purposes
 atStatement
-    : AT LEFT_PAREN variableName bool_op expr RIGHT_PAREN block;
+    : AT LEFT_PAREN variableName boolOp expr RIGHT_PAREN block;
 
 // ITERATIVE
 iterativeStatement
@@ -73,7 +73,7 @@ forStatement
 // EXPRESSIONS
 
 expr
-    : expr op=(ADD | SUB | MOD | DIV | MUL) expr // Precedence handled by target
+    : expr arithOp expr // Precedence handled by target
     | numLiteral | NOT?'('expr')'
     | variableName
     | functionCall;
@@ -82,7 +82,7 @@ expr
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr
     : BOOL_LITERAL
-    | (expr | BOOL_LITERAL) op=(EQUAL | NOT_EQUAL | GREATER_THAN | GREATER_OR_EQUAL | LESS_THAN | LESS_OR_EQUAL) (BOOL_LITERAL | expr)
+    | (expr | BOOL_LITERAL) boolOp (BOOL_LITERAL | expr)
     | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
 
 
@@ -116,19 +116,17 @@ numLiteral
     | DOUBLE_DIGIT
     | DOUBLE_DIGIT_NEGATIVE;
 
-arit_op
+arithOp
     : ADD
     | SUB
     | MOD
     | DIV
-    | MUL
-    ;
+    | MUL;
 
-bool_op
+boolOp
     : EQUAL
     | NOT_EQUAL
     | GREATER_THAN
     | GREATER_OR_EQUAL
     | LESS_THAN
-    | LESS_OR_EQUAL
-    ;
+    | LESS_OR_EQUAL;
