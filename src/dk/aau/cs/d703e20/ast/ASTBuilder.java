@@ -83,6 +83,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             return visitFunctionCall(ctx.functionCall());
         else if (ctx.iterativeStatement() != null)
             return visitForStatement(ctx.iterativeStatement().forStatement());
+        else if (ctx.returnStatement() != null)
+            return visitReturnStatement(ctx.returnStatement());
         else
             throw new CompilerException("Invalid statement", getCodePosition(ctx));
     }
