@@ -32,7 +32,7 @@ public class OurParser extends Parser {
 		RULE_statement = 8, RULE_returnStatement = 9, RULE_ifElseStatement = 10, 
 		RULE_ifStatement = 11, RULE_elseIfStatement = 12, RULE_elseStatement = 13, 
 		RULE_conditionalExpression = 14, RULE_atStatement = 15, RULE_iterativeStatement = 16, 
-		RULE_forStatement = 17, RULE_expr = 18, RULE_boolExpr = 19, RULE_variableDecl = 20, 
+		RULE_forStatement = 17, RULE_arithExpr = 18, RULE_boolExpr = 19, RULE_variableDecl = 20, 
 		RULE_assignment = 21, RULE_variableName = 22, RULE_functionName = 23, 
 		RULE_datatype = 24, RULE_literal = 25, RULE_numLiteral = 26, RULE_arithOp = 27, 
 		RULE_boolOp = 28;
@@ -41,7 +41,7 @@ public class OurParser extends Parser {
 			"program", "loop", "setup", "block", "functionDecl", "functionParam", 
 			"functionCall", "functionArgs", "statement", "returnStatement", "ifElseStatement", 
 			"ifStatement", "elseIfStatement", "elseStatement", "conditionalExpression", 
-			"atStatement", "iterativeStatement", "forStatement", "expr", "boolExpr", 
+			"atStatement", "iterativeStatement", "forStatement", "arithExpr", "boolExpr", 
 			"variableDecl", "assignment", "variableName", "functionName", "datatype", 
 			"literal", "numLiteral", "arithOp", "boolOp"
 		};
@@ -615,11 +615,11 @@ public class OurParser extends Parser {
 	}
 
 	public static class FunctionArgsContext extends ParserRuleContext {
-		public List<ExprContext> expr() {
-			return getRuleContexts(ExprContext.class);
+		public List<ArithExprContext> arithExpr() {
+			return getRuleContexts(ArithExprContext.class);
 		}
-		public ExprContext expr(int i) {
-			return getRuleContext(ExprContext.class,i);
+		public ArithExprContext arithExpr(int i) {
+			return getRuleContext(ArithExprContext.class,i);
 		}
 		public List<BoolExprContext> boolExpr() {
 			return getRuleContexts(BoolExprContext.class);
@@ -663,7 +663,7 @@ public class OurParser extends Parser {
 			case 1:
 				{
 				setState(110);
-				expr(0);
+				arithExpr(0);
 				}
 				break;
 			case 2:
@@ -687,7 +687,7 @@ public class OurParser extends Parser {
 				case 1:
 					{
 					setState(115);
-					expr(0);
+					arithExpr(0);
 					}
 					break;
 				case 2:
@@ -1211,8 +1211,8 @@ public class OurParser extends Parser {
 		public BoolOpContext boolOp() {
 			return getRuleContext(BoolOpContext.class,0);
 		}
-		public ExprContext expr() {
-			return getRuleContext(ExprContext.class,0);
+		public ArithExprContext arithExpr() {
+			return getRuleContext(ArithExprContext.class,0);
 		}
 		public TerminalNode RIGHT_PAREN() { return getToken(OurParser.RIGHT_PAREN, 0); }
 		public BlockContext block() {
@@ -1252,7 +1252,7 @@ public class OurParser extends Parser {
 			setState(175);
 			boolOp();
 			setState(176);
-			expr(0);
+			arithExpr(0);
 			setState(177);
 			match(RIGHT_PAREN);
 			setState(178);
@@ -1317,11 +1317,11 @@ public class OurParser extends Parser {
 	public static class ForStatementContext extends ParserRuleContext {
 		public TerminalNode FOR() { return getToken(OurParser.FOR, 0); }
 		public TerminalNode LEFT_PAREN() { return getToken(OurParser.LEFT_PAREN, 0); }
-		public List<ExprContext> expr() {
-			return getRuleContexts(ExprContext.class);
+		public List<ArithExprContext> arithExpr() {
+			return getRuleContexts(ArithExprContext.class);
 		}
-		public ExprContext expr(int i) {
-			return getRuleContext(ExprContext.class,i);
+		public ArithExprContext arithExpr(int i) {
+			return getRuleContext(ArithExprContext.class,i);
 		}
 		public TerminalNode TO() { return getToken(OurParser.TO, 0); }
 		public TerminalNode RIGHT_PAREN() { return getToken(OurParser.RIGHT_PAREN, 0); }
@@ -1358,11 +1358,11 @@ public class OurParser extends Parser {
 			setState(183);
 			match(LEFT_PAREN);
 			setState(184);
-			expr(0);
+			arithExpr(0);
 			setState(185);
 			match(TO);
 			setState(186);
-			expr(0);
+			arithExpr(0);
 			setState(187);
 			match(RIGHT_PAREN);
 			setState(188);
@@ -1380,16 +1380,16 @@ public class OurParser extends Parser {
 		return _localctx;
 	}
 
-	public static class ExprContext extends ParserRuleContext {
+	public static class ArithExprContext extends ParserRuleContext {
 		public NumLiteralContext numLiteral() {
 			return getRuleContext(NumLiteralContext.class,0);
 		}
 		public TerminalNode LEFT_PAREN() { return getToken(OurParser.LEFT_PAREN, 0); }
-		public List<ExprContext> expr() {
-			return getRuleContexts(ExprContext.class);
+		public List<ArithExprContext> arithExpr() {
+			return getRuleContexts(ArithExprContext.class);
 		}
-		public ExprContext expr(int i) {
-			return getRuleContext(ExprContext.class,i);
+		public ArithExprContext arithExpr(int i) {
+			return getRuleContext(ArithExprContext.class,i);
 		}
 		public TerminalNode RIGHT_PAREN() { return getToken(OurParser.RIGHT_PAREN, 0); }
 		public TerminalNode NOT() { return getToken(OurParser.NOT, 0); }
@@ -1402,36 +1402,36 @@ public class OurParser extends Parser {
 		public ArithOpContext arithOp() {
 			return getRuleContext(ArithOpContext.class,0);
 		}
-		public ExprContext(ParserRuleContext parent, int invokingState) {
+		public ArithExprContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_expr; }
+		@Override public int getRuleIndex() { return RULE_arithExpr; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof OurParserListener ) ((OurParserListener)listener).enterExpr(this);
+			if ( listener instanceof OurParserListener ) ((OurParserListener)listener).enterArithExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof OurParserListener ) ((OurParserListener)listener).exitExpr(this);
+			if ( listener instanceof OurParserListener ) ((OurParserListener)listener).exitArithExpr(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof OurParserVisitor ) return ((OurParserVisitor<? extends T>)visitor).visitExpr(this);
+			if ( visitor instanceof OurParserVisitor ) return ((OurParserVisitor<? extends T>)visitor).visitArithExpr(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final ExprContext expr() throws RecognitionException {
-		return expr(0);
+	public final ArithExprContext arithExpr() throws RecognitionException {
+		return arithExpr(0);
 	}
 
-	private ExprContext expr(int _p) throws RecognitionException {
+	private ArithExprContext arithExpr(int _p) throws RecognitionException {
 		ParserRuleContext _parentctx = _ctx;
 		int _parentState = getState();
-		ExprContext _localctx = new ExprContext(_ctx, _parentState);
-		ExprContext _prevctx = _localctx;
+		ArithExprContext _localctx = new ArithExprContext(_ctx, _parentState);
+		ArithExprContext _prevctx = _localctx;
 		int _startState = 36;
-		enterRecursionRule(_localctx, 36, RULE_expr, _p);
+		enterRecursionRule(_localctx, 36, RULE_arithExpr, _p);
 		int _la;
 		try {
 			int _alt;
@@ -1461,7 +1461,7 @@ public class OurParser extends Parser {
 				setState(195);
 				match(LEFT_PAREN);
 				setState(196);
-				expr(0);
+				arithExpr(0);
 				setState(197);
 				match(RIGHT_PAREN);
 				}
@@ -1489,14 +1489,14 @@ public class OurParser extends Parser {
 					_prevctx = _localctx;
 					{
 					{
-					_localctx = new ExprContext(_parentctx, _parentState);
-					pushNewRecursionContext(_localctx, _startState, RULE_expr);
+					_localctx = new ArithExprContext(_parentctx, _parentState);
+					pushNewRecursionContext(_localctx, _startState, RULE_arithExpr);
 					setState(203);
 					if (!(precpred(_ctx, 5))) throw new FailedPredicateException(this, "precpred(_ctx, 5)");
 					setState(204);
 					arithOp();
 					setState(205);
-					expr(6);
+					arithExpr(6);
 					}
 					} 
 				}
@@ -1525,11 +1525,11 @@ public class OurParser extends Parser {
 		public BoolOpContext boolOp() {
 			return getRuleContext(BoolOpContext.class,0);
 		}
-		public List<ExprContext> expr() {
-			return getRuleContexts(ExprContext.class);
+		public List<ArithExprContext> arithExpr() {
+			return getRuleContexts(ArithExprContext.class);
 		}
-		public ExprContext expr(int i) {
-			return getRuleContext(ExprContext.class,i);
+		public ArithExprContext arithExpr(int i) {
+			return getRuleContext(ArithExprContext.class,i);
 		}
 		public TerminalNode LEFT_PAREN() { return getToken(OurParser.LEFT_PAREN, 0); }
 		public BoolExprContext boolExpr() {
@@ -1586,7 +1586,7 @@ public class OurParser extends Parser {
 				case ID:
 					{
 					setState(213);
-					expr(0);
+					arithExpr(0);
 					}
 					break;
 				case BOOL_LITERAL:
@@ -1618,7 +1618,7 @@ public class OurParser extends Parser {
 				case ID:
 					{
 					setState(219);
-					expr(0);
+					arithExpr(0);
 					}
 					break;
 				default:
@@ -1715,8 +1715,8 @@ public class OurParser extends Parser {
 		}
 		public TerminalNode ASSIGN() { return getToken(OurParser.ASSIGN, 0); }
 		public TerminalNode SEMICOLON() { return getToken(OurParser.SEMICOLON, 0); }
-		public ExprContext expr() {
-			return getRuleContext(ExprContext.class,0);
+		public ArithExprContext arithExpr() {
+			return getRuleContext(ArithExprContext.class,0);
 		}
 		public LiteralContext literal() {
 			return getRuleContext(LiteralContext.class,0);
@@ -1759,7 +1759,7 @@ public class OurParser extends Parser {
 			case 1:
 				{
 				setState(236);
-				expr(0);
+				arithExpr(0);
 				}
 				break;
 			case 2:
@@ -2149,11 +2149,11 @@ public class OurParser extends Parser {
 	public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
 		switch (ruleIndex) {
 		case 18:
-			return expr_sempred((ExprContext)_localctx, predIndex);
+			return arithExpr_sempred((ArithExprContext)_localctx, predIndex);
 		}
 		return true;
 	}
-	private boolean expr_sempred(ExprContext _localctx, int predIndex) {
+	private boolean arithExpr_sempred(ArithExprContext _localctx, int predIndex) {
 		switch (predIndex) {
 		case 0:
 			return precpred(_ctx, 5);

@@ -188,15 +188,15 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitForStatement(OurParser.ForStatementContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link OurParser#expr}.
+	 * Enter a parse tree produced by {@link OurParser#arithExpr}.
 	 * @param ctx the parse tree
 	 */
-	void enterExpr(OurParser.ExprContext ctx);
+	void enterArithExpr(OurParser.ArithExprContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link OurParser#expr}.
+	 * Exit a parse tree produced by {@link OurParser#arithExpr}.
 	 * @param ctx the parse tree
 	 */
-	void exitExpr(OurParser.ExprContext ctx);
+	void exitArithExpr(OurParser.ArithExprContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#boolExpr}.
 	 * @param ctx the parse tree

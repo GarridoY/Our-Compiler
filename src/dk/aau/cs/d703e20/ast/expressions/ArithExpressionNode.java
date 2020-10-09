@@ -5,8 +5,8 @@ import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
 
 public class ArithExpressionNode implements ASTNode {
-    private ArithExpressionNode expressionNode1;
-    private ArithExpressionNode expressionNode2;
+    private ArithExpressionNode arithExpressionNode1;
+    private ArithExpressionNode arithExpressionNode2;
     private Enums.Operator arithExpressionOperator;
 
     private Double number;
@@ -15,9 +15,9 @@ public class ArithExpressionNode implements ASTNode {
 
     private CodePosition codePosition;
 
-    public ArithExpressionNode(ArithExpressionNode expressionNode1, ArithExpressionNode expressionNode2, Enums.Operator arithExpressionOperator) {
-        this.expressionNode1 = expressionNode1;
-        this.expressionNode2 = expressionNode2;
+    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1, ArithExpressionNode arithExpressionNode2, Enums.Operator arithExpressionOperator) {
+        this.arithExpressionNode1 = arithExpressionNode1;
+        this.arithExpressionNode2 = arithExpressionNode2;
         this.arithExpressionOperator = arithExpressionOperator;
     }
 
@@ -25,20 +25,20 @@ public class ArithExpressionNode implements ASTNode {
         this.number = number;
     }
 
-    public ArithExpressionNode(ArithExpressionNode expressionNode1) {
-        this.expressionNode1 = expressionNode1;
+    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1) {
+        this.arithExpressionNode1 = arithExpressionNode1;
     }
 
     public ArithExpressionNode(String variableName) {
         this.variableName = variableName;
     }
 
-    public ArithExpressionNode getExpressionNode1() {
-        return expressionNode1;
+    public ArithExpressionNode getArithExpressionNode1() {
+        return arithExpressionNode1;
     }
 
-    public ArithExpressionNode getExpressionNode2() {
-        return expressionNode2;
+    public ArithExpressionNode getArithExpressionNode2() {
+        return arithExpressionNode2;
     }
 
     public Enums.Operator getArithExpressionOperator() {

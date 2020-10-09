@@ -53,7 +53,7 @@ public class astTest {
         IfStatementNode ifStatementNode = (IfStatementNode) astBuilder.visitIfStatement(ifStatement);
 
         ConditionalExpressionNode conditionalExpressionNode = ifStatementNode.getConditionalExpressionNode();
-        BoolExpressionNode boolExpressionNode = conditionalExpressionNode.getBoolExpression();
+        BoolExpressionNode boolExpressionNode = conditionalExpressionNode.getBoolExpressionNode();
         BlockNode blockNode = ifStatementNode.getBlockNode();
 
         assertAll(
