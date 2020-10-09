@@ -41,10 +41,21 @@ public class astTest {
         AssignmentNode assignmentNode = (AssignmentNode) astBuilder.visitAssignment(assignment);
 
         assertAll(
-                () -> assertEquals("four", assignmentNode.getVariableName() )
+                () -> assertEquals("four", assignmentNode.getVariableName()),
+                () -> assertEquals(4, assignmentNode.getArithExpressionNode().getNumber())
         );
+    }
 
+    //Test AST for AtStatement
+    @Test
+    void testATStatement() {
+        OurParser parser = createParserFromText("at (x == 1) {}");
+        OurParser.AtStatementContext at = parser.atStatement();
+        ASTBuilder astBuilder = new ASTBuilder();
 
+        AtStatementNode atStatementNode = (AtStatementNode) astBuilder.visitAtStatement(at);
+
+        assertEquals("x", atStatementNode.getVariableName());
     }
 
     // Test AST for conditional statement if
