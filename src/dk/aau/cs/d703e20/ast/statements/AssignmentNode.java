@@ -1,17 +1,17 @@
 package dk.aau.cs.d703e20.ast.statements;
 
 import dk.aau.cs.d703e20.ast.CodePosition;
-import dk.aau.cs.d703e20.ast.expressions.ExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
 
 public class AssignmentNode extends StatementNode {
 
     private final String variableName;
     private String literalValue;
-    private ExpressionNode expressionNode;
+    private ArithExpressionNode expressionNode;
 
     private  CodePosition codePosition;
 
-    public AssignmentNode(String variableName, ExpressionNode expressionNode) {
+    public AssignmentNode(String variableName, ArithExpressionNode expressionNode) {
         this.variableName = variableName;
         this.expressionNode = expressionNode;
     }
@@ -23,7 +23,7 @@ public class AssignmentNode extends StatementNode {
 
     public String getVariableName() { return variableName; }
 
-    public ExpressionNode getExpressionNode() { return expressionNode; }
+    public ArithExpressionNode getExpressionNode() { return expressionNode; }
 
     public String getLiteralValue() {
         return literalValue;

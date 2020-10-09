@@ -7,7 +7,6 @@ import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.resources.FailTestErrorListener;
-import dk.aau.cs.d703e20.resources.TestToken;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ListTokenSource;
