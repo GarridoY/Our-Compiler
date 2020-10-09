@@ -251,7 +251,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             if (ctx.arithExpr() != null) {
                 // arith op arith
                 ArithExpressionNode arithExpressionNode1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
-                ArithExpressionNode arithExpressionNode2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(2));
+                ArithExpressionNode arithExpressionNode2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
                 return new BoolExpressionNode(arithExpressionNode1, arithExpressionNode2, getBoolOperator(ctx.boolOp()));
             }
             else if (ctx.boolExpr() != null) {

@@ -15,8 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class astTest {
 
@@ -85,25 +84,20 @@ public class astTest {
     }
 
     // Test AST for bool expression
-    /*
     @Test
     void testBOOLEXPR() {
-        OurParser parser = createParser("test1 == test2");
+        OurParser parser = createParser("test1 == test2;");
         OurParser.BoolExprContext boolExpr = parser.boolExpr();
         ASTBuilder astBuilder = new ASTBuilder();
         BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
 
-        ExpressionNode expressionNode1 = boolExpressionNode.getExpressionNode1();
-        ExpressionNode expressionNode2 = boolExpressionNode.getExpressionNode2();
+        ArithExpressionNode expressionNode1 = boolExpressionNode.getArithExpressionNode1();
 
         assertAll(
-                () -> assertNotNull(blockNode),
-                () -> assertNotNull(boolExpressionNode),
-                () -> assertNotNull(conditionalExpressionNode)
+                () -> assertEquals(expressionNode1.getVariableName(), "test1")
         );
 
     }
-    */
 
 
 
