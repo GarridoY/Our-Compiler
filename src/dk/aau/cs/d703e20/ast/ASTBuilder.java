@@ -200,9 +200,9 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitArithExpr(OurParser.ArithExprContext ctx) {
-        ArithExpressionNode arithExpressionNode;
+        ArithExpressionNode arithExpressionNode = null;
 
-        if (ctx.arithExpr() != null) {
+        if (ctx.arithExpr().size() > 0) {
             if (ctx.arithExpr(0) != null){
                 if(ctx.arithExpr(1) != null){
                     ArithExpressionNode node1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
@@ -212,13 +212,11 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                     ArithExpressionNode node = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
                     arithExpressionNode = new ArithExpressionNode(node);
                 }
-            } else if (ctx.numLiteral() != null) {
-                arithExpressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
-            } else if (ctx.variableName() != null) {
-                arithExpressionNode = new ArithExpressionNode(ctx.variableName().getText());
-            } else {
-                throw new CompilerException("Invalid Expression", getCodePosition(ctx));
             }
+        } else if (ctx.numLiteral() != null) {
+            arithExpressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
+        } else if (ctx.variableName() != null) {
+            arithExpressionNode = new ArithExpressionNode(ctx.variableName().getText());
         } else {
             throw new CompilerException("Invalid Expression", getCodePosition(ctx));
         }
