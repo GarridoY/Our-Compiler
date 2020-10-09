@@ -8,5 +8,5 @@ Loop {
 
 int TestFunction () {
     int value = 0;
-    //return value;
+    return value;
 }
