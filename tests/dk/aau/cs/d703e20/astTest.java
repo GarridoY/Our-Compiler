@@ -1,11 +1,9 @@
 package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.ASTBuilder;
-import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
-import dk.aau.cs.d703e20.ast.expressions.ConditionalExpressionNode;
-import dk.aau.cs.d703e20.ast.expressions.ExpressionNode;
-import dk.aau.cs.d703e20.ast.statements.IfStatementNode;
-import dk.aau.cs.d703e20.ast.structure.BlockNode;
+import dk.aau.cs.d703e20.ast.expressions.*;
+import dk.aau.cs.d703e20.ast.statements.*;
+import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.resources.FailTestErrorListener;
@@ -66,6 +64,47 @@ public class astTest {
         );
 
     }
+
+    // Test AST for conditional statement if else if
+    @Test
+    void testIFELSEIF() {
+        OurParser parser = createParser("if (hej == true) {} else if (test) {} else {}");
+        OurParser.IfElseStatementContext ifElseStatement = parser.ifElseStatement();
+        ASTBuilder astBuilder = new ASTBuilder();
+        IfElseStatementNode ifElseStatementNode = (IfElseStatementNode) astBuilder.visitIfElseStatement(ifElseStatement);
+
+        IfStatementNode ifStatementNode = ifElseStatementNode.getIfStatementNode();
+        List<ElseIfStatementNode> elseIfStatementNodes = ifElseStatementNode.getElseIfStatementNodes();
+        ElseStatementNode elseStatementNode = ifElseStatementNode.getElseStatement();
+
+        assertAll(
+                () -> assertNotNull(ifStatementNode),
+                () -> assertNotNull(elseIfStatementNodes),
+                () -> assertNotNull(elseStatementNode)
+        );
+
+    }
+
+    // Test AST for bool expression
+    /*
+    @Test
+    void testBOOLEXPR() {
+        OurParser parser = createParser("test1 == test2");
+        OurParser.BoolExprContext boolExpr = parser.boolExpr();
+        ASTBuilder astBuilder = new ASTBuilder();
+        BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
+
+        ExpressionNode expressionNode1 = boolExpressionNode.getExpressionNode1();
+        ExpressionNode expressionNode2 = boolExpressionNode.getExpressionNode2();
+
+        assertAll(
+                () -> assertNotNull(blockNode),
+                () -> assertNotNull(boolExpressionNode),
+                () -> assertNotNull(conditionalExpressionNode)
+        );
+
+    }
+    */
 
 
 

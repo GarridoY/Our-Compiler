@@ -144,10 +144,10 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitElseIfStatement(OurParser.ElseIfStatementContext ctx) {
-        ExpressionNode expressionNode = (ExpressionNode) visitConditionalExpression(ctx.conditionalExpression());
+        ConditionalExpressionNode conditionalExpressionNode = (ConditionalExpressionNode) visitConditionalExpression(ctx.conditionalExpression());
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
 
-        ElseIfStatementNode elseIfStatementNode = new ElseIfStatementNode(expressionNode, blockNode);
+        ElseIfStatementNode elseIfStatementNode = new ElseIfStatementNode(conditionalExpressionNode, blockNode);
         setCodePos(elseIfStatementNode, ctx);
         return elseIfStatementNode;
     }
