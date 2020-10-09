@@ -231,7 +231,11 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
         if (ctx.boolExpr() != null) {
             if (ctx.NOT() != null) {
-                //if there is 'NOT' before the expression
+                if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null){
+                    BoolExpressionNode boolExpressionNode1 = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+                    boolExpressionNode = new BoolExpressionNode(false, boolExpressionNode1);
+                    return boolExpressionNode;
+                }
             }
             boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
             return boolExpressionNode;
