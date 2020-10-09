@@ -4,11 +4,14 @@ options { tokenVocab=OurLexer; }
 // Program rule, has to consist of a main rule, can be followed by function declarations.
 // variableName is used to catch outside of the program
 program
-    : main (functionDecl | variableName)*;
+    : setup loop (functionDecl | variableName)*;
 
 // main start keyword followed by a block
-main
-    : MAIN block;
+loop
+    : LOOP block;
+
+setup
+    : SETUP block;
 
 // Encapsulation of code by brackets
 block
@@ -25,7 +28,7 @@ functionParam
 
 // Call function given optional arguments (expr)
 functionCall
-    : functionName LEFT_PAREN functionArgs? RIGHT_PAREN SEMICOLON;
+    : functionName LEFT_PAREN functionArgs? RIGHT_PAREN;
 
 // Function arguments for calling function(s)
 functionArgs
@@ -35,7 +38,7 @@ functionArgs
 statement
     : variableDecl
     | assignment
-    | functionCall
+    | functionCall SEMICOLON
     | ifElseStatement //conditionalStatement
     | iterativeStatement
     | atStatement
@@ -57,7 +60,7 @@ conditionalExpression: boolExpr | NOT? variableName | functionCall;
 
 // at statement for clock and timing purposes
 atStatement
-    : AT LEFT_PAREN variableName op=(EQUAL | LESS_THAN | GREATER_THAN | GREATER_OR_EQUAL | LESS_OR_EQUAL | NOT_EQUAL) expr RIGHT_PAREN block;
+    : AT LEFT_PAREN variableName boolOp expr RIGHT_PAREN block;
 
 // ITERATIVE
 iterativeStatement
@@ -70,17 +73,16 @@ forStatement
 // EXPRESSIONS
 
 expr
-    : expr op=(ADD | SUB | MOD | DIV | MUL) expr // Precedence handled by target
-    | numLiteral
-    | '('expr')'
-    | variableName;
+    : expr arithOp expr // Precedence handled by target
+    | numLiteral | NOT?'('expr')'
+    | variableName
+    | functionCall;
 
 // TODO: Check ambiguity
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr
     : BOOL_LITERAL
-    | //boolExpr op=(EQUAL | AND | OR | NOT_EQUAL) boolExpr
-    | (expr | BOOL_LITERAL) op=(EQUAL | NOT_EQUAL | GREATER_THAN | GREATER_OR_EQUAL | LESS_THAN | LESS_OR_EQUAL) (BOOL_LITERAL | expr)
+    | (expr | BOOL_LITERAL) boolOp (BOOL_LITERAL | expr)
     | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
 
 
@@ -89,9 +91,7 @@ variableDecl
     : datatype assignment;
 
 assignment
-    : variableName ASSIGN (expr | literal) SEMICOLON;
-
-
+    : variableName ASSIGN (expr | literal | functionCall) SEMICOLON;
 
 // Names
 variableName
@@ -103,7 +103,8 @@ datatype
     : INT
     | DOUBLE
     | BOOLEAN
-    | CLOCK;
+    | CLOCK
+    | STRING;
 
 literal
     : STRING_LITERAL
@@ -114,3 +115,18 @@ numLiteral
     | DIGIT_NEGATIVE
     | DOUBLE_DIGIT
     | DOUBLE_DIGIT_NEGATIVE;
+
+arithOp
+    : ADD
+    | SUB
+    | MOD
+    | DIV
+    | MUL;
+
+boolOp
+    : EQUAL
+    | NOT_EQUAL
+    | GREATER_THAN
+    | GREATER_OR_EQUAL
+    | LESS_THAN
+    | LESS_OR_EQUAL;

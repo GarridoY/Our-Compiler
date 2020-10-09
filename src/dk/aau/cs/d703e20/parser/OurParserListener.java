@@ -1,4 +1,4 @@
-// Generated from /Users/Garrido/Documents/GitHub/P7/src/OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/htmle/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -18,15 +18,25 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitProgram(OurParser.ProgramContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link OurParser#main}.
+	 * Enter a parse tree produced by {@link OurParser#loop}.
 	 * @param ctx the parse tree
 	 */
-	void enterMain(OurParser.MainContext ctx);
+	void enterLoop(OurParser.LoopContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link OurParser#main}.
+	 * Exit a parse tree produced by {@link OurParser#loop}.
 	 * @param ctx the parse tree
 	 */
-	void exitMain(OurParser.MainContext ctx);
+	void exitLoop(OurParser.LoopContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#setup}.
+	 * @param ctx the parse tree
+	 */
+	void enterSetup(OurParser.SetupContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#setup}.
+	 * @param ctx the parse tree
+	 */
+	void exitSetup(OurParser.SetupContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#block}.
 	 * @param ctx the parse tree
@@ -267,4 +277,24 @@ public interface OurParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitNumLiteral(OurParser.NumLiteralContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#arithOp}.
+	 * @param ctx the parse tree
+	 */
+	void enterArithOp(OurParser.ArithOpContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#arithOp}.
+	 * @param ctx the parse tree
+	 */
+	void exitArithOp(OurParser.ArithOpContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#boolOp}.
+	 * @param ctx the parse tree
+	 */
+	void enterBoolOp(OurParser.BoolOpContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#boolOp}.
+	 * @param ctx the parse tree
+	 */
+	void exitBoolOp(OurParser.BoolOpContext ctx);
 }

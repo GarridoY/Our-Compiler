@@ -1,4 +1,4 @@
-// Generated from /Users/Garrido/Documents/GitHub/P7/src/OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/htmle/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -17,11 +17,17 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitProgram(OurParser.ProgramContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link OurParser#main}.
+	 * Visit a parse tree produced by {@link OurParser#loop}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitMain(OurParser.MainContext ctx);
+	T visitLoop(OurParser.LoopContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#setup}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSetup(OurParser.SetupContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link OurParser#block}.
 	 * @param ctx the parse tree
@@ -166,4 +172,16 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitNumLiteral(OurParser.NumLiteralContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#arithOp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArithOp(OurParser.ArithOpContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#boolOp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBoolOp(OurParser.BoolOpContext ctx);
 }

@@ -12,7 +12,8 @@ PIT: 'pit';
 VOID: 'void';
 
 // Keywords
-MAIN: 'Main';
+LOOP: 'Loop';
+SETUP: 'Setup';
 RETURN: 'return';
 IF: 'if';
 ELSE_IF: 'else if';
@@ -27,7 +28,7 @@ DIGIT: DIGIT_RULE;
 DIGIT_NEGATIVE: DIGIT_NEGATIVE_RULE;
 
 DOUBLE_DIGIT: DIGIT'.'DIGIT+;
-DOUBLE_DIGIT_NEGATIVE: DIGIT_NEGATIVE'.'DIGIT+;
+DOUBLE_DIGIT_NEGATIVE: '(-' DIGIT '.' DIGIT+')';
 
 BOOL_LITERAL: 'true' | 'false';
 
