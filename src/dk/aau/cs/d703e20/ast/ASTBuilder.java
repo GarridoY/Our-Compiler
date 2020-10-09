@@ -231,31 +231,46 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitBoolExpr(OurParser.BoolExprContext ctx) {
         BoolExpressionNode boolExpressionNode;
 
-        if (ctx.boolExpr() != null) {
-            if (ctx.NOT() != null) {
-                if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null){
-                    BoolExpressionNode boolExpressionNode1 = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
-                    boolExpressionNode = new BoolExpressionNode(false, boolExpressionNode1);
-                    return boolExpressionNode;
+        if (ctx.BOOL_LITERAL() != null) {
+            if (ctx.BOOL_LITERAL().size() > 1) {
+                // LITERAL op LITERAL
+                return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText(), ctx.BOOL_LITERAL(1).getText(), getBoolOperator(ctx.boolOp()));
+            }
+            else {
+                if (ctx.arithExpr() != null) {
+                    // arith op LITERAL | LITERAL op arith
+                    // TODO: figure out order
+                    ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
+                    return new BoolExpressionNode(arithExpressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.boolOp()));
+                }
+                else {
+                    // only BOOL
+                    return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
                 }
             }
-            boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
-            return boolExpressionNode;
-        } else if (ctx.BOOL_LITERAL() != null) {
-            if (ctx.BOOL_LITERAL(1) != null) {
-
-                ArithExpressionNode node1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
-                ArithExpressionNode node2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
-
-                return new BoolExpressionNode(node1, node2, getBoolOperator(ctx.boolOp()));
-            } else if (ctx.boolExpr() != null){
-                BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
-                return new BoolExpressionNode(nestedBoolExpressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.boolOp()));
-            } else {
-                return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
+        }
+        else {
+            if (ctx.arithExpr() != null) {
+                // arith op arith
+                ArithExpressionNode arithExpressionNode1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
+                ArithExpressionNode arithExpressionNode2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(2));
+                return new BoolExpressionNode(arithExpressionNode1, arithExpressionNode2, getBoolOperator(ctx.boolOp()));
             }
-        } else {
-            throw new  CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
+            else if (ctx.boolExpr() != null) {
+                // nested boolExpr
+                if (ctx.NOT() != null) {
+                    if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null){
+                        BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+                        boolExpressionNode = new BoolExpressionNode(false, nestedBoolExpressionNode);
+                        return boolExpressionNode;
+                    }
+                }
+                boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+                return boolExpressionNode;
+            }
+            else {
+                throw new  CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
+            }
         }
     }
 

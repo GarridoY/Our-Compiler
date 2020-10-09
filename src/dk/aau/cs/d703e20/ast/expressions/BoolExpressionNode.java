@@ -48,10 +48,10 @@ public class BoolExpressionNode implements ASTNode {
         this.boolExpressionOperator = boolExpressionOperator;
     }
 
-    public BoolExpressionNode(Enums.BoolOperator boolExpressionOperator, String boolLiteral, String boolLiteral1) {
+    public BoolExpressionNode(String boolLiteral1, String boolLiteral2, Enums.BoolOperator boolExpressionOperator) {
         this.boolExpressionOperator = boolExpressionOperator;
-        this.boolLiteral = boolLiteral;
-        this.boolLiteral1 = boolLiteral1;
+        this.boolLiteral = boolLiteral1;
+        this.boolLiteral1 = boolLiteral2;
     }
 
     public BoolExpressionNode(String boolLiteral) {
