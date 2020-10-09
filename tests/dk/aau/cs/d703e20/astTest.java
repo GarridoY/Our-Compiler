@@ -1,6 +1,7 @@
 package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.ASTBuilder;
+import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
@@ -28,6 +29,22 @@ public class astTest {
         OurParser parser = new OurParser(tokenStream);
         parser.addErrorListener(new FailTestErrorListener()); // Not expecting any syntax error, fails test if any
         return parser;
+    }
+
+    // Test AST for AssignmentNode
+    @Test
+    void testASSIGN() {
+        OurParser parser = createParserFromText("four = 4;");
+        OurParser.AssignmentContext assignment = parser.assignment();
+        ASTBuilder astBuilder = new ASTBuilder();
+
+        AssignmentNode assignmentNode = (AssignmentNode) astBuilder.visitAssignment(assignment);
+
+        assertAll(
+                () -> assertEquals("four", assignmentNode.getVariableName() )
+        );
+
+
     }
 
     // Test AST for conditional statement if
@@ -73,18 +90,25 @@ public class astTest {
     // Test AST for bool expression
     @Test
     void testBOOLEXPR() {
-        OurParser parser = createParserFromText("test1 == test2;");
+        OurParser parser = createParserFromText("test1 == test2");
         OurParser.BoolExprContext boolExpr = parser.boolExpr();
         ASTBuilder astBuilder = new ASTBuilder();
         BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
 
         ArithExpressionNode expressionNode1 = boolExpressionNode.getArithExpressionNode1();
+        ArithExpressionNode expressionNode2 = boolExpressionNode.getArithExpressionNode2();
+        Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperator();
+
 
         assertAll(
-                () -> assertEquals(expressionNode1.getVariableName(), "test1")
+                () -> assertEquals("test1", expressionNode1.getVariableName()),
+                () -> assertEquals("test2", expressionNode2.getVariableName()),
+                () -> assertEquals(Enums.BoolOperator.EQUAL, operator)
         );
-
     }
+
+
+
 
 
 
