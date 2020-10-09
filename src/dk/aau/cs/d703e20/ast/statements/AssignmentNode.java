@@ -7,13 +7,13 @@ public class AssignmentNode extends StatementNode {
 
     private final String variableName;
     private String literalValue;
-    private ArithExpressionNode expressionNode;
+    private ArithExpressionNode arithExpressionNode;
 
     private  CodePosition codePosition;
 
-    public AssignmentNode(String variableName, ArithExpressionNode expressionNode) {
+    public AssignmentNode(String variableName, ArithExpressionNode arithExpressionNode) {
         this.variableName = variableName;
-        this.expressionNode = expressionNode;
+        this.arithExpressionNode = arithExpressionNode;
     }
 
     public AssignmentNode(String variableName, String literalValue) {
@@ -23,7 +23,7 @@ public class AssignmentNode extends StatementNode {
 
     public String getVariableName() { return variableName; }
 
-    public ArithExpressionNode getExpressionNode() { return expressionNode; }
+    public ArithExpressionNode getArithExpressionNode() { return arithExpressionNode; }
 
     public String getLiteralValue() {
         return literalValue;

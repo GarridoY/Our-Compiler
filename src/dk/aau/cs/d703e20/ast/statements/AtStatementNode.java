@@ -8,15 +8,15 @@ import dk.aau.cs.d703e20.ast.structure.BlockNode;
 public class AtStatementNode extends StatementNode{
 
     private String variableName;
-    private ArithExpressionNode expressionNode;
+    private ArithExpressionNode arithExpressionNode;
     private Enums.BoolOperator boolOperator;
     private BlockNode blockNode;
 
     private CodePosition codePosition;
 
-    public AtStatementNode(String variableName, ArithExpressionNode expressionNode, Enums.BoolOperator boolOperator, BlockNode blockNode) {
+    public AtStatementNode(String variableName, ArithExpressionNode arithExpressionNode, Enums.BoolOperator boolOperator, BlockNode blockNode) {
         this.variableName = variableName;
-        this.expressionNode = expressionNode;
+        this.arithExpressionNode = arithExpressionNode;
         this.boolOperator = boolOperator;
         this.blockNode = blockNode;
     }
@@ -25,8 +25,8 @@ public class AtStatementNode extends StatementNode{
         return variableName;
     }
 
-    public ArithExpressionNode getExpressionNode() {
-        return expressionNode;
+    public ArithExpressionNode getArithExpressionNode() {
+        return arithExpressionNode;
     }
 
     public Enums.BoolOperator getBoolOperator() {

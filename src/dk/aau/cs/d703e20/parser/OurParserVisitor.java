@@ -119,11 +119,11 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitForStatement(OurParser.ForStatementContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link OurParser#expr}.
+	 * Visit a parse tree produced by {@link OurParser#arithExpr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpr(OurParser.ExprContext ctx);
+	T visitArithExpr(OurParser.ArithExprContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link OurParser#boolExpr}.
 	 * @param ctx the parse tree

@@ -9,8 +9,8 @@ public class BoolExpressionNode implements ASTNode {
     private Boolean not;
     private BoolExpressionNode boolExpressionNode;
 
-    private ArithExpressionNode expressionNode1;
-    private ArithExpressionNode expressionNode2;
+    private ArithExpressionNode arithExpressionNode1;
+    private ArithExpressionNode arithExpressionNode2;
 
     private String boolLiteral;
     private String boolLiteral1;
@@ -24,14 +24,14 @@ public class BoolExpressionNode implements ASTNode {
         this.boolExpressionNode = boolExpressionNode;
     }
 
-    public BoolExpressionNode(ArithExpressionNode expressionNode1, ArithExpressionNode expressionNode2, Enums.BoolOperator boolExpressionOperator) {
-        this.expressionNode1 = expressionNode1;
-        this.expressionNode2 = expressionNode2;
+    public BoolExpressionNode(ArithExpressionNode arithExpressionNode1, ArithExpressionNode arithExpressionNode2, Enums.BoolOperator boolExpressionOperator) {
+        this.arithExpressionNode1 = arithExpressionNode1;
+        this.arithExpressionNode2 = arithExpressionNode2;
         this.boolExpressionOperator = boolExpressionOperator;
     }
 
-    public BoolExpressionNode(ArithExpressionNode expressionNode1 , String boolLiteral, Enums.BoolOperator boolExpressionOperator) {
-        this.expressionNode1 = expressionNode1;
+    public BoolExpressionNode(ArithExpressionNode arithExpressionNode1 , String boolLiteral, Enums.BoolOperator boolExpressionOperator) {
+        this.arithExpressionNode1 = arithExpressionNode1;
         this.boolExpressionOperator = boolExpressionOperator;
         this.boolLiteral = boolLiteral;
     }
@@ -42,9 +42,9 @@ public class BoolExpressionNode implements ASTNode {
         this.boolLiteral = boolLiteral;
     }
 
-    public BoolExpressionNode(String boolLiteral, ArithExpressionNode expressionNode1, Enums.BoolOperator boolExpressionOperator) {
+    public BoolExpressionNode(String boolLiteral, ArithExpressionNode arithExpressionNode2, Enums.BoolOperator boolExpressionOperator) {
         this.boolLiteral = boolLiteral;
-        this.expressionNode1 = expressionNode1;
+        this.arithExpressionNode1 = arithExpressionNode2;
         this.boolExpressionOperator = boolExpressionOperator;
     }
 
@@ -58,9 +58,9 @@ public class BoolExpressionNode implements ASTNode {
         this.boolLiteral = boolLiteral;
     }
 
-    public ArithExpressionNode getExpressionNode1() { return expressionNode1; }
+    public ArithExpressionNode getArithExpressionNode1() { return arithExpressionNode1; }
 
-    public ArithExpressionNode getExpressionNode2() { return expressionNode2; }
+    public ArithExpressionNode getArithExpressionNode2() { return arithExpressionNode2; }
 
     public Enums.BoolOperator getBoolExpressionOperator() { return boolExpressionOperator; }
 

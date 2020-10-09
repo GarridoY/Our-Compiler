@@ -103,11 +103,11 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitFunctionArgs(OurParser.FunctionArgsContext ctx) {
-        List<ArithExpressionNode> expressionNodes = visitList(ArithExpressionNode.class, ctx.expr(), this::visitExpr);
+        List<ArithExpressionNode> arithExpressionNodes = visitList(ArithExpressionNode.class, ctx.arithExpr(), this::visitArithExpr);
 
         List<BoolExpressionNode> boolExpressionNodes = visitList(BoolExpressionNode.class, ctx.boolExpr(), this::visitBoolExpr);
 
-        FunctionArgsNode functionArgsNode = new FunctionArgsNode(expressionNodes, boolExpressionNodes);
+        FunctionArgsNode functionArgsNode = new FunctionArgsNode(arithExpressionNodes, boolExpressionNodes);
         setCodePos(functionArgsNode, ctx);
         return functionArgsNode;
     }
@@ -188,8 +188,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitForStatement(OurParser.ForStatementContext ctx) {
-        ArithExpressionNode arithExpressionNode1 = (ArithExpressionNode) visitExpr(ctx.expr(0));
-        ArithExpressionNode arithExpressionNode2 = (ArithExpressionNode) visitExpr(ctx.expr(1));
+        ArithExpressionNode arithExpressionNode1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
+        ArithExpressionNode arithExpressionNode2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
 
         ForStatementNode forStatementNode = new ForStatementNode(arithExpressionNode1, arithExpressionNode2, blockNode);
@@ -199,23 +199,23 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     }
 
     @Override
-    public ASTNode visitExpr(OurParser.ExprContext ctx) {
-        ArithExpressionNode expressionNode;
+    public ASTNode visitArithExpr(OurParser.ArithExprContext ctx) {
+        ArithExpressionNode arithExpressionNode;
 
-        if (ctx.expr() != null) {
-            if (ctx.expr(0) != null){
-                if(ctx.expr(1) != null){
-                    ArithExpressionNode node1 = (ArithExpressionNode) visitExpr(ctx.expr(0));
-                    ArithExpressionNode node2 = (ArithExpressionNode) visitExpr(ctx.expr(1));
-                    expressionNode = new ArithExpressionNode(node1 , node2, getArithOperator(ctx.arithOp()));
+        if (ctx.arithExpr() != null) {
+            if (ctx.arithExpr(0) != null){
+                if(ctx.arithExpr(1) != null){
+                    ArithExpressionNode node1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
+                    ArithExpressionNode node2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
+                    arithExpressionNode = new ArithExpressionNode(node1 , node2, getArithOperator(ctx.arithOp()));
                 } else {
-                    ArithExpressionNode node = (ArithExpressionNode) visitExpr(ctx.expr(0));
-                    expressionNode = new ArithExpressionNode(node);
+                    ArithExpressionNode node = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
+                    arithExpressionNode = new ArithExpressionNode(node);
                 }
             } else if (ctx.numLiteral() != null) {
-                expressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
+                arithExpressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
             } else if (ctx.variableName() != null) {
-                expressionNode = new ArithExpressionNode(ctx.variableName().getText());
+                arithExpressionNode = new ArithExpressionNode(ctx.variableName().getText());
             } else {
                 throw new CompilerException("Invalid Expression", getCodePosition(ctx));
             }
@@ -223,8 +223,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             throw new CompilerException("Invalid Expression", getCodePosition(ctx));
         }
 
-        setCodePos(expressionNode, ctx);
-        return expressionNode;
+        setCodePos(arithExpressionNode, ctx);
+        return arithExpressionNode;
     }
 
     @Override
@@ -244,13 +244,13 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         } else if (ctx.BOOL_LITERAL() != null) {
             if (ctx.BOOL_LITERAL(1) != null) {
 
-                ArithExpressionNode node1 = (ArithExpressionNode) visitExpr(ctx.expr(0));
-                ArithExpressionNode node2 = (ArithExpressionNode) visitExpr(ctx.expr(1));
+                ArithExpressionNode node1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
+                ArithExpressionNode node2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
 
                 return new BoolExpressionNode(node1, node2, getBoolOperator(ctx.boolOp()));
             } else if (ctx.boolExpr() != null){
-                BoolExpressionNode expressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
-                return new BoolExpressionNode(expressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.boolOp()));
+                BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+                return new BoolExpressionNode(nestedBoolExpressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.boolOp()));
             } else {
                 return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
             }
@@ -278,9 +278,9 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitAssignment(OurParser.AssignmentContext ctx) {
         if (ctx.literal() != null) {
             return new AssignmentNode(ctx.variableName().getText(), ctx.literal().getText());
-        } else if (ctx.expr() != null) {
-            ArithExpressionNode expressionNode = (ArithExpressionNode) visitExpr(ctx.expr());
-            return new AssignmentNode(ctx.variableName().getText(), expressionNode);
+        } else if (ctx.arithExpr() != null) {
+            ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr());
+            return new AssignmentNode(ctx.variableName().getText(), arithExpressionNode);
         }
         else {
             throw new CompilerException("Invalid Assignment Statement", getCodePosition(ctx));
@@ -295,9 +295,9 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitAtStatement(OurParser.AtStatementContext ctx) {
         try {
-            ArithExpressionNode expressionNode = (ArithExpressionNode) visitExpr(ctx.expr());
+            ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr());
             BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
-            return new AtStatementNode(ctx.variableName().getText(), expressionNode, getBoolOperator(ctx.boolOp()), blockNode);
+            return new AtStatementNode(ctx.variableName().getText(), arithExpressionNode, getBoolOperator(ctx.boolOp()), blockNode);
         } catch (CompilerException e) {
             throw new CompilerException("Invalid At Statement", getCodePosition(ctx));
         }
