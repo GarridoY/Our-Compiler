@@ -6,6 +6,9 @@ import dk.aau.cs.d703e20.ast.Enums;
 
 public class BoolExpressionNode extends ExpressionNode {
     // TODO Add boolSymbol
+    private Boolean not;
+    private BoolExpressionNode boolExpressionNode;
+
     private ExpressionNode expressionNode1;
     private ExpressionNode expressionNode2;
 
@@ -15,6 +18,11 @@ public class BoolExpressionNode extends ExpressionNode {
     private Enums.BoolOperator boolExpressionOperator;
 
     private CodePosition codePosition;
+
+    public BoolExpressionNode(Boolean not, BoolExpressionNode boolExpressionNode) {
+        this.not = not;
+        this.boolExpressionNode = boolExpressionNode;
+    }
 
     public BoolExpressionNode(ExpressionNode expressionNode1, ExpressionNode expressionNode2, Enums.BoolOperator boolExpressionOperator) {
         this.expressionNode1 = expressionNode1;

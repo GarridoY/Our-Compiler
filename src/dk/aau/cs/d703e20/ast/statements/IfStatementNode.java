@@ -2,22 +2,23 @@ package dk.aau.cs.d703e20.ast.statements;
 
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
+import dk.aau.cs.d703e20.ast.expressions.ConditionalExpressionNode;
 import dk.aau.cs.d703e20.ast.expressions.ExpressionNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 
 public class IfStatementNode implements ASTNode {
-    private final ExpressionNode expressionNode;
+    private final ConditionalExpressionNode conditionalExpressionNode;
     private final BlockNode blockNode;
 
     private CodePosition codePosition;
 
-    public IfStatementNode(ExpressionNode expressionNode, BlockNode blockNode) {
-        this.expressionNode = expressionNode;
+    public IfStatementNode(ConditionalExpressionNode conditionalExpressionNode, BlockNode blockNode) {
+        this.conditionalExpressionNode = conditionalExpressionNode;
         this.blockNode = blockNode;
     }
 
-    public ExpressionNode getExpressionNode() {
-        return expressionNode;
+    public ConditionalExpressionNode getConditionalExpressionNode() {
+        return conditionalExpressionNode;
     }
 
     public BlockNode getBlockNode() {
