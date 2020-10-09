@@ -290,10 +290,19 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitAssignment(OurParser.AssignmentContext ctx) {
         if (ctx.literal() != null) {
-            return new AssignmentNode(ctx.variableName().getText(), ctx.literal().getText());
+            AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), ctx.literal().getText());
+            setCodePos(assignmentNode, ctx);
+            return assignmentNode;
         } else if (ctx.arithExpr() != null) {
             ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr());
-            return new AssignmentNode(ctx.variableName().getText(), arithExpressionNode);
+            AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), arithExpressionNode);
+            setCodePos(assignmentNode, ctx);
+            return assignmentNode;
+        } else if (ctx.functionCall() != null) {
+            FunctionCallNode functionCallNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
+            AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), functionCallNode);
+            setCodePos(assignmentNode, ctx);
+            return assignmentNode;
         }
         else {
             throw new CompilerException("Invalid Assignment Statement", getCodePosition(ctx));
