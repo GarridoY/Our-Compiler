@@ -231,7 +231,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitBoolExpr(OurParser.BoolExprContext ctx) {
         BoolExpressionNode boolExpressionNode;
 
-        if (ctx.BOOL_LITERAL() != null) {
+        if (ctx.BOOL_LITERAL().size() > 0) {
             if (ctx.BOOL_LITERAL().size() > 1) {
                 // LITERAL op LITERAL
                 return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText(), ctx.BOOL_LITERAL(1).getText(), getBoolOperator(ctx.boolOp()));
