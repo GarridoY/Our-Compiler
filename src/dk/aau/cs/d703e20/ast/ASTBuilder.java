@@ -203,16 +203,26 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         ArithExpressionNode arithExpressionNode = null;
 
         if (ctx.arithExpr().size() > 0) {
-            if (ctx.arithExpr(0) != null){
-                if(ctx.arithExpr(1) != null){
+            if (ctx.arithExpr(0) != null) {
+                if (ctx.arithExpr(1) != null) {
+                    // arithExpr arithOp arithExpr
                     ArithExpressionNode node1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
                     ArithExpressionNode node2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
-                    arithExpressionNode = new ArithExpressionNode(node1 , node2, getArithOperator(ctx.arithOp()));
+                    arithExpressionNode = new ArithExpressionNode(node1, node2, getArithOperator(ctx.arithOp()));
                 } else {
+                    // NOT? (arithExpr)
                     ArithExpressionNode node = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
-                    arithExpressionNode = new ArithExpressionNode(node);
+                    if (ctx.NOT() != null) {
+                        arithExpressionNode = new ArithExpressionNode(node, Enums.BoolOperator.NOT);
+                    } else {
+                        arithExpressionNode = new ArithExpressionNode(node);
+                    }
                 }
             }
+        } else if (ctx.functionCall() != null) {
+            // FunctionCall
+            FunctionCallNode funcNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
+            arithExpressionNode = new ArithExpressionNode(funcNode);
         } else if (ctx.numLiteral() != null) {
             arithExpressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
         } else if (ctx.variableName() != null) {
@@ -233,31 +243,27 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             if (ctx.BOOL_LITERAL().size() > 1) {
                 // LITERAL op LITERAL
                 return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText(), ctx.BOOL_LITERAL(1).getText(), getBoolOperator(ctx.boolOp()));
-            }
-            else {
+            } else {
                 if (ctx.arithExpr() != null) {
                     // arith op LITERAL | LITERAL op arith
                     // TODO: figure out order
                     ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
                     return new BoolExpressionNode(arithExpressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.boolOp()));
-                }
-                else {
+                } else {
                     // only BOOL
                     return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
                 }
             }
-        }
-        else {
+        } else {
             if (ctx.arithExpr() != null) {
                 // arith op arith
                 ArithExpressionNode arithExpressionNode1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
                 ArithExpressionNode arithExpressionNode2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
                 return new BoolExpressionNode(arithExpressionNode1, arithExpressionNode2, getBoolOperator(ctx.boolOp()));
-            }
-            else if (ctx.boolExpr() != null) {
+            } else if (ctx.boolExpr() != null) {
                 // nested boolExpr
                 if (ctx.NOT() != null) {
-                    if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null){
+                    if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null) {
                         BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
                         boolExpressionNode = new BoolExpressionNode(false, nestedBoolExpressionNode);
                         return boolExpressionNode;
@@ -265,9 +271,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                 }
                 boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
                 return boolExpressionNode;
-            }
-            else {
-                throw new  CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
+            } else {
+                throw new CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
             }
         }
     }
@@ -280,7 +285,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             Enums.DataType dataType = getDataType(ctx.datatype());
             AssignmentNode assignmentNode = (AssignmentNode) visitAssignment(ctx.assignment());
             variableDeclarationNode = new VariableDeclarationNode(dataType, assignmentNode);
-        } catch (CompilerException e){
+        } catch (CompilerException e) {
             throw new CompilerException("Invalid Variable Declaration Statement", getCodePosition(ctx));
         }
 
@@ -303,8 +308,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), functionCallNode);
             setCodePos(assignmentNode, ctx);
             return assignmentNode;
-        }
-        else {
+        } else {
             throw new CompilerException("Invalid Assignment Statement", getCodePosition(ctx));
         }
     }
@@ -343,7 +347,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     private Enums.ArithOperator getArithOperator(OurParser.ArithOpContext ctx) {
         Enums.ArithOperator operator;
 
-        if (ctx.ADD() != null){
+        if (ctx.ADD() != null) {
             operator = Enums.ArithOperator.ADD;
         } else if (ctx.SUB() != null) {
             operator = Enums.ArithOperator.SUB;
@@ -359,10 +363,10 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         return operator;
     }
 
-    private  Enums.BoolOperator getBoolOperator(OurParser.BoolOpContext ctx) {
+    private Enums.BoolOperator getBoolOperator(OurParser.BoolOpContext ctx) {
         Enums.BoolOperator operator;
 
-        if (ctx.EQUAL() != null){
+        if (ctx.EQUAL() != null) {
             operator = Enums.BoolOperator.EQUAL;
         } else if (ctx.NOT_EQUAL() != null) {
             operator = Enums.BoolOperator.NOT_EQUAL;
@@ -378,10 +382,10 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             throw new CompilerException("Operator is unknown", getCodePosition(ctx));
         }
 
-        return  operator;
+        return operator;
     }
 
-    private Double getNumLiteralValue (OurParser.NumLiteralContext ctx){
+    private Double getNumLiteralValue(OurParser.NumLiteralContext ctx) {
         return Double.valueOf(ctx.getText());
     }
 
@@ -389,7 +393,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     // All the results from visiting are added to the list which gets returned.
     // Usage example:
     // List<StatementNode> statementNodes = visitList(StatementNode.class, ctx.statement(), this::visitStatement);
-    private <T,S> List<T> visitList(Class<T> tClass, List<S> ctxs, Function<S, ASTNode> func) {
+    private <T, S> List<T> visitList(Class<T> tClass, List<S> ctxs, Function<S, ASTNode> func) {
         List<T> nodes = new ArrayList<>();
         for (S ctx : ctxs) {
             nodes.add(tClass.cast(func.apply(ctx)));

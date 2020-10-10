@@ -118,9 +118,43 @@ public class astTest {
         );
     }
 
+    // Test arithExpr arithOp arithExpr
+    @Test
+    void testArithExpr1() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("var + 2");
+        // Get parsed context
+        OurParser.ArithExprContext arithExpr = parser.arithExpr();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        ArithExpressionNode arithExpressionNode = (ArithExpressionNode) astBuilder.visitArithExpr(arithExpr);
+
+        String varName = arithExpressionNode.getArithExpressionNode1().getVariableName();
+        Enums.ArithOperator operator = arithExpressionNode.getArithExpressionOperator();
+        double literal = arithExpressionNode.getArithExpressionNode2().getNumber();
+
+        assertAll(
+                () -> assertEquals("var", varName),
+                () -> assertEquals(Enums.ArithOperator.ADD, operator),
+                () -> assertEquals(2, literal)
+        );
+    }
+
+    // Test NOT?(arithExpr), arithExpr is functionCall
+    @Test
+    void testArithExprNotFunc() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("!(FuncName())");
+        // Get parsed context
+        OurParser.ArithExprContext arithExpr = parser.arithExpr();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        ArithExpressionNode arithExpressionNode = (ArithExpressionNode) astBuilder.visitArithExpr(arithExpr);
 
 
-
-
-
+        assertAll(
+                () -> assertEquals("FuncName", arithExpressionNode.getArithExpressionNode1().getFunctionCallNode().getFunctionName()), //
+                () -> assertEquals(Enums.BoolOperator.NOT, arithExpressionNode.getOptionalNot())
+        );
+    }
 }
