@@ -17,7 +17,7 @@ public class Enums {
         VEC4
     }
 
-    public enum Operator {
+    public enum ArithOperator {
         ADD,
         SUB,
         MOD,

@@ -7,7 +7,7 @@ import dk.aau.cs.d703e20.ast.Enums;
 public class ArithExpressionNode implements ASTNode {
     private ArithExpressionNode arithExpressionNode1;
     private ArithExpressionNode arithExpressionNode2;
-    private Enums.Operator arithExpressionOperator;
+    private Enums.ArithOperator arithExpressionOperator;
 
     private Double number;
 
@@ -15,7 +15,7 @@ public class ArithExpressionNode implements ASTNode {
 
     private CodePosition codePosition;
 
-    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1, ArithExpressionNode arithExpressionNode2, Enums.Operator arithExpressionOperator) {
+    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1, ArithExpressionNode arithExpressionNode2, Enums.ArithOperator arithExpressionOperator) {
         this.arithExpressionNode1 = arithExpressionNode1;
         this.arithExpressionNode2 = arithExpressionNode2;
         this.arithExpressionOperator = arithExpressionOperator;
@@ -41,7 +41,7 @@ public class ArithExpressionNode implements ASTNode {
         return arithExpressionNode2;
     }
 
-    public Enums.Operator getArithExpressionOperator() {
+    public Enums.ArithOperator getArithExpressionOperator() {
         return arithExpressionOperator;
     }
 

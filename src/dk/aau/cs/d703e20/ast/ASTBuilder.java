@@ -340,19 +340,19 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         return dataType;
     }
 
-    private Enums.Operator getArithOperator(OurParser.ArithOpContext ctx) {
-        Enums.Operator operator;
+    private Enums.ArithOperator getArithOperator(OurParser.ArithOpContext ctx) {
+        Enums.ArithOperator operator;
 
         if (ctx.ADD() != null){
-            operator = Enums.Operator.ADD;
+            operator = Enums.ArithOperator.ADD;
         } else if (ctx.SUB() != null) {
-            operator = Enums.Operator.SUB;
+            operator = Enums.ArithOperator.SUB;
         } else if (ctx.MOD() != null) {
-            operator = Enums.Operator.MOD;
+            operator = Enums.ArithOperator.MOD;
         } else if (ctx.DIV() != null) {
-            operator = Enums.Operator.DIV;
+            operator = Enums.ArithOperator.DIV;
         } else if (ctx.MUL() != null) {
-            operator = Enums.Operator.MUL;
+            operator = Enums.ArithOperator.MUL;
         } else {
             throw new CompilerException("Operator is unknown", getCodePosition(ctx));
         }
