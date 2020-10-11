@@ -244,7 +244,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                 // LITERAL op LITERAL
                 return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText(), ctx.BOOL_LITERAL(1).getText(), getBoolOperator(ctx.boolOp()));
             } else {
-                if (ctx.arithExpr() != null) {
+                if (ctx.arithExpr() != null && !ctx.arithExpr().isEmpty()) { // ctx.ArithExpr can be empty but not null list, fails when accessing the empty list
                     // arith op LITERAL | LITERAL op arith
                     // TODO: figure out order
                     ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
@@ -255,7 +255,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                 }
             }
         } else {
-            if (ctx.arithExpr() != null) {
+            if (ctx.arithExpr() != null && !ctx.arithExpr().isEmpty()) { // ctx.ArithExpr can be empty
                 // arith op arith
                 ArithExpressionNode arithExpressionNode1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
                 ArithExpressionNode arithExpressionNode2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
@@ -265,7 +265,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                 if (ctx.NOT() != null) {
                     if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null) {
                         BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
-                        boolExpressionNode = new BoolExpressionNode(false, nestedBoolExpressionNode);
+                        boolExpressionNode = new BoolExpressionNode(Enums.BoolOperator.NOT, nestedBoolExpressionNode);
                         return boolExpressionNode;
                     }
                 }

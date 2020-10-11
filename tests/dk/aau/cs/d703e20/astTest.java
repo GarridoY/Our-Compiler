@@ -98,7 +98,7 @@ public class astTest {
 
     }
 
-    // Test AST for bool expression
+    // Test AST for bool expression | arith op arith
     @Test
     void testBOOLEXPR() {
         OurParser parser = createParserFromText("test1 == test2");
@@ -116,6 +116,36 @@ public class astTest {
                 () -> assertEquals("test2", expressionNode2.getVariableName()),
                 () -> assertEquals(Enums.BoolOperator.EQUAL, operator)
         );
+    }
+
+    @Test
+    void testBoolExprLiteral() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("true");
+        // Get parsed context
+        OurParser.BoolExprContext boolExpr = parser.boolExpr();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
+
+        assertEquals("true", boolExpressionNode.getBoolLiteral());
+    }
+
+    @Test
+    void testBoolExprNotLiteral() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("!(true)");
+        // Get parsed context
+        OurParser.BoolExprContext boolExpr = parser.boolExpr();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
+
+        assertAll(
+                () -> assertEquals("true", boolExpressionNode.getBoolExpressionNode().getBoolLiteral()),
+                () -> assertEquals(Enums.BoolOperator.NOT, boolExpressionNode.getOptionalNot())
+        );
+
     }
 
     // Test arithExpr arithOp arithExpr
