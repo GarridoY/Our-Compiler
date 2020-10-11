@@ -46,6 +46,57 @@ public class astTest {
         );
     }
 
+    @Test
+    void testVarDeclString() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("string varName = \"Super123\";");
+        // Get parsed context
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode varDeclNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        assertAll(
+                () -> assertEquals(Enums.DataType.STRING, varDeclNode.getDataType()),
+                () -> assertEquals("varName", varDeclNode.getAssignmentNode().getVariableName()),
+                () -> assertEquals("Super123", varDeclNode.getAssignmentNode().getLiteralValue())
+        );
+    }
+
+    @Test
+    void testVarDeclBool() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("bool varName = true;");
+        // Get parsed context
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode varDeclNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        assertAll(
+                () -> assertEquals(Enums.DataType.BOOL, varDeclNode.getDataType()),
+                () -> assertEquals("varName", varDeclNode.getAssignmentNode().getVariableName()),
+                () -> assertEquals("true", varDeclNode.getAssignmentNode().getLiteralValue())
+        );
+    }
+
+    @Test
+    void testVarDeclFunctionCall() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("int varName = getInt();");
+        // Get parsed context
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode varDeclNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        assertAll(
+                () -> assertEquals(Enums.DataType.INT, varDeclNode.getDataType()),
+                () -> assertEquals("varName", varDeclNode.getAssignmentNode().getVariableName()),
+                () -> assertEquals("getInt", varDeclNode.getAssignmentNode().getArithExpressionNode().getFunctionCallNode().getFunctionName())
+        );
+    }
+
     //Test AST for AtStatement
     @Test
     void testATStatement() {
@@ -145,7 +196,6 @@ public class astTest {
                 () -> assertEquals("true", boolExpressionNode.getBoolExpressionNode().getBoolLiteral()),
                 () -> assertEquals(Enums.BoolOperator.NOT, boolExpressionNode.getOptionalNot())
         );
-
     }
 
     // Test arithExpr arithOp arithExpr

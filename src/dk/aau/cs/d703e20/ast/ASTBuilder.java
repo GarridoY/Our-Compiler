@@ -295,20 +295,32 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitAssignment(OurParser.AssignmentContext ctx) {
         if (ctx.literal() != null) {
-            AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), ctx.literal().getText());
-            setCodePos(assignmentNode, ctx);
-            return assignmentNode;
+            // Check the kind of literal
+            if (ctx.literal().BOOL_LITERAL() != null) {
+                AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), ctx.literal().getText());
+                setCodePos(assignmentNode, ctx);
+                return assignmentNode;
+            }
+            else {
+                // if String_Literal then remove "" from string value
+                AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), getStringLiteral(ctx.literal()));
+                setCodePos(assignmentNode, ctx);
+                return assignmentNode;
+            }
         } else if (ctx.arithExpr() != null) {
             ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr());
             AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), arithExpressionNode);
             setCodePos(assignmentNode, ctx);
             return assignmentNode;
-        } else if (ctx.functionCall() != null) {
+        }
+        /*
+        else if (ctx.functionCall() != null) {
             FunctionCallNode functionCallNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
             AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), functionCallNode);
             setCodePos(assignmentNode, ctx);
             return assignmentNode;
-        } else {
+        } */
+        else {
             throw new CompilerException("Invalid Assignment Statement", getCodePosition(ctx));
         }
     }
@@ -338,6 +350,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             dataType = Enums.DataType.BOOL;
         else if (ctx.CLOCK() != null)
             dataType = Enums.DataType.CLOCK;
+        else if (ctx.STRING() != null)
+            dataType = Enums.DataType.STRING;
         else
             throw new CompilerException("DataType is unknown", getCodePosition(ctx));
 
@@ -383,6 +397,15 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         }
 
         return operator;
+    }
+
+    private String getStringLiteral(OurParser.LiteralContext ctx) {
+        if (ctx.STRING_LITERAL() != null) {
+            // Remove "" from both ends of the string
+            return ctx.STRING_LITERAL().getText().subSequence(1, ctx.STRING_LITERAL().getText().length()-1).toString();
+        }
+        else
+            throw new CompilerException("Bool is not String");
     }
 
     private Double getNumLiteralValue(OurParser.NumLiteralContext ctx) {
