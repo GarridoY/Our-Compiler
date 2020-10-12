@@ -8,7 +8,8 @@ import dk.aau.cs.d703e20.ast.expressions.FunctionParameterNode;
 import java.util.List;
 
 public class FunctionDeclarationNode implements ASTNode {
-    private final Enums.DataType dataType;
+    private Enums.DataType dataType;
+    private Boolean isVoid;
     private final String functionName;
     private final BlockNode blockNode;
 
@@ -19,6 +20,14 @@ public class FunctionDeclarationNode implements ASTNode {
         this.functionName = functionName;
         this.blockNode = blockNode;
     }
+
+    public FunctionDeclarationNode(Boolean isVoid, String functionName, BlockNode blockNode) {
+        this.isVoid = isVoid;
+        this.functionName = functionName;
+        this.blockNode = blockNode;
+    }
+
+    public Boolean getVoid() { return isVoid; }
 
     public Enums.DataType getDataType() {
         return dataType;

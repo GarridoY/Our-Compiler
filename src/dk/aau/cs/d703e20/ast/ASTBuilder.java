@@ -59,9 +59,17 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFunctionDecl(OurParser.FunctionDeclContext ctx) {
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
-        FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), blockNode);
-        setCodePos(functionDeclarationNode, ctx);
-        return functionDeclarationNode;
+        if (ctx.VOID() != null) {
+            FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode(true, ctx.functionName().getText(), blockNode);
+            setCodePos(functionDeclarationNode, ctx);
+            return functionDeclarationNode;
+        } else if (ctx.datatype() != null && !ctx.datatype().isEmpty()) {
+            FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), blockNode);
+            setCodePos(functionDeclarationNode, ctx);
+            return functionDeclarationNode;
+        } else {
+            throw new CompilerException("Invalid Function Declaration", getCodePosition(ctx));
+        }
     }
 
     @Override
@@ -92,7 +100,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFunctionCall(OurParser.FunctionCallContext ctx) {
         FunctionCallNode functionCallNode;
-        if (ctx.functionArgs() != null)
+        if (ctx.functionArgs() != null && !ctx.functionArgs().isEmpty())
             functionCallNode = new FunctionCallNode(ctx.functionName().getText(), (FunctionArgsNode) visitFunctionArgs(ctx.functionArgs()));
         else
             functionCallNode = new FunctionCallNode(ctx.functionName().getText());

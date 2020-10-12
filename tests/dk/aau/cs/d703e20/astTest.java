@@ -271,6 +271,23 @@ public class astTest {
         );
     }
 
+    // Test visitprogram
+    @Test
+    void testVisitProgram() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("Setup{} Loop{}");
+        // Get parsed Context
+        OurParser.ProgramContext programContext = parser.program();
+        // Context -> AST visit
+        ASTBuilder astBuilder = new ASTBuilder();
+        ProgramNode programNode = (ProgramNode) astBuilder.visitProgram(programContext);
+
+        assertAll(
+                () -> assertNotNull(programNode.getSetupNode()),
+                () -> assertNotNull(programNode.getLoopNode())
+        );
+    }
+
     @Test
     void testForLoop() {
         // String -> Tokens -> Parsing
@@ -303,5 +320,38 @@ public class astTest {
                 () -> assertEquals(2, functionCallNode.getFunctionArgsNode().getArithExpressionNodes().get(0).getNumber()),
                 () -> assertEquals("varName", functionCallNode.getFunctionArgsNode().getArithExpressionNodes().get(1).getVariableName())
         );
+    }
+
+    // Test void functionDecl
+    @Test
+    void testFunctionDecl() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("void test(int ID2, string varName){}");
+        // Get parsed context
+        OurParser.FunctionDeclContext functionDeclContext = parser.functionDecl();
+        // Context -> ASTNode
+        ASTBuilder astbuilder = new ASTBuilder();
+        FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) astbuilder.visitFunctionDecl(functionDeclContext);
+
+        assertAll(
+                () -> assertNotNull(functionDeclarationNode.getBlockNode()),
+                () -> assertNotNull(functionDeclarationNode.getVoid()),
+                () -> assertNotNull(functionDeclarationNode.getFunctionName())
+        );
+    }
+
+    //Test FunctionDecl with get.Datatype
+
+    @Test
+    void testFunctionDeclDatatype() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("bool test(int ID2, string varName){}");
+        // Get parsed context
+        OurParser.FunctionDeclContext functionDeclContext = parser.functionDecl();
+        // Context -> ASTNode
+        ASTBuilder astbuilder = new ASTBuilder();
+        FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) astbuilder.visitFunctionDecl(functionDeclContext);
+
+        assertEquals(Enums.DataType.BOOL, functionDeclarationNode.getDataType());
     }
 }
