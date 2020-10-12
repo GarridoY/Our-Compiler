@@ -1,4 +1,4 @@
-// Generated from C:/Users/htmle/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/the_p/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -188,15 +188,15 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitForStatement(OurParser.ForStatementContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link OurParser#expr}.
+	 * Enter a parse tree produced by {@link OurParser#arithExpr}.
 	 * @param ctx the parse tree
 	 */
-	void enterExpr(OurParser.ExprContext ctx);
+	void enterArithExpr(OurParser.ArithExprContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link OurParser#expr}.
+	 * Exit a parse tree produced by {@link OurParser#arithExpr}.
 	 * @param ctx the parse tree
 	 */
-	void exitExpr(OurParser.ExprContext ctx);
+	void exitArithExpr(OurParser.ArithExprContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#boolExpr}.
 	 * @param ctx the parse tree

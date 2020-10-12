@@ -6,7 +6,7 @@ import dk.aau.cs.d703e20.ast.Enums;
 
 import java.util.List;
 
-public class FunctionParameterNode extends ExpressionNode {
+public class FunctionParameterNode implements ASTNode {
     private final Enums.DataType dataType;
     private final String variableName;
     private final List<FunctionParameterNode> functionParameterNodes;

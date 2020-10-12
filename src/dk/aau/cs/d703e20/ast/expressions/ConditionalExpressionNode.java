@@ -5,14 +5,14 @@ import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 
 public class ConditionalExpressionNode implements ASTNode {
-    private BoolExpressionNode boolExpression;
+    private BoolExpressionNode boolExpressionNode;
     private String variableName;
     private FunctionCallNode functionCallNode;
 
     private CodePosition codePosition;
 
-    public ConditionalExpressionNode(BoolExpressionNode boolExpression) {
-        this.boolExpression = boolExpression;
+    public ConditionalExpressionNode(BoolExpressionNode boolExpressionNode) {
+        this.boolExpressionNode = boolExpressionNode;
     }
 
     public ConditionalExpressionNode(String variableName) {
@@ -23,8 +23,8 @@ public class ConditionalExpressionNode implements ASTNode {
         this.functionCallNode = functionCallNode;
     }
 
-    public BoolExpressionNode getBoolExpression() {
-        return boolExpression;
+    public BoolExpressionNode getBoolExpressionNode() {
+        return boolExpressionNode;
     }
 
     public String getVariableName() {

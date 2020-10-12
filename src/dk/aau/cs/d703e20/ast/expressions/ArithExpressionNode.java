@@ -3,45 +3,66 @@ package dk.aau.cs.d703e20.ast.expressions;
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
+import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 
-public class ArithExpressionNode extends ExpressionNode {
-    private ExpressionNode expressionNode1;
-    private ExpressionNode expressionNode2;
-    private Enums.Operator arithExpressionOperator;
+public class ArithExpressionNode implements ASTNode {
+    // arithExpr arithOp arithExpr
+    private ArithExpressionNode arithExpressionNode1;
+    private ArithExpressionNode arithExpressionNode2;
+    private Enums.ArithOperator arithExpressionOperator;
 
+    // functionCall
+    private FunctionCallNode functionCallNode;
+    // NOT? (arithExpr)
+    private Enums.BoolOperator optionalNot;
+
+    // numLiteral
     private Double number;
 
     private String variableName;
 
     private CodePosition codePosition;
 
-    public ArithExpressionNode(ExpressionNode expressionNode1, ExpressionNode expressionNode2, Enums.Operator arithExpressionOperator) {
-        this.expressionNode1 = expressionNode1;
-        this.expressionNode2 = expressionNode2;
+    // arithExpr arithOp arithExpr
+    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1, ArithExpressionNode arithExpressionNode2, Enums.ArithOperator arithExpressionOperator) {
+        this.arithExpressionNode1 = arithExpressionNode1;
+        this.arithExpressionNode2 = arithExpressionNode2;
         this.arithExpressionOperator = arithExpressionOperator;
     }
 
+    // numLiteral
     public ArithExpressionNode(Double number) {
         this.number = number;
     }
 
-    public ArithExpressionNode(ExpressionNode expressionNode1) {
-        this.expressionNode1 = expressionNode1;
+    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1) {
+        this.arithExpressionNode1 = arithExpressionNode1;
     }
 
     public ArithExpressionNode(String variableName) {
         this.variableName = variableName;
     }
 
-    public ExpressionNode getExpressionNode1() {
-        return expressionNode1;
+    // functionCall
+    public ArithExpressionNode(FunctionCallNode functionCallNode) {
+        this.functionCallNode = functionCallNode;
     }
 
-    public ExpressionNode getExpressionNode2() {
-        return expressionNode2;
+    // NOT? (arithExpr)
+    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1, Enums.BoolOperator optionalNot) {
+        this.arithExpressionNode1 = arithExpressionNode1;
+        this.optionalNot = optionalNot;
     }
 
-    public Enums.Operator getArithExpressionOperator() {
+    public ArithExpressionNode getArithExpressionNode1() {
+        return arithExpressionNode1;
+    }
+
+    public ArithExpressionNode getArithExpressionNode2() {
+        return arithExpressionNode2;
+    }
+
+    public Enums.ArithOperator getArithExpressionOperator() {
         return arithExpressionOperator;
     }
 
@@ -51,6 +72,14 @@ public class ArithExpressionNode extends ExpressionNode {
 
     public String getVariableName() {
         return variableName;
+    }
+
+    public FunctionCallNode getFunctionCallNode() {
+        return functionCallNode;
+    }
+
+    public Enums.BoolOperator getOptionalNot() {
+        return optionalNot;
     }
 
     @Override
