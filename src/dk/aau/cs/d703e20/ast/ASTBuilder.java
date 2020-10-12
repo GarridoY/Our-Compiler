@@ -58,22 +58,26 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitFunctionDecl(OurParser.FunctionDeclContext ctx) {
-        BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
         FunctionDeclarationNode functionDeclarationNode = null;
+        BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+
         if (ctx.functionParam() != null) {
             FunctionParameterNode functionParameterNode = (FunctionParameterNode) visitFunctionParam(ctx.functionParam());
             if (ctx.VOID() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(true, ctx.functionName().getText(), blockNode, functionParameterNode);
+                functionDeclarationNode = new FunctionDeclarationNode(ctx.functionName().getText(), blockNode, functionParameterNode);
             }
             else if (ctx.datatype() != null) {
                 functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), blockNode, functionParameterNode);
             }
-        } else {
+        }
+        else {
             if (ctx.VOID() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(true, ctx.functionName().getText(), blockNode);
-            } else if (ctx.datatype() != null) {
+                functionDeclarationNode = new FunctionDeclarationNode(ctx.functionName().getText(), blockNode);
+            }
+            else if (ctx.datatype() != null) {
                 functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), blockNode);
-            } else {
+            }
+            else {
                 throw new CompilerException("Invalid Function Declaration", getCodePosition(ctx));
             }
         }

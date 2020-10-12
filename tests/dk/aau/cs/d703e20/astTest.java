@@ -336,7 +336,7 @@ public class astTest {
 
         assertAll(
                 () -> assertNotNull(functionDeclarationNode.getBlockNode()),
-                () -> assertNotNull(functionDeclarationNode.getVoid()),
+                () -> assertEquals(Enums.DataType.VOID, functionDeclarationNode.getDataType()),
                 () -> assertNotNull(functionDeclarationNode.getFunctionName())
         );
     }

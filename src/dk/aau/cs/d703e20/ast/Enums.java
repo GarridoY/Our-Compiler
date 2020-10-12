@@ -6,15 +6,7 @@ public class Enums {
         STRING,
         CLOCK,
         BOOL,
-    }
-
-    public enum ReturnType {
-        VOID,
-        NUM,
-        BOOL,
-        VEC2,
-        VEC3,
-        VEC4
+        VOID
     }
 
     public enum ArithOperator {

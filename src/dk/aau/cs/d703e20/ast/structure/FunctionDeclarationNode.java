@@ -9,7 +9,6 @@ import java.util.List;
 
 public class FunctionDeclarationNode implements ASTNode {
     private Enums.DataType dataType;
-    private Boolean isVoid;
     private final String functionName;
     private final BlockNode blockNode;
     private FunctionParameterNode functionParameterNode;
@@ -21,8 +20,8 @@ public class FunctionDeclarationNode implements ASTNode {
         this.blockNode = blockNode;
     }
 
-    public FunctionDeclarationNode(Boolean isVoid, String functionName, BlockNode blockNode) {
-        this.isVoid = isVoid;
+    public FunctionDeclarationNode(String functionName, BlockNode blockNode) {
+        this.dataType = Enums.DataType.VOID;
         this.functionName = functionName;
         this.blockNode = blockNode;
     }
@@ -34,14 +33,12 @@ public class FunctionDeclarationNode implements ASTNode {
         this.functionParameterNode = functionParameterNode;
     }
 
-    public FunctionDeclarationNode(Boolean isVoid, String functionName, BlockNode blockNode, FunctionParameterNode functionParameterNode) {
-        this.isVoid = isVoid;
+    public FunctionDeclarationNode(String functionName, BlockNode blockNode, FunctionParameterNode functionParameterNode) {
+        this.dataType = Enums.DataType.VOID;
         this.functionName = functionName;
         this.blockNode = blockNode;
         this.functionParameterNode = functionParameterNode;
     }
-
-    public Boolean getVoid() { return isVoid; }
 
     public Enums.DataType getDataType() {
         return dataType;
