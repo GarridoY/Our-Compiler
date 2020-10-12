@@ -74,9 +74,18 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitFunctionParam(OurParser.FunctionParamContext ctx) {
-        List<FunctionParameterNode> functionParameterNodes = visitList(FunctionParameterNode.class, ctx.functionParam(), this::visitFunctionParam);
+        List<Enums.DataType> dataTypes = new ArrayList<Enums.DataType>();
+        List<String> variableNames = new ArrayList<String>();
 
-        FunctionParameterNode functionParameterNode = new FunctionParameterNode(getDataType(ctx.datatype()), functionParameterNodes, ctx.variableName().getText());
+        for (OurParser.DatatypeContext datatypeContext : ctx.datatype()) {
+            dataTypes.add(getDataType(datatypeContext));
+        }
+
+        for (OurParser.VariableNameContext variableNameContext : ctx.variableName()) {
+            variableNames.add(variableNameContext.getText());
+        }
+
+        FunctionParameterNode functionParameterNode = new FunctionParameterNode(dataTypes, variableNames);
         setCodePos(functionParameterNode, ctx);
         return functionParameterNode;
     }
