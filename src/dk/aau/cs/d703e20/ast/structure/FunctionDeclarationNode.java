@@ -8,16 +8,36 @@ import dk.aau.cs.d703e20.ast.expressions.FunctionParameterNode;
 import java.util.List;
 
 public class FunctionDeclarationNode implements ASTNode {
-    private final Enums.DataType dataType;
+    private Enums.DataType dataType;
     private final String functionName;
     private final BlockNode blockNode;
-
+    private FunctionParameterNode functionParameterNode;
     private CodePosition codePosition;
 
     public FunctionDeclarationNode(Enums.DataType dataType, String functionName, BlockNode blockNode) {
         this.dataType = dataType;
         this.functionName = functionName;
         this.blockNode = blockNode;
+    }
+
+    public FunctionDeclarationNode(String functionName, BlockNode blockNode) {
+        this.dataType = Enums.DataType.VOID;
+        this.functionName = functionName;
+        this.blockNode = blockNode;
+    }
+
+    public FunctionDeclarationNode(Enums.DataType dataType, String functionName, BlockNode blockNode, FunctionParameterNode functionParameterNode) {
+        this.dataType = dataType;
+        this.functionName = functionName;
+        this.blockNode = blockNode;
+        this.functionParameterNode = functionParameterNode;
+    }
+
+    public FunctionDeclarationNode(String functionName, BlockNode blockNode, FunctionParameterNode functionParameterNode) {
+        this.dataType = Enums.DataType.VOID;
+        this.functionName = functionName;
+        this.blockNode = blockNode;
+        this.functionParameterNode = functionParameterNode;
     }
 
     public Enums.DataType getDataType() {
@@ -30,6 +50,10 @@ public class FunctionDeclarationNode implements ASTNode {
 
     public BlockNode getBlockNode() {
         return blockNode;
+    }
+
+    public FunctionParameterNode getFunctionParameterNode() {
+        return functionParameterNode;
     }
 
     @Override
