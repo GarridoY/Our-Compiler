@@ -18,7 +18,7 @@ block
     : LEFT_BRACKET (statement)* RIGHT_BRACKET;
 
 // FUNCTIONS
-// Function declaration, optional argument followed by more optional arguments prefixed by comma TODO: Check if ANTLR can figure out which functionArg is in use
+// Function declaration, optional argument followed by more optional arguments prefixed by comma
 functionDecl
     : (VOID | datatype) functionName LEFT_PAREN functionParam? RIGHT_PAREN block;
 
@@ -36,16 +36,16 @@ functionArgs
 
 // Statements available in main
 statement
-    : variableDecl
-    | assignment
+    : variableDecl SEMICOLON
+    | assignment SEMICOLON
     | functionCall SEMICOLON
     | ifElseStatement //conditionalStatement
     | iterativeStatement
     | atStatement
-    | returnStatement;
+    | returnStatement SEMICOLON;
 
 returnStatement
-    : RETURN variableName SEMICOLON;
+    : RETURN variableName;
 
 // CONDITIONAL
 // any IF statement require blocks
@@ -78,7 +78,6 @@ arithExpr
     | variableName
     | functionCall;
 
-// TODO: Check ambiguity
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr
     : BOOL_LITERAL
@@ -91,7 +90,7 @@ variableDecl
     : datatype assignment;
 
 assignment
-    : variableName ASSIGN (arithExpr | literal) SEMICOLON; // Todo: Fix amiguity functioncall arith
+    : variableName ASSIGN (arithExpr | literal);
 
 // Names
 variableName
