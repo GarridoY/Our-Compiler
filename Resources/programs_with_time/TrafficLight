@@ -1,0 +1,253 @@
+Main {
+
+    list<bool> trafficLight1[greenH, yellowH, redH, greenV, yellowV, redV];
+    list<bool> trafficLight2[greenH, yellowH, redH, greenV, yellowV, redV];
+
+    //booleans?
+    sensor lane1F;
+    sensor lane1L;
+    sensor lane2F;
+    sensor lane2L;
+    sensor lane3;
+    sensor lane4;
+    sensor lane5;
+    sensor lane6;
+
+    int yellowTime = 3;
+
+    //function that gives vertical traffic red, before giving horizontal traffic green
+    initiateGreenH(list light){
+        Time time;
+        time.start;
+        light.4 = true;
+
+        if (time > yellowTime){
+            light.4 = false;
+            light.5 = false;
+            light.3 = true;
+            time.reset
+        }
+        time.start;
+        light.1 = true;
+        if (time > yellowTime){
+            light.1 = false;
+            light.2 = false;
+            light.0 = true;
+        }
+    }
+    //function that gives horizontal traffic red, before giving vertical traffic green
+    initiateGreenV(list light){
+        Time time;
+        time.start;
+        light.4 = true;
+
+        if (time > yellowTime){
+            light.4 = false;
+            light.5 = true;
+            time.reset
+        }
+        time.start;
+        light.4 = true;
+        if (time > yellowTime){
+            light.4 = false;
+            light.5 = false;
+            light.3 = true;
+        }
+
+
+-----------------------------------------------------------------------------------------------------------------------
+    controllerTrafficLight1(){
+
+        Time time;
+        int maxWait = 20;
+        bool hFirst;
+        bool vFirst;
+        bool pending;
+        bool hTraffic;
+        bool vTraffic;
+        bool hFirst;
+        bool vFirst;
+
+        //if no traffic or green light switch to green for horizontal traffic (horizontal has green by default)
+        if (lane1F || lane2L || lane3 || lane4 || trafficLight1.0 == false){
+            initiateGreenH(trafficLight1);
+        }
+        //checks if horizontal traffic
+        if (lane1F || lane2L == true){
+           hTraffic = true;
+        }
+        //checks if vertical traffic
+        if (lane3 || lane4){
+            vTraffic = true;
+        }
+        //checks who should get green first
+        if (hTraffic == true && vTraffic == false){
+            hFirst = true;
+        }
+        if (hTraffic == false && vTraffic == true){
+            vFirst = true;
+        }
+
+        //checks if traffic is pending
+        if (hFirst == true && vTraffic == true || vFirst == true && hTraffic == true) {
+           pending = true;
+        }
+        else{
+            pending = false;
+        }
+
+        //limits waiting time if pending, if no traffic from sides green light stays on
+        if (hFirst == true){
+            initiateGreenH(TrafficLight1);
+            if (pending == true){
+                time.start;
+                if (waitTime < time && vTraffic){
+                    hFirst = false;
+                    vFirst = true;
+                    time.reset;
+                }
+                else if (hTraffic == false){
+                   vFirst = true;
+                }
+            }
+        }
+
+        //limits waiting time if pending, if no traffic before time runs out horizontal traffic should keep having green
+        if (vFirst == true){
+            initiateGreenV(trafficLight1);
+            if (pending == true){
+                time.start;
+                if (waitTime < time && hFirst){
+                    vFirst = false;
+                    hFirst = true;
+                   time.reset;
+                }
+                else if (vTraffic = false){
+                    hFirst = true;
+                }
+            }
+        }
+    }
+
+
+
+ignorer dette ↓
+*******************************************************************************************************************************
+
+
+Main {
+
+    list<bool> trafficLight1[greenH, yellowH, redH, greenV, yellowV, redV];
+    list<bool> trafficLight2[greenH, yellowH, redH, greenV, yellowV, redV];
+
+    //booleans?
+    sensor lane1F;
+    sensor lane1L;
+    sensor lane2F;
+    sensor lane2L;
+    sensor lane3;
+    sensor lane4;
+    sensor lane5;
+    sensor lane6;
+
+    int yellowTime = 3;
+
+    //function that gives vertical traffic red, before giving horizontal traffic green
+    initiateGreenH(list light){
+        Time time;
+        time.start;
+        light.4 = true;
+
+        if (time > yellowTime){
+            light.4 = false;
+            light.5 = false;
+            light.3 = true;
+            time.reset
+        }
+        time.start;
+        light.1 = true;
+        if (time > yellowTime){
+            light.1 = false;
+            light.2 = false;
+            light.0 = true;
+        }
+    }
+    //function that gives horizontal traffic red, before giving vertical traffic green
+    initiateGreenV(list light){
+        Time time;
+        time.start;
+        light.4 = true;
+
+        if (time > yellowTime){
+            light.4 = false;
+            light.5 = true;
+            time.reset
+        }
+        time.start;
+        light.4 = true;
+        if (time > yellowTime){
+            light.4 = false;
+            light.5 = false;
+            light.3 = true;
+        }
+
+
+-----------------------------------------------------------------------------------------------------------------------
+    controllerTrafficLight1(){
+
+        Time time;
+        int maxWait = 20;
+        bool hFirst;
+        bool vFirst;
+        bool pending;
+        hFirst = false;
+        vFirst = false;
+
+        //if no traffic or green light switch to green for horizontal traffic (horizontal has green by default)
+        if (lane1F || lane2L || lane3 || lane4 || trafficLight1.0 == false){
+        initiateGreenH(trafficLight1);
+        }
+        //checks if horizontal traffic
+        if (lane1F || lane2L == true){
+            hFirst = true;
+        }
+        //if no horizontal traffic check if vertical traffic
+            else if (lane3 || lane4){
+        vFirst = true;
+        }
+        //checks if  vertical traffic is pending
+            if (lane3 || lane4 && hFirst) {
+        pending = true;
+        }
+        //limits waiting time if pending, if no traffic before time runs out vertical traffic should keep having green
+         if (hFirst == true){
+            initiateGreenH(TrafficLight1);
+            if (pending == true){
+                time.start;
+                if (waitTime < time && vFirst){
+                    hFirst = false;
+                    vFirst = true;
+                    pending = false;
+                    time.reset;
+                }
+                else if (hFirst == false){
+                    vFirst = true;
+                    pending = false;
+                }
+            }
+         }
+         //limits waiting time if pending, if no traffic before time runs out horizontal traffic should keep having green
+         if (vFirst == true){
+            initiateGreenV(trafficLight1);
+            if (hFirst == true){
+                pending = true;
+            }
+            if (pending == true){
+                time.start;
+                if (waitTime < time && hFirst){
+
+                }
+            }
+         }
+    }
+
