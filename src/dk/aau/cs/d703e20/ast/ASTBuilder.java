@@ -248,10 +248,14 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                     // arith op LITERAL | LITERAL op arith
                     // TODO: figure out order
                     ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
-                    return new BoolExpressionNode(arithExpressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.boolOp()));
+                    boolExpressionNode = new BoolExpressionNode(arithExpressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.boolOp()));
+                    setCodePos(boolExpressionNode, ctx);
+                    return boolExpressionNode;
                 } else {
                     // only BOOL
-                    return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
+                    boolExpressionNode = new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
+                    setCodePos(boolExpressionNode, ctx);
+                    return boolExpressionNode;
                 }
             }
         } else {
@@ -259,17 +263,21 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                 // arith op arith
                 ArithExpressionNode arithExpressionNode1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
                 ArithExpressionNode arithExpressionNode2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
-                return new BoolExpressionNode(arithExpressionNode1, arithExpressionNode2, getBoolOperator(ctx.boolOp()));
+                boolExpressionNode = new BoolExpressionNode(arithExpressionNode1, arithExpressionNode2, getBoolOperator(ctx.boolOp()));
+                setCodePos(boolExpressionNode, ctx);
+                return boolExpressionNode;
             } else if (ctx.boolExpr() != null) {
                 // nested boolExpr
                 if (ctx.NOT() != null) {
                     if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null) {
                         BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
                         boolExpressionNode = new BoolExpressionNode(Enums.BoolOperator.NOT, nestedBoolExpressionNode);
+                        setCodePos(boolExpressionNode, ctx);
                         return boolExpressionNode;
                     }
                 }
                 boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+                setCodePos(boolExpressionNode, ctx);
                 return boolExpressionNode;
             } else {
                 throw new CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
@@ -289,6 +297,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             throw new CompilerException("Invalid Variable Declaration Statement", getCodePosition(ctx));
         }
 
+        setCodePos(variableDeclarationNode, ctx);
         return variableDeclarationNode;
     }
 
@@ -327,7 +336,9 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitReturnStatement(OurParser.ReturnStatementContext ctx) {
-        return new ReturnStatementNode(ctx.variableName().getText());
+        ReturnStatementNode returnStatementNode = new ReturnStatementNode(ctx.variableName().getText());
+        setCodePos(returnStatementNode, ctx);
+        return returnStatementNode;
     }
 
     @Override
@@ -335,7 +346,9 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         try {
             ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr());
             BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
-            return new AtStatementNode(ctx.variableName().getText(), arithExpressionNode, getBoolOperator(ctx.boolOp()), blockNode);
+            AtStatementNode atStatementNode = new AtStatementNode(ctx.variableName().getText(), arithExpressionNode, getBoolOperator(ctx.boolOp()), blockNode);
+            setCodePos(atStatementNode, ctx);
+            return atStatementNode;
         } catch (CompilerException e) {
             throw new CompilerException("Invalid At Statement", getCodePosition(ctx));
         }
