@@ -237,4 +237,38 @@ public class astTest {
                 () -> assertEquals(Enums.BoolOperator.NOT, arithExpressionNode.getOptionalNot())
         );
     }
+
+    @Test
+    void testForLoop() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("for (var to 5) {}");
+        // Get parsed context
+        OurParser.ForStatementContext forStatement = parser.forStatement();
+        // Context -> ASTNode
+        ASTBuilder astbuilder = new ASTBuilder();
+        ForStatementNode forStatementNode = (ForStatementNode) astbuilder.visitForStatement(forStatement);
+
+        assertAll(
+                () -> assertEquals("var", forStatementNode.getArithExpressionNode1().getVariableName()),
+                () -> assertEquals(5, forStatementNode.getArithExpressionNode2().getNumber())
+        );
+    }
+
+    @Test
+    void testFunctionCallArgs() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("function(2, varName)");
+        // Get parsed context, through arithExpr
+        OurParser.ArithExprContext arithExprContext = parser.arithExpr();
+        // Context -> ASTNode
+        ASTBuilder astbuilder = new ASTBuilder();
+        ArithExpressionNode arithExpressionNode = (ArithExpressionNode) astbuilder.visitArithExpr(arithExprContext);
+        FunctionCallNode functionCallNode = arithExpressionNode.getFunctionCallNode();
+
+        assertAll(
+                () -> assertEquals("function", functionCallNode.getFunctionName()),
+                () -> assertEquals(2, functionCallNode.getFunctionArgsNode().getArithExpressionNodes().get(0).getNumber()),
+                () -> assertEquals("varName", functionCallNode.getFunctionArgsNode().getArithExpressionNodes().get(1).getVariableName())
+        );
+    }
 }
