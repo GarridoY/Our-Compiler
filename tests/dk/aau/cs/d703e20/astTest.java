@@ -354,4 +354,18 @@ public class astTest {
 
         assertEquals(Enums.DataType.BOOL, functionDeclarationNode.getDataType());
     }
+
+    @Test
+    void testVisitReturnStatement() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("return varName;");
+        // Get parsed context
+        OurParser.StatementContext statementContext = parser.statement();
+        // Context -> ASTNode
+        ASTBuilder astbuilder = new ASTBuilder();
+        // VisitStatement returns a ReturnStatementNode
+        ReturnStatementNode returnStatementNode = (ReturnStatementNode) astbuilder.visitStatement(statementContext);
+
+        assertEquals("varName", returnStatementNode.getVariableName());
+    }
 }
