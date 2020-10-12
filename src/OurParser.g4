@@ -32,7 +32,7 @@ functionCall
 
 // Function arguments for calling function(s)
 functionArgs
-    : (expr | boolExpr) ( COMMA (expr | boolExpr))*;
+    : (arithExpr | boolExpr) ( COMMA (arithExpr | boolExpr))*;
 
 // Statements available in main
 statement
@@ -60,7 +60,7 @@ conditionalExpression: boolExpr | NOT? variableName | functionCall;
 
 // at statement for clock and timing purposes
 atStatement
-    : AT LEFT_PAREN variableName boolOp expr RIGHT_PAREN block;
+    : AT LEFT_PAREN variableName boolOp arithExpr RIGHT_PAREN block;
 
 // ITERATIVE
 iterativeStatement
@@ -68,13 +68,13 @@ iterativeStatement
 
 // for (* to *) {}
 forStatement
-    : FOR LEFT_PAREN expr TO expr RIGHT_PAREN block;
+    : FOR LEFT_PAREN arithExpr TO arithExpr RIGHT_PAREN block;
 
 // EXPRESSIONS
 
-expr
-    : expr arithOp expr // Precedence handled by target
-    | numLiteral | NOT?'('expr')'
+arithExpr
+    : arithExpr arithOp arithExpr // Precedence handled by target
+    | numLiteral | NOT?'('arithExpr')'
     | variableName
     | functionCall;
 
@@ -82,7 +82,7 @@ expr
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr
     : BOOL_LITERAL
-    | (expr | BOOL_LITERAL) boolOp (BOOL_LITERAL | expr)
+    | (arithExpr | BOOL_LITERAL) boolOp (BOOL_LITERAL | arithExpr)
     | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
 
 
@@ -91,7 +91,7 @@ variableDecl
     : datatype assignment;
 
 assignment
-    : variableName ASSIGN (expr | literal | functionCall) SEMICOLON;
+    : variableName ASSIGN (arithExpr | literal) SEMICOLON; // Todo: Fix amiguity functioncall arith
 
 // Names
 variableName

@@ -1,19 +1,20 @@
 package dk.aau.cs.d703e20.ast.statements;
 
 import dk.aau.cs.d703e20.ast.CodePosition;
-import dk.aau.cs.d703e20.ast.expressions.ExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
 
 public class AssignmentNode extends StatementNode {
 
     private final String variableName;
     private String literalValue;
-    private ExpressionNode expressionNode;
+    private ArithExpressionNode arithExpressionNode;
+    private FunctionCallNode functionCallNode;
 
     private  CodePosition codePosition;
 
-    public AssignmentNode(String variableName, ExpressionNode expressionNode) {
+    public AssignmentNode(String variableName, ArithExpressionNode arithExpressionNode) {
         this.variableName = variableName;
-        this.expressionNode = expressionNode;
+        this.arithExpressionNode = arithExpressionNode;
     }
 
     public AssignmentNode(String variableName, String literalValue) {
@@ -21,13 +22,20 @@ public class AssignmentNode extends StatementNode {
         this.literalValue = literalValue;
     }
 
+    public AssignmentNode(String variableName, FunctionCallNode functionCallNode) {
+        this.variableName = variableName;
+        this.functionCallNode = functionCallNode;
+    }
+
     public String getVariableName() { return variableName; }
 
-    public ExpressionNode getExpressionNode() { return expressionNode; }
+    public ArithExpressionNode getArithExpressionNode() { return arithExpressionNode; }
 
     public String getLiteralValue() {
         return literalValue;
     }
+
+    public FunctionCallNode getFunctionCallNode() { return functionCallNode; }
 
     @Override
     public String prettyPrint(int indentation) { return null; }

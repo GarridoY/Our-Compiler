@@ -2,21 +2,21 @@ package dk.aau.cs.d703e20.ast.statements;
 
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.expressions.ExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 
 public class AtStatementNode extends StatementNode{
 
     private String variableName;
-    private ExpressionNode expressionNode;
+    private ArithExpressionNode arithExpressionNode;
     private Enums.BoolOperator boolOperator;
     private BlockNode blockNode;
 
     private CodePosition codePosition;
 
-    public AtStatementNode(String variableName, ExpressionNode expressionNode, Enums.BoolOperator boolOperator, BlockNode blockNode) {
+    public AtStatementNode(String variableName, ArithExpressionNode arithExpressionNode, Enums.BoolOperator boolOperator, BlockNode blockNode) {
         this.variableName = variableName;
-        this.expressionNode = expressionNode;
+        this.arithExpressionNode = arithExpressionNode;
         this.boolOperator = boolOperator;
         this.blockNode = blockNode;
     }
@@ -25,8 +25,8 @@ public class AtStatementNode extends StatementNode{
         return variableName;
     }
 
-    public ExpressionNode getExpressionNode() {
-        return expressionNode;
+    public ArithExpressionNode getArithExpressionNode() {
+        return arithExpressionNode;
     }
 
     public Enums.BoolOperator getBoolOperator() {

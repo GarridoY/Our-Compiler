@@ -63,7 +63,7 @@ public class parserTest {
         );
         OurParser parser = createParser(tokens);
         OurParser.FunctionDeclContext func = parser.functionDecl();
-        assertEquals(func.functionName().getText(), fname);
+        assertEquals(fname, func.functionName().getText());
     }
 
     @Test
@@ -96,8 +96,8 @@ public class parserTest {
         );
         OurParser parser = createParser(tokens);
         OurParser.FunctionCallContext fcall = parser.functionCall();
-        assertEquals(fcall.functionName().getText(), fname);
-        assertEquals(fcall.functionArgs().expr().size(), 2);
+        assertEquals(fname, fcall.functionName().getText());
+        assertEquals(2, fcall.functionArgs().arithExpr().size());
     }
 
     @Test
@@ -143,7 +143,7 @@ public class parserTest {
         );
         OurParser parser = createParser(tokens);
         OurParser.AtStatementContext atCtx = parser.atStatement();
-        assertNotNull(atCtx.expr().numLiteral().DIGIT());
-        assertEquals(atCtx.boolOp().LESS_THAN().getSymbol().getType(), OurLexer.LESS_THAN);
+        assertNotNull(atCtx.arithExpr().numLiteral().DIGIT());
+        assertEquals(OurLexer.LESS_THAN, atCtx.boolOp().LESS_THAN().getSymbol().getType());
     }
 }
