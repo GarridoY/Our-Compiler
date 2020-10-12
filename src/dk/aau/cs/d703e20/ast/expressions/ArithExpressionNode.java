@@ -3,24 +3,34 @@ package dk.aau.cs.d703e20.ast.expressions;
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
+import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 
 public class ArithExpressionNode implements ASTNode {
+    // arithExpr arithOp arithExpr
     private ArithExpressionNode arithExpressionNode1;
     private ArithExpressionNode arithExpressionNode2;
-    private Enums.Operator arithExpressionOperator;
+    private Enums.ArithOperator arithExpressionOperator;
 
+    // functionCall
+    private FunctionCallNode functionCallNode;
+    // NOT? (arithExpr)
+    private Enums.BoolOperator optionalNot;
+
+    // numLiteral
     private Double number;
 
     private String variableName;
 
     private CodePosition codePosition;
 
-    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1, ArithExpressionNode arithExpressionNode2, Enums.Operator arithExpressionOperator) {
+    // arithExpr arithOp arithExpr
+    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1, ArithExpressionNode arithExpressionNode2, Enums.ArithOperator arithExpressionOperator) {
         this.arithExpressionNode1 = arithExpressionNode1;
         this.arithExpressionNode2 = arithExpressionNode2;
         this.arithExpressionOperator = arithExpressionOperator;
     }
 
+    // numLiteral
     public ArithExpressionNode(Double number) {
         this.number = number;
     }
@@ -33,6 +43,17 @@ public class ArithExpressionNode implements ASTNode {
         this.variableName = variableName;
     }
 
+    // functionCall
+    public ArithExpressionNode(FunctionCallNode functionCallNode) {
+        this.functionCallNode = functionCallNode;
+    }
+
+    // NOT? (arithExpr)
+    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1, Enums.BoolOperator optionalNot) {
+        this.arithExpressionNode1 = arithExpressionNode1;
+        this.optionalNot = optionalNot;
+    }
+
     public ArithExpressionNode getArithExpressionNode1() {
         return arithExpressionNode1;
     }
@@ -41,7 +62,7 @@ public class ArithExpressionNode implements ASTNode {
         return arithExpressionNode2;
     }
 
-    public Enums.Operator getArithExpressionOperator() {
+    public Enums.ArithOperator getArithExpressionOperator() {
         return arithExpressionOperator;
     }
 
@@ -51,6 +72,14 @@ public class ArithExpressionNode implements ASTNode {
 
     public String getVariableName() {
         return variableName;
+    }
+
+    public FunctionCallNode getFunctionCallNode() {
+        return functionCallNode;
+    }
+
+    public Enums.BoolOperator getOptionalNot() {
+        return optionalNot;
     }
 
     @Override

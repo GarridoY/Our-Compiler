@@ -91,7 +91,7 @@ variableDecl
     : datatype assignment;
 
 assignment
-    : variableName ASSIGN (arithExpr | literal | functionCall) SEMICOLON;
+    : variableName ASSIGN (arithExpr | literal) SEMICOLON; // Todo: Fix amiguity functioncall arith
 
 // Names
 variableName

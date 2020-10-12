@@ -6,7 +6,8 @@ import dk.aau.cs.d703e20.ast.Enums;
 
 public class BoolExpressionNode implements ASTNode {
     // TODO Add boolSymbol
-    private Boolean not;
+    // private Boolean not;
+    private Enums.BoolOperator optionalNot;
     private BoolExpressionNode boolExpressionNode;
 
     private ArithExpressionNode arithExpressionNode1;
@@ -19,8 +20,8 @@ public class BoolExpressionNode implements ASTNode {
 
     private CodePosition codePosition;
 
-    public BoolExpressionNode(Boolean not, BoolExpressionNode boolExpressionNode) {
-        this.not = not;
+    public BoolExpressionNode(Enums.BoolOperator optionalNot, BoolExpressionNode boolExpressionNode) {
+        this.optionalNot = optionalNot;
         this.boolExpressionNode = boolExpressionNode;
     }
 
@@ -48,10 +49,10 @@ public class BoolExpressionNode implements ASTNode {
         this.boolExpressionOperator = boolExpressionOperator;
     }
 
-    public BoolExpressionNode(Enums.BoolOperator boolExpressionOperator, String boolLiteral, String boolLiteral1) {
+    public BoolExpressionNode(String boolLiteral1, String boolLiteral2, Enums.BoolOperator boolExpressionOperator) {
         this.boolExpressionOperator = boolExpressionOperator;
-        this.boolLiteral = boolLiteral;
-        this.boolLiteral1 = boolLiteral1;
+        this.boolLiteral = boolLiteral1;
+        this.boolLiteral1 = boolLiteral2;
     }
 
     public BoolExpressionNode(String boolLiteral) {
@@ -68,6 +69,14 @@ public class BoolExpressionNode implements ASTNode {
 
     public String getBoolLiteral1() {
         return boolLiteral1;
+    }
+
+    public BoolExpressionNode getBoolExpressionNode() {
+        return boolExpressionNode;
+    }
+
+    public Enums.BoolOperator getOptionalNot() {
+        return optionalNot;
     }
 
     @Override

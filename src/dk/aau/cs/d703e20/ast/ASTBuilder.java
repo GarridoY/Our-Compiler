@@ -200,25 +200,33 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitArithExpr(OurParser.ArithExprContext ctx) {
-        ArithExpressionNode arithExpressionNode;
+        ArithExpressionNode arithExpressionNode = null;
 
-        if (ctx.arithExpr() != null) {
-            if (ctx.arithExpr(0) != null){
-                if(ctx.arithExpr(1) != null){
+        if (ctx.arithExpr().size() > 0) {
+            if (ctx.arithExpr(0) != null) {
+                if (ctx.arithExpr(1) != null) {
+                    // arithExpr arithOp arithExpr
                     ArithExpressionNode node1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
                     ArithExpressionNode node2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
-                    arithExpressionNode = new ArithExpressionNode(node1 , node2, getArithOperator(ctx.arithOp()));
+                    arithExpressionNode = new ArithExpressionNode(node1, node2, getArithOperator(ctx.arithOp()));
                 } else {
+                    // NOT? (arithExpr)
                     ArithExpressionNode node = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
-                    arithExpressionNode = new ArithExpressionNode(node);
+                    if (ctx.NOT() != null) {
+                        arithExpressionNode = new ArithExpressionNode(node, Enums.BoolOperator.NOT);
+                    } else {
+                        arithExpressionNode = new ArithExpressionNode(node);
+                    }
                 }
-            } else if (ctx.numLiteral() != null) {
-                arithExpressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
-            } else if (ctx.variableName() != null) {
-                arithExpressionNode = new ArithExpressionNode(ctx.variableName().getText());
-            } else {
-                throw new CompilerException("Invalid Expression", getCodePosition(ctx));
             }
+        } else if (ctx.functionCall() != null) {
+            // FunctionCall
+            FunctionCallNode funcNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
+            arithExpressionNode = new ArithExpressionNode(funcNode);
+        } else if (ctx.numLiteral() != null) {
+            arithExpressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
+        } else if (ctx.variableName() != null) {
+            arithExpressionNode = new ArithExpressionNode(ctx.variableName().getText());
         } else {
             throw new CompilerException("Invalid Expression", getCodePosition(ctx));
         }
@@ -231,31 +239,41 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitBoolExpr(OurParser.BoolExprContext ctx) {
         BoolExpressionNode boolExpressionNode;
 
-        if (ctx.boolExpr() != null) {
-            if (ctx.NOT() != null) {
-                if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null){
-                    BoolExpressionNode boolExpressionNode1 = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
-                    boolExpressionNode = new BoolExpressionNode(false, boolExpressionNode1);
-                    return boolExpressionNode;
+        if (ctx.BOOL_LITERAL().size() > 0) {
+            if (ctx.BOOL_LITERAL().size() > 1) {
+                // LITERAL op LITERAL
+                return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText(), ctx.BOOL_LITERAL(1).getText(), getBoolOperator(ctx.boolOp()));
+            } else {
+                if (ctx.arithExpr() != null && !ctx.arithExpr().isEmpty()) { // ctx.ArithExpr can be empty but not null list, fails when accessing the empty list
+                    // arith op LITERAL | LITERAL op arith
+                    // TODO: figure out order
+                    ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
+                    return new BoolExpressionNode(arithExpressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.boolOp()));
+                } else {
+                    // only BOOL
+                    return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
                 }
             }
-            boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
-            return boolExpressionNode;
-        } else if (ctx.BOOL_LITERAL() != null) {
-            if (ctx.BOOL_LITERAL(1) != null) {
-
-                ArithExpressionNode node1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
-                ArithExpressionNode node2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
-
-                return new BoolExpressionNode(node1, node2, getBoolOperator(ctx.boolOp()));
-            } else if (ctx.boolExpr() != null){
-                BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
-                return new BoolExpressionNode(nestedBoolExpressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.boolOp()));
-            } else {
-                return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
-            }
         } else {
-            throw new  CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
+            if (ctx.arithExpr() != null && !ctx.arithExpr().isEmpty()) { // ctx.ArithExpr can be empty
+                // arith op arith
+                ArithExpressionNode arithExpressionNode1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
+                ArithExpressionNode arithExpressionNode2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
+                return new BoolExpressionNode(arithExpressionNode1, arithExpressionNode2, getBoolOperator(ctx.boolOp()));
+            } else if (ctx.boolExpr() != null) {
+                // nested boolExpr
+                if (ctx.NOT() != null) {
+                    if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null) {
+                        BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+                        boolExpressionNode = new BoolExpressionNode(Enums.BoolOperator.NOT, nestedBoolExpressionNode);
+                        return boolExpressionNode;
+                    }
+                }
+                boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+                return boolExpressionNode;
+            } else {
+                throw new CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
+            }
         }
     }
 
@@ -267,7 +285,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             Enums.DataType dataType = getDataType(ctx.datatype());
             AssignmentNode assignmentNode = (AssignmentNode) visitAssignment(ctx.assignment());
             variableDeclarationNode = new VariableDeclarationNode(dataType, assignmentNode);
-        } catch (CompilerException e){
+        } catch (CompilerException e) {
             throw new CompilerException("Invalid Variable Declaration Statement", getCodePosition(ctx));
         }
 
@@ -277,11 +295,31 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitAssignment(OurParser.AssignmentContext ctx) {
         if (ctx.literal() != null) {
-            return new AssignmentNode(ctx.variableName().getText(), ctx.literal().getText());
+            // Check the kind of literal
+            if (ctx.literal().BOOL_LITERAL() != null) {
+                AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), ctx.literal().getText());
+                setCodePos(assignmentNode, ctx);
+                return assignmentNode;
+            }
+            else {
+                // if String_Literal then remove "" from string value
+                AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), getStringLiteral(ctx.literal()));
+                setCodePos(assignmentNode, ctx);
+                return assignmentNode;
+            }
         } else if (ctx.arithExpr() != null) {
             ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr());
-            return new AssignmentNode(ctx.variableName().getText(), arithExpressionNode);
+            AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), arithExpressionNode);
+            setCodePos(assignmentNode, ctx);
+            return assignmentNode;
         }
+        /*
+        else if (ctx.functionCall() != null) {
+            FunctionCallNode functionCallNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
+            AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), functionCallNode);
+            setCodePos(assignmentNode, ctx);
+            return assignmentNode;
+        } */
         else {
             throw new CompilerException("Invalid Assignment Statement", getCodePosition(ctx));
         }
@@ -312,35 +350,37 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             dataType = Enums.DataType.BOOL;
         else if (ctx.CLOCK() != null)
             dataType = Enums.DataType.CLOCK;
+        else if (ctx.STRING() != null)
+            dataType = Enums.DataType.STRING;
         else
             throw new CompilerException("DataType is unknown", getCodePosition(ctx));
 
         return dataType;
     }
 
-    private Enums.Operator getArithOperator(OurParser.ArithOpContext ctx) {
-        Enums.Operator operator;
+    private Enums.ArithOperator getArithOperator(OurParser.ArithOpContext ctx) {
+        Enums.ArithOperator operator;
 
-        if (ctx.ADD() != null){
-            operator = Enums.Operator.ADD;
+        if (ctx.ADD() != null) {
+            operator = Enums.ArithOperator.ADD;
         } else if (ctx.SUB() != null) {
-            operator = Enums.Operator.SUB;
+            operator = Enums.ArithOperator.SUB;
         } else if (ctx.MOD() != null) {
-            operator = Enums.Operator.MOD;
+            operator = Enums.ArithOperator.MOD;
         } else if (ctx.DIV() != null) {
-            operator = Enums.Operator.DIV;
+            operator = Enums.ArithOperator.DIV;
         } else if (ctx.MUL() != null) {
-            operator = Enums.Operator.MUL;
+            operator = Enums.ArithOperator.MUL;
         } else {
             throw new CompilerException("Operator is unknown", getCodePosition(ctx));
         }
         return operator;
     }
 
-    private  Enums.BoolOperator getBoolOperator(OurParser.BoolOpContext ctx) {
+    private Enums.BoolOperator getBoolOperator(OurParser.BoolOpContext ctx) {
         Enums.BoolOperator operator;
 
-        if (ctx.EQUAL() != null){
+        if (ctx.EQUAL() != null) {
             operator = Enums.BoolOperator.EQUAL;
         } else if (ctx.NOT_EQUAL() != null) {
             operator = Enums.BoolOperator.NOT_EQUAL;
@@ -356,10 +396,19 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             throw new CompilerException("Operator is unknown", getCodePosition(ctx));
         }
 
-        return  operator;
+        return operator;
     }
 
-    private Double getNumLiteralValue (OurParser.NumLiteralContext ctx){
+    private String getStringLiteral(OurParser.LiteralContext ctx) {
+        if (ctx.STRING_LITERAL() != null) {
+            // Remove "" from both ends of the string
+            return ctx.STRING_LITERAL().getText().subSequence(1, ctx.STRING_LITERAL().getText().length()-1).toString();
+        }
+        else
+            throw new CompilerException("Bool is not String");
+    }
+
+    private Double getNumLiteralValue(OurParser.NumLiteralContext ctx) {
         return Double.valueOf(ctx.getText());
     }
 
@@ -367,7 +416,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     // All the results from visiting are added to the list which gets returned.
     // Usage example:
     // List<StatementNode> statementNodes = visitList(StatementNode.class, ctx.statement(), this::visitStatement);
-    private <T,S> List<T> visitList(Class<T> tClass, List<S> ctxs, Function<S, ASTNode> func) {
+    private <T, S> List<T> visitList(Class<T> tClass, List<S> ctxs, Function<S, ASTNode> func) {
         List<T> nodes = new ArrayList<>();
         for (S ctx : ctxs) {
             nodes.add(tClass.cast(func.apply(ctx)));
