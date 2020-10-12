@@ -386,6 +386,6 @@ public class astTest {
                 () -> assertEquals("ID2", functionParameterNode.getVariableNames().get(0)),
                 () -> assertEquals("varName", functionParameterNode.getVariableNames().get(1))
         );
-        
+
     }
 }
