@@ -59,17 +59,26 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFunctionDecl(OurParser.FunctionDeclContext ctx) {
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
-        if (ctx.VOID() != null) {
-            FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode(true, ctx.functionName().getText(), blockNode);
-            setCodePos(functionDeclarationNode, ctx);
-            return functionDeclarationNode;
-        } else if (ctx.datatype() != null && !ctx.datatype().isEmpty()) {
-            FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), blockNode);
-            setCodePos(functionDeclarationNode, ctx);
-            return functionDeclarationNode;
+        FunctionDeclarationNode functionDeclarationNode = null;
+        if (ctx.functionParam() != null) {
+            FunctionParameterNode functionParameterNode = (FunctionParameterNode) visitFunctionParam(ctx.functionParam());
+            if (ctx.VOID() != null) {
+                functionDeclarationNode = new FunctionDeclarationNode(true, ctx.functionName().getText(), blockNode, functionParameterNode);
+            }
+            else if (ctx.datatype() != null) {
+                functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), blockNode, functionParameterNode);
+            }
         } else {
-            throw new CompilerException("Invalid Function Declaration", getCodePosition(ctx));
+            if (ctx.VOID() != null) {
+                functionDeclarationNode = new FunctionDeclarationNode(true, ctx.functionName().getText(), blockNode);
+            } else if (ctx.datatype() != null) {
+                functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), blockNode);
+            } else {
+                throw new CompilerException("Invalid Function Declaration", getCodePosition(ctx));
+            }
         }
+        setCodePos(functionDeclarationNode, ctx);
+        return functionDeclarationNode;
     }
 
     @Override

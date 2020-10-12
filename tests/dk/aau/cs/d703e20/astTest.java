@@ -2,6 +2,7 @@ package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.ASTBuilder;
 import dk.aau.cs.d703e20.ast.Enums;
+import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
@@ -341,7 +342,6 @@ public class astTest {
     }
 
     //Test FunctionDecl with get.Datatype
-
     @Test
     void testFunctionDeclDatatype() {
         // String -> Tokens -> Parsing
@@ -367,5 +367,25 @@ public class astTest {
         ReturnStatementNode returnStatementNode = (ReturnStatementNode) astbuilder.visitStatement(statementContext);
 
         assertEquals("varName", returnStatementNode.getVariableName());
+    }
+
+    @Test
+    void testVisitFunctionParam() {
+        OurParser parser = createParserFromText("bool test(int ID2, string varName){}");
+        // Get parsed context
+        OurParser.FunctionDeclContext functionDeclContext = parser.functionDecl();
+        // Context -> ASTNode
+        ASTBuilder astbuilder = new ASTBuilder();
+
+        FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) astbuilder.visitFunctionDecl(functionDeclContext);
+        FunctionParameterNode functionParameterNode = functionDeclarationNode.getFunctionParameterNode();
+
+        assertAll(
+                () -> assertEquals(Enums.DataType.INT, functionParameterNode.getDataTypes().get(0)),
+                () -> assertEquals(Enums.DataType.STRING, functionParameterNode.getDataTypes().get(1)),
+                () -> assertEquals("ID2", functionParameterNode.getVariableNames().get(0)),
+                () -> assertEquals("varName", functionParameterNode.getVariableNames().get(1))
+        );
+        
     }
 }

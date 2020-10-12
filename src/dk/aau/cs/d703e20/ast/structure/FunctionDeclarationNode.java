@@ -12,7 +12,7 @@ public class FunctionDeclarationNode implements ASTNode {
     private Boolean isVoid;
     private final String functionName;
     private final BlockNode blockNode;
-
+    private FunctionParameterNode functionParameterNode;
     private CodePosition codePosition;
 
     public FunctionDeclarationNode(Enums.DataType dataType, String functionName, BlockNode blockNode) {
@@ -27,6 +27,20 @@ public class FunctionDeclarationNode implements ASTNode {
         this.blockNode = blockNode;
     }
 
+    public FunctionDeclarationNode(Enums.DataType dataType, String functionName, BlockNode blockNode, FunctionParameterNode functionParameterNode) {
+        this.dataType = dataType;
+        this.functionName = functionName;
+        this.blockNode = blockNode;
+        this.functionParameterNode = functionParameterNode;
+    }
+
+    public FunctionDeclarationNode(Boolean isVoid, String functionName, BlockNode blockNode, FunctionParameterNode functionParameterNode) {
+        this.isVoid = isVoid;
+        this.functionName = functionName;
+        this.blockNode = blockNode;
+        this.functionParameterNode = functionParameterNode;
+    }
+
     public Boolean getVoid() { return isVoid; }
 
     public Enums.DataType getDataType() {
@@ -39,6 +53,10 @@ public class FunctionDeclarationNode implements ASTNode {
 
     public BlockNode getBlockNode() {
         return blockNode;
+    }
+
+    public FunctionParameterNode getFunctionParameterNode() {
+        return functionParameterNode;
     }
 
     @Override
