@@ -36,16 +36,16 @@ functionArgs
 
 // Statements available in main
 statement
-    : variableDecl
-    | assignment
+    : variableDecl SEMICOLON
+    | assignment SEMICOLON
     | functionCall SEMICOLON
     | ifElseStatement //conditionalStatement
     | iterativeStatement
     | atStatement
-    | returnStatement;
+    | returnStatement SEMICOLON;
 
 returnStatement
-    : RETURN variableName SEMICOLON;
+    : RETURN variableName;
 
 // CONDITIONAL
 // any IF statement require blocks
@@ -91,7 +91,7 @@ variableDecl
     : datatype assignment;
 
 assignment
-    : variableName ASSIGN (arithExpr | literal) SEMICOLON; // Todo: Fix amiguity functioncall arith
+    : variableName ASSIGN (arithExpr | literal); // Todo: Fix amiguity functioncall arith
 
 // Names
 variableName
