@@ -24,7 +24,7 @@ functionDecl
 
 // Function parameters
 functionParam
-    : datatype variableName ( COMMA functionParam)*;
+    : datatype variableName ( COMMA datatype variableName)*;
 
 // Call function given optional arguments (expr)
 functionCall
