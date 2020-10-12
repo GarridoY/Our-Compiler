@@ -170,6 +170,39 @@ public class astTest {
     }
 
     @Test
+    void TestBOOLEXPR1() {
+        OurParser parser = createParserFromText("test != false");
+        OurParser.BoolExprContext boolExpr = parser.boolExpr();
+        ASTBuilder astBuilder = new ASTBuilder();
+        BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
+
+        ArithExpressionNode expressionNode = boolExpressionNode.getArithExpressionNode1();
+        Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperator();
+        assertAll(
+                () -> assertEquals("test", expressionNode.getVariableName()),
+                () -> assertEquals("false", boolExpressionNode.getBoolLiteral()),
+                () -> assertEquals(Enums.BoolOperator.NOT_EQUAL, operator)
+        );
+    }
+
+    @Test
+    void TestBOOLEXPR2() {
+        OurParser parser = createParserFromText("test >= 5");
+        OurParser.BoolExprContext boolExpr = parser.boolExpr();
+        ASTBuilder astBuilder = new ASTBuilder();
+        BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
+
+        ArithExpressionNode expressionNode1 = boolExpressionNode.getArithExpressionNode1();
+        ArithExpressionNode expressionNode2 = boolExpressionNode.getArithExpressionNode2();
+        Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperator();
+        assertAll(
+                () -> assertEquals("test", expressionNode1.getVariableName()),
+                () -> assertEquals(5, expressionNode2.getNumber()),
+                () -> assertEquals(Enums.BoolOperator.GREATER_OR_EQUAL, operator)
+        );
+    }
+
+    @Test
     void testBoolExprLiteral() {
         // String -> Tokens -> Parsing
         OurParser parser = createParserFromText("true");
