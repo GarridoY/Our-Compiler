@@ -384,6 +384,34 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         }
     }
 
+    @Override
+    public ASTNode visitPinDecl(OurParser.PinDeclContext ctx) {
+        PinDeclarationNode pinDeclarationNode;
+        Enums.PinType pinType = getPinType(ctx.pinType());
+
+        if (ctx.DIGIT() != null)
+            pinDeclarationNode = new PinDeclarationNode(pinType, ctx.variableName().getText(), ctx.DIGIT().getText());
+        else if (ctx.ANALOGPIN() != null)
+            pinDeclarationNode = new PinDeclarationNode(pinType, ctx.variableName().getText(), ctx.ANALOGPIN().getText());
+        else
+            throw new CompilerException("Invalid pin declaration", getCodePosition(ctx));
+
+        return pinDeclarationNode;
+    }
+
+    private Enums.PinType getPinType(OurParser.PinTypeContext ctx) {
+        Enums.PinType pinType;
+
+        if (ctx.IPIN() != null)
+            pinType = Enums.PinType.IPIN;
+        else if (ctx.OPIN() != null)
+            pinType = Enums.PinType.OPIN;
+        else
+            throw new CompilerException("Invalid pin type", getCodePosition(ctx));
+
+        return pinType;
+    }
+
     private Enums.DataType getDataType(OurParser.DataTypeContext ctx) {
         Enums.DataType dataType;
 

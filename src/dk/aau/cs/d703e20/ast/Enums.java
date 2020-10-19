@@ -9,6 +9,11 @@ public class Enums {
         VOID
     }
 
+    public enum PinType {
+        IPIN,
+        OPIN
+    }
+
     public enum ArithOperator {
         ADD,
         SUB,

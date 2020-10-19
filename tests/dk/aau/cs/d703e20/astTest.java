@@ -82,6 +82,40 @@ public class astTest {
     }
 
     @Test
+    void testPinDeclDigital() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("ipin digiPin 12;");
+        // Get parsed context
+        OurParser.PinDeclContext pinDecl = parser.pinDecl();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        PinDeclarationNode pinDeclNode = (PinDeclarationNode) astBuilder.visitPinDecl(pinDecl);
+
+        assertAll(
+                () -> assertEquals(Enums.PinType.IPIN, pinDeclNode.getPinType()),
+                () -> assertEquals("digiPin", pinDeclNode.getVariableName()),
+                () -> assertEquals("12", pinDeclNode.getPinNumber())
+        );
+    }
+
+    @Test
+    void testPinDeclAnalog() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("opin anaPin A5;");
+        // Get parsed context
+        OurParser.PinDeclContext pinDecl = parser.pinDecl();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        PinDeclarationNode pinDeclNode = (PinDeclarationNode) astBuilder.visitPinDecl(pinDecl);
+
+        assertAll(
+                () -> assertEquals(Enums.PinType.OPIN, pinDeclNode.getPinType()),
+                () -> assertEquals("anaPin", pinDeclNode.getVariableName()),
+                () -> assertEquals("A5", pinDeclNode.getPinNumber())
+        );
+    }
+
+    @Test
     void testVarDeclFunctionCall() {
         // String -> Tokens -> Parsing
         OurParser parser = createParserFromText("int varName = getInt();");

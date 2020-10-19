@@ -129,6 +129,20 @@ public class parserTest {
     }
 
     @Test
+    void testPinDecl() {
+        String pinName = "pinny";
+        List<TestToken> tokens = List.of(
+                new TestToken("Pin_Type", OurLexer.IPIN),
+                new TestToken(pinName, OurLexer.ID),
+                new TestToken("Literal", OurLexer.ANALOGPIN),
+                new TestToken("Semicolon", OurLexer.SEMICOLON)
+        );
+        OurParser parser = createParser(tokens);
+        OurParser.PinDeclContext pinDeclctx = parser.pinDecl();
+        assertNotNull(pinDeclctx.ANALOGPIN());
+    }
+
+    @Test
     void testAtStatement() {
         String var_name = "Var_name";
         List<TestToken> tokens = List.of(
