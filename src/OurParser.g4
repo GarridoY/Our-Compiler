@@ -57,7 +57,7 @@ ifStatement: IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseStatement: ELSE block;
 
-conditionalExpression: boolExpr | NOT? variableName | functionCall;
+conditionalExpression: boolExpr | NOT? variableName | functionCall | SUBSCRIPT;
 
 // at statement for clock and timing purposes
 atStatement
@@ -81,7 +81,8 @@ arithExpr
     : arithExpr arithOp arithExpr // Precedence handled by target
     | numLiteral | NOT?'('arithExpr')'
     | variableName
-    | functionCall;
+    | functionCall
+    | SUBSCRIPT;
 
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr

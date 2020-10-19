@@ -4,12 +4,15 @@ lexer grammar OurLexer;
 INT: 'int';
 INT_ARRAY: 'int' '[' DIGIT* ']';
 BOOLEAN: 'bool';
-BOOLEAN_ARRAY: 'bool' '[' DIGIT* ']';
+BOOLEAN_ARRAY: 'bool' '[' DIGIT ']';
 DOUBLE: 'double';
-DOUBLE_ARRAY: 'double' '[' DIGIT* ']';
+DOUBLE_ARRAY: 'double' '[' DIGIT ']';
 CLOCK: 'clock';
 STRING: 'string';
 PIT: 'pit';
+
+// Access arrays
+SUBSCRIPT: ID '[' DIGIT ']';
 
 // Pin Types
 IPIN: 'ipin';
