@@ -8,6 +8,13 @@ CLOCK: 'clock';
 STRING: 'string';
 PIT: 'pit';
 
+// Pin Types
+IPIN: 'ipin';
+OPIN: 'opin';
+
+// Analog pin
+ANALOGPIN: 'A' . DIGIT;
+
 // Return/Function type
 VOID: 'void';
 

@@ -208,6 +208,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitBoolExpr(OurParser.BoolExprContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link OurParser#pinDecl}.
+	 * @param ctx the parse tree
+	 */
+	void enterPinDecl(OurParser.PinDeclContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#pinDecl}.
+	 * @param ctx the parse tree
+	 */
+	void exitPinDecl(OurParser.PinDeclContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link OurParser#variableDecl}.
 	 * @param ctx the parse tree
 	 */
@@ -248,15 +258,25 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitFunctionName(OurParser.FunctionNameContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link OurParser#datatype}.
+	 * Enter a parse tree produced by {@link OurParser#pinType}.
 	 * @param ctx the parse tree
 	 */
-	void enterDatatype(OurParser.DatatypeContext ctx);
+	void enterPinType(OurParser.PinTypeContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link OurParser#datatype}.
+	 * Exit a parse tree produced by {@link OurParser#pinType}.
 	 * @param ctx the parse tree
 	 */
-	void exitDatatype(OurParser.DatatypeContext ctx);
+	void exitPinType(OurParser.PinTypeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#dataType}.
+	 * @param ctx the parse tree
+	 */
+	void enterDataType(OurParser.DataTypeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#dataType}.
+	 * @param ctx the parse tree
+	 */
+	void exitDataType(OurParser.DataTypeContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#literal}.
 	 * @param ctx the parse tree

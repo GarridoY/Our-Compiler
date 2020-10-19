@@ -66,16 +66,16 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             if (ctx.VOID() != null) {
                 functionDeclarationNode = new FunctionDeclarationNode(ctx.functionName().getText(), blockNode, functionParameterNode);
             }
-            else if (ctx.datatype() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), blockNode, functionParameterNode);
+            else if (ctx.dataType() != null) {
+                functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.dataType()), ctx.functionName().getText(), blockNode, functionParameterNode);
             }
         }
         else {
             if (ctx.VOID() != null) {
                 functionDeclarationNode = new FunctionDeclarationNode(ctx.functionName().getText(), blockNode);
             }
-            else if (ctx.datatype() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.datatype()), ctx.functionName().getText(), blockNode);
+            else if (ctx.dataType() != null) {
+                functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.dataType()), ctx.functionName().getText(), blockNode);
             }
             else {
                 throw new CompilerException("Invalid Function Declaration", getCodePosition(ctx));
@@ -90,7 +90,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         List<Enums.DataType> dataTypes = new ArrayList<Enums.DataType>();
         List<String> variableNames = new ArrayList<String>();
 
-        for (OurParser.DatatypeContext datatypeContext : ctx.datatype()) {
+        for (OurParser.DataTypeContext datatypeContext : ctx.dataType()) {
             dataTypes.add(getDataType(datatypeContext));
         }
 
@@ -320,7 +320,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         VariableDeclarationNode variableDeclarationNode;
 
         try {
-            Enums.DataType dataType = getDataType(ctx.datatype());
+            Enums.DataType dataType = getDataType(ctx.dataType());
             AssignmentNode assignmentNode = (AssignmentNode) visitAssignment(ctx.assignment());
             variableDeclarationNode = new VariableDeclarationNode(dataType, assignmentNode);
         } catch (CompilerException e) {
@@ -384,7 +384,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         }
     }
 
-    private Enums.DataType getDataType(OurParser.DatatypeContext ctx) {
+    private Enums.DataType getDataType(OurParser.DataTypeContext ctx) {
         Enums.DataType dataType;
 
         if (ctx.INT() != null)

@@ -131,6 +131,12 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitBoolExpr(OurParser.BoolExprContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link OurParser#pinDecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPinDecl(OurParser.PinDeclContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link OurParser#variableDecl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -155,11 +161,17 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFunctionName(OurParser.FunctionNameContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link OurParser#datatype}.
+	 * Visit a parse tree produced by {@link OurParser#pinType}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDatatype(OurParser.DatatypeContext ctx);
+	T visitPinType(OurParser.PinTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#dataType}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDataType(OurParser.DataTypeContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link OurParser#literal}.
 	 * @param ctx the parse tree
