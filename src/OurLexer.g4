@@ -16,7 +16,7 @@ IPIN: 'ipin';
 OPIN: 'opin';
 
 // Analog pin
-ANALOGPIN: 'A' . DIGIT;
+ANALOGPIN: 'A' DIGIT;
 
 // Return/Function type
 VOID: 'void';
