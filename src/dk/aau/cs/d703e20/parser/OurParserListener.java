@@ -1,4 +1,4 @@
-// Generated from C:/Users/htmle/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/the_p/Desktop/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -188,6 +188,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitForStatement(OurParser.ForStatementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link OurParser#whileStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterWhileStatement(OurParser.WhileStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#whileStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitWhileStatement(OurParser.WhileStatementContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link OurParser#arithExpr}.
 	 * @param ctx the parse tree
 	 */
@@ -227,6 +237,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitVariableDecl(OurParser.VariableDeclContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#assignArray}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssignArray(OurParser.AssignArrayContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#assignArray}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssignArray(OurParser.AssignArrayContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#assignment}.
 	 * @param ctx the parse tree
