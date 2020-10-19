@@ -94,7 +94,8 @@ pinDecl
 
 // Declaration of variable, all variables must be initialized
 variableDecl
-    : dataType assignment
+    : dataType variableName
+    | dataType assignment
     | dataType assignArray;
 
 assignArray
