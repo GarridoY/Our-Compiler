@@ -2,8 +2,11 @@ lexer grammar OurLexer;
 
 // Data Types
 INT: 'int';
+INT_ARRAY: 'int' '[' DIGIT* ']';
 BOOLEAN: 'bool';
+BOOLEAN_ARRAY: 'bool' '[' DIGIT* ']';
 DOUBLE: 'double';
+DOUBLE_ARRAY: 'double' '[' DIGIT* ']';
 CLOCK: 'clock';
 STRING: 'string';
 PIT: 'pit';
@@ -27,6 +30,7 @@ ELSE_IF: 'else if';
 ELSE: 'else';
 TO: 'to';
 FOR: 'for';
+WHILE: 'while';
 AT: 'at';
 // Possible other: delay, wait, sleep, loop, pause
 
@@ -42,6 +46,8 @@ BOOL_LITERAL: 'true' | 'false';
 STRING_LITERAL: '"' (~["\\\r\n])* '"';
 
 // Separators
+LEFT_SQBRACKET: '[';
+RIGHT_SQBRACKET: ']';
 LEFT_BRACKET: '{';
 RIGHT_BRACKET: '}';
 LEFT_PAREN: '(';

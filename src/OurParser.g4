@@ -65,11 +65,15 @@ atStatement
 
 // ITERATIVE
 iterativeStatement
-    : forStatement;
+    : forStatement
+    | whileStatement;
 
 // for (* to *) {}
 forStatement
     : FOR LEFT_PAREN arithExpr TO arithExpr RIGHT_PAREN block;
+
+whileStatement
+    : WHILE LEFT_PAREN boolExpr RIGHT_PAREN block;
 
 // EXPRESSIONS
 
@@ -90,7 +94,11 @@ pinDecl
 
 // Declaration of variable, all variables must be initialized
 variableDecl
-    : dataType assignment;
+    : dataType assignment
+    | dataType assignArray;
+
+assignArray
+    : variableName ASSIGN LEFT_BRACKET (arithExpr | literal) (COMMA (arithExpr | literal))* RIGHT_BRACKET;
 
 assignment
     : variableName ASSIGN (arithExpr | literal);
@@ -110,7 +118,10 @@ dataType
     | DOUBLE
     | BOOLEAN
     | CLOCK
-    | STRING;
+    | STRING
+    | INT_ARRAY
+    | DOUBLE_ARRAY
+    | BOOLEAN_ARRAY;
 
 literal
     : STRING_LITERAL
