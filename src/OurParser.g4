@@ -20,11 +20,11 @@ block
 // FUNCTIONS
 // Function declaration, optional argument followed by more optional arguments prefixed by comma
 functionDecl
-    : (VOID | datatype) functionName LEFT_PAREN functionParam? RIGHT_PAREN block;
+    : (VOID | dataType) functionName LEFT_PAREN functionParam? RIGHT_PAREN block;
 
 // Function parameters
 functionParam
-    : datatype variableName ( COMMA datatype variableName)*;
+    : dataType variableName ( COMMA dataType variableName)*;
 
 // Call function given optional arguments (expr)
 functionCall
@@ -38,6 +38,7 @@ functionArgs
 statement
     : variableDecl SEMICOLON
     | assignment SEMICOLON
+    | pinDecl SEMICOLON
     | functionCall SEMICOLON
     | ifElseStatement //conditionalStatement
     | iterativeStatement
@@ -84,10 +85,12 @@ boolExpr
     | (arithExpr | BOOL_LITERAL) boolOp (BOOL_LITERAL | arithExpr)
     | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
 
+pinDecl
+    : pinType variableName (DIGIT | ANALOGPIN);
 
 // Declaration of variable, all variables must be initialized
 variableDecl
-    : datatype assignment;
+    : dataType assignment;
 
 assignment
     : variableName ASSIGN (arithExpr | literal);
@@ -98,7 +101,11 @@ variableName
 functionName
     : ID;
 
-datatype
+pinType
+    : IPIN
+    | OPIN;
+
+dataType
     : INT
     | DOUBLE
     | BOOLEAN

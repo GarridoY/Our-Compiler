@@ -256,6 +256,18 @@ public class OurParserBaseListener implements OurParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterPinDecl(OurParser.PinDeclContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPinDecl(OurParser.PinDeclContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterVariableDecl(OurParser.VariableDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -304,13 +316,25 @@ public class OurParserBaseListener implements OurParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDatatype(OurParser.DatatypeContext ctx) { }
+	@Override public void enterPinType(OurParser.PinTypeContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitDatatype(OurParser.DatatypeContext ctx) { }
+	@Override public void exitPinType(OurParser.PinTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterDataType(OurParser.DataTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDataType(OurParser.DataTypeContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
