@@ -13,8 +13,11 @@ import dk.aau.cs.d703e20.parser.OurParserBaseVisitor;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
@@ -65,19 +68,15 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             FunctionParameterNode functionParameterNode = (FunctionParameterNode) visitFunctionParam(ctx.functionParam());
             if (ctx.VOID() != null) {
                 functionDeclarationNode = new FunctionDeclarationNode(ctx.functionName().getText(), blockNode, functionParameterNode);
-            }
-            else if (ctx.dataType() != null) {
+            } else if (ctx.dataType() != null) {
                 functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.dataType()), ctx.functionName().getText(), blockNode, functionParameterNode);
             }
-        }
-        else {
+        } else {
             if (ctx.VOID() != null) {
                 functionDeclarationNode = new FunctionDeclarationNode(ctx.functionName().getText(), blockNode);
-            }
-            else if (ctx.dataType() != null) {
+            } else if (ctx.dataType() != null) {
                 functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.dataType()), ctx.functionName().getText(), blockNode);
-            }
-            else {
+            } else {
                 throw new CompilerException("Invalid Function Declaration", getCodePosition(ctx));
             }
         }
@@ -112,7 +111,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         else if (ctx.functionCall() != null)
             return visitFunctionCall(ctx.functionCall());
         else if (ctx.iterativeStatement() != null)
-            return visitForStatement(ctx.iterativeStatement().forStatement());
+            return visitIterativeStatement(ctx.iterativeStatement());
         else if (ctx.returnStatement() != null)
             return visitReturnStatement(ctx.returnStatement());
         else
@@ -203,7 +202,13 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         } else if (ctx.functionCall() != null) {
             FunctionCallNode functionCallNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
             conditionalExpressionNode = new ConditionalExpressionNode(functionCallNode);
-        } else {
+        } /* else if (ctx.SUBSCRIPT() != null) {
+            TODO: get number from text
+            Pattern pattern = Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(ctx.SUBSCRIPT().getText());
+            System.out.println(matcher.toString());
+        } */
+        else {
             throw new CompilerException("Invalid conditional expression", getCodePosition(ctx));
         }
 
@@ -213,7 +218,12 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitIterativeStatement(OurParser.IterativeStatementContext ctx) {
-        return visitForStatement(ctx.forStatement());
+        if (ctx.forStatement() != null)
+            return visitForStatement(ctx.forStatement());
+        else if (ctx.whileStatement() != null)
+            return visitWhileStatement(ctx.whileStatement());
+        else
+            throw new CompilerException("Invalid Iterative Statement", getCodePosition(ctx));
     }
 
     @Override
@@ -232,6 +242,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitArithExpr(OurParser.ArithExprContext ctx) {
         ArithExpressionNode arithExpressionNode = null;
 
+        // TODO add get num from subscript
         if (ctx.arithExpr().size() > 0) {
             if (ctx.arithExpr(0) != null) {
                 if (ctx.arithExpr(1) != null) {
@@ -319,16 +330,38 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitVariableDecl(OurParser.VariableDeclContext ctx) {
         VariableDeclarationNode variableDeclarationNode;
 
-        try {
-            Enums.DataType dataType = getDataType(ctx.dataType());
-            AssignmentNode assignmentNode = (AssignmentNode) visitAssignment(ctx.assignment());
-            variableDeclarationNode = new VariableDeclarationNode(dataType, assignmentNode);
-        } catch (CompilerException e) {
-            throw new CompilerException("Invalid Variable Declaration Statement", getCodePosition(ctx));
+        if (ctx.assignment() != null) {
+            variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignmentNode) visitAssignment(ctx.assignment()));
         }
+        else if (ctx.assignArray() != null) {
+            variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignArrayNode) visitAssignArray(ctx.assignArray()));
+        }
+        else if (ctx.variableName() != null) {
+            variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), ctx.variableName().getText());
+        }
+        else
+            throw new CompilerException("Invalid Variable Declaration Statement", getCodePosition(ctx));
 
         setCodePos(variableDeclarationNode, ctx);
         return variableDeclarationNode;
+    }
+
+    @Override
+    public ASTNode visitAssignArray(OurParser.AssignArrayContext ctx) {
+        if (!ctx.arithExpr().isEmpty()) {
+            List<Object> arithExpressionNodes = visitList(Object.class, ctx.arithExpr(), this::visitArithExpr);
+            AssignArrayNode assignArrayNode = new AssignArrayNode(ctx.variableName().getText(), arithExpressionNodes, false);
+            setCodePos(assignArrayNode, ctx);
+            return assignArrayNode;
+        }
+        else if (!ctx.literal().isEmpty()) {
+            List<Object> arithExpressionNodes = Collections.singletonList(visitLiterals(ctx.literal()));
+            AssignArrayNode assignArrayNode = new AssignArrayNode(ctx.variableName().getText(), arithExpressionNodes, true);
+            setCodePos(assignArrayNode, ctx);
+            return assignArrayNode;
+        }
+        else
+            throw new CompilerException("Invalid array assignment", getCodePosition(ctx));
     }
 
     @Override
@@ -339,8 +372,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                 AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), ctx.literal().getText());
                 setCodePos(assignmentNode, ctx);
                 return assignmentNode;
-            }
-            else {
+            } else {
                 // if String_Literal then remove "" from string value
                 AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), getStringLiteral(ctx.literal()));
                 setCodePos(assignmentNode, ctx);
@@ -399,6 +431,16 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         return pinDeclarationNode;
     }
 
+    @Override
+    public ASTNode visitWhileStatement(OurParser.WhileStatementContext ctx) {
+        BoolExpressionNode boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+        BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+
+        WhileStatementNode whileStatementNode = new WhileStatementNode(boolExpressionNode, blockNode);
+        setCodePos(whileStatementNode, ctx);
+        return whileStatementNode;
+    }
+
     private Enums.PinType getPinType(OurParser.PinTypeContext ctx) {
         Enums.PinType pinType;
 
@@ -423,6 +465,14 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             dataType = Enums.DataType.CLOCK;
         else if (ctx.STRING() != null)
             dataType = Enums.DataType.STRING;
+        else if (ctx.DOUBLE() != null)
+            dataType = Enums.DataType.DOUBLE;
+        else if (ctx.DOUBLE_ARRAY() != null)
+            dataType = Enums.DataType.DOUBLE_ARRAY;
+        else if (ctx.BOOLEAN_ARRAY() != null)
+            dataType = Enums.DataType.BOOL_ARRAY;
+        else if (ctx.INT_ARRAY() != null)
+            dataType = Enums.DataType.INT_ARRAY;
         else
             throw new CompilerException("DataType is unknown", getCodePosition(ctx));
 
@@ -473,9 +523,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     private String getStringLiteral(OurParser.LiteralContext ctx) {
         if (ctx.STRING_LITERAL() != null) {
             // Remove "" from both ends of the string
-            return ctx.STRING_LITERAL().getText().subSequence(1, ctx.STRING_LITERAL().getText().length()-1).toString();
-        }
-        else
+            return ctx.STRING_LITERAL().getText().subSequence(1, ctx.STRING_LITERAL().getText().length() - 1).toString();
+        } else
             throw new CompilerException("Bool is not String");
     }
 
@@ -491,6 +540,14 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         List<T> nodes = new ArrayList<>();
         for (S ctx : ctxs) {
             nodes.add(tClass.cast(func.apply(ctx)));
+        }
+        return nodes;
+    }
+
+    private List<String> visitLiterals(List<OurParser.LiteralContext> ctxs) {
+        List<String> nodes = new ArrayList<>();
+        for (OurParser.LiteralContext ctx : ctxs) {
+            nodes.add(ctx.getText());
         }
         return nodes;
     }

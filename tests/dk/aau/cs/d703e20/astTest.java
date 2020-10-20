@@ -2,7 +2,6 @@ package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.ASTBuilder;
 import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
@@ -62,6 +61,23 @@ public class astTest {
                 () -> assertEquals("varName", varDeclNode.getAssignmentNode().getVariableName()),
                 () -> assertEquals("Super123", varDeclNode.getAssignmentNode().getLiteralValue())
         );
+    }
+
+    @Test
+    void testVarDeclEmpty() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("double[] arr");
+        // Get parsed context
+        OurParser.VariableDeclContext variableDeclContext = parser.variableDecl();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDeclContext);
+
+        assertAll(
+                () -> assertEquals(Enums.DataType.DOUBLE_ARRAY, variableDeclarationNode.getDataType()),
+                () -> assertEquals("arr", variableDeclarationNode.getVariableName())
+        );
+
     }
 
     @Test
@@ -420,6 +436,36 @@ public class astTest {
                 () -> assertEquals("ID2", functionParameterNode.getVariableNames().get(0)),
                 () -> assertEquals("varName", functionParameterNode.getVariableNames().get(1))
         );
+    }
 
+    @Test
+    void testWhileStatement() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("while (true) {}");
+        // Get parsed context
+        OurParser.WhileStatementContext whileStatementContext = parser.whileStatement();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+
+        WhileStatementNode whileStatementNode = (WhileStatementNode) astBuilder.visitWhileStatement(whileStatementContext);
+
+        assertEquals("true", whileStatementNode.getBoolExpressionNode().getBoolLiteral());
+    }
+
+    @Test
+    void testAssignArray() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("arr = {1.2, 3.3}");
+        // Get parsed context
+        OurParser.AssignArrayContext assignArrayContext = parser.assignArray();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        AssignArrayNode assignArrayNode = (AssignArrayNode) astBuilder.visitAssignArray(assignArrayContext);
+
+        assertAll(
+                () -> assertEquals("arr", assignArrayNode.getVariableName()),
+                () -> assertEquals(1.2, assignArrayNode.getArithExpressionNodes().get(0).getNumber()),
+                () -> assertEquals(3.3, assignArrayNode.getArithExpressionNodes().get(1).getNumber())
+        );
     }
 }

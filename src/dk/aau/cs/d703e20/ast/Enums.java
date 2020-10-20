@@ -6,6 +6,10 @@ public class Enums {
         STRING,
         CLOCK,
         BOOL,
+        DOUBLE,
+        INT_ARRAY,
+        DOUBLE_ARRAY,
+        BOOL_ARRAY,
         VOID
     }
 
