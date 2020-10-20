@@ -202,12 +202,10 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         } else if (ctx.functionCall() != null) {
             FunctionCallNode functionCallNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
             conditionalExpressionNode = new ConditionalExpressionNode(functionCallNode);
-        } /* else if (ctx.SUBSCRIPT() != null) {
-            TODO: get number from text
-            Pattern pattern = Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
-            Matcher matcher = pattern.matcher(ctx.SUBSCRIPT().getText());
-            System.out.println(matcher.toString());
-        } */
+        } else if (ctx.SUBSCRIPT() != null) {
+            SubscriptNode subscriptNode = new SubscriptNode(ctx.SUBSCRIPT().getText());
+            conditionalExpressionNode = new ConditionalExpressionNode(subscriptNode);
+        }
         else {
             throw new CompilerException("Invalid conditional expression", getCodePosition(ctx));
         }
@@ -268,6 +266,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             arithExpressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
         } else if (ctx.variableName() != null) {
             arithExpressionNode = new ArithExpressionNode(ctx.variableName().getText());
+        } else if (ctx.SUBSCRIPT() != null) {
+            arithExpressionNode = new ArithExpressionNode(new SubscriptNode(ctx.SUBSCRIPT().getText()));
         } else {
             throw new CompilerException("Invalid Expression", getCodePosition(ctx));
         }

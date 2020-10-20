@@ -254,6 +254,19 @@ public class astTest {
     }
 
     @Test
+    void TestSUBSCRIPT() {
+        OurParser parser = createParserFromText("array[23]");
+        OurParser.ConditionalExpressionContext conditionalExpression = parser.conditionalExpression();
+        ASTBuilder astBuilder = new ASTBuilder();
+        ConditionalExpressionNode conditionalExpressionNode = (ConditionalExpressionNode) astBuilder.visitConditionalExpression(conditionalExpression);
+
+        assertAll(
+                () -> assertEquals("array", conditionalExpressionNode.getSubscriptNode().getVariableName()),
+                () -> assertEquals(23, conditionalExpressionNode.getSubscriptNode().getIndex())
+        );
+    }
+
+    @Test
     void testBoolExprLiteral() {
         // String -> Tokens -> Parsing
         OurParser parser = createParserFromText("true");
@@ -317,8 +330,26 @@ public class astTest {
 
 
         assertAll(
-                () -> assertEquals("FuncName", arithExpressionNode.getArithExpressionNode1().getFunctionCallNode().getFunctionName()), //
+                () -> assertEquals("FuncName", arithExpressionNode.getArithExpressionNode1().getFunctionCallNode().getFunctionName()),
                 () -> assertEquals(Enums.BoolOperator.NOT, arithExpressionNode.getOptionalNot())
+        );
+    }
+
+    // Test SUBSCRIPT arithExpr
+    @Test
+    void testArithExprSUBSCRIPT() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("arr[2]");
+        // Get parsed context
+        OurParser.ArithExprContext arithExpr = parser.arithExpr();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        ArithExpressionNode arithExpressionNode = (ArithExpressionNode) astBuilder.visitArithExpr(arithExpr);
+
+
+        assertAll(
+                () -> assertEquals("arr", arithExpressionNode.getSubscriptNode().getVariableName()),
+                () -> assertEquals(2, arithExpressionNode.getSubscriptNode().getIndex())
         );
     }
 
