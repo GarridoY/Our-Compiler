@@ -35,6 +35,8 @@ TO: 'to';
 FOR: 'for';
 WHILE: 'while';
 AT: 'at';
+BOUND: 'bound';
+FINAL: 'final';
 // Possible other: delay, wait, sleep, loop, pause
 
 //Numbers and booleans

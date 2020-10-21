@@ -1,4 +1,4 @@
-// Generated from C:/Users/the_p/Desktop/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/the_p/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -167,6 +167,26 @@ public interface OurParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAtStatement(OurParser.AtStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#atParams}.
+	 * @param ctx the parse tree
+	 */
+	void enterAtParams(OurParser.AtParamsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#atParams}.
+	 * @param ctx the parse tree
+	 */
+	void exitAtParams(OurParser.AtParamsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#boundStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterBoundStatement(OurParser.BoundStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#boundStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitBoundStatement(OurParser.BoundStatementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#iterativeStatement}.
 	 * @param ctx the parse tree

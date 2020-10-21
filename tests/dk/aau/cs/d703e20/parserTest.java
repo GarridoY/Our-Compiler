@@ -157,8 +157,8 @@ public class parserTest {
         );
         OurParser parser = createParser(tokens);
         OurParser.AtStatementContext atCtx = parser.atStatement();
-        assertNotNull(atCtx.arithExpr().numLiteral().DIGIT());
-        assertEquals(OurLexer.LESS_THAN, atCtx.boolOp().LESS_THAN().getSymbol().getType());
+        assertNotNull(atCtx.atParams().arithExpr(0).numLiteral().DIGIT());
+        assertEquals(OurLexer.LESS_THAN, atCtx.atParams().boolOp(0).LESS_THAN().getSymbol().getType());
     }
 
     @Test
@@ -182,7 +182,7 @@ public class parserTest {
         );
         OurParser parser = createParser(tokens);
         OurParser.AtStatementContext atCtx = parser.atStatement();
-        assertNotNull(atCtx.arithExpr().numLiteral().DIGIT());
-        assertEquals(OurLexer.LESS_THAN, atCtx.boolOp().LESS_THAN().getSymbol().getType());
+        assertNotNull(atCtx.atParams().arithExpr(0).numLiteral().DIGIT());
+        assertEquals(OurLexer.LESS_THAN, atCtx.atParams().boolOp(0).LESS_THAN().getSymbol().getType());
     }
 }

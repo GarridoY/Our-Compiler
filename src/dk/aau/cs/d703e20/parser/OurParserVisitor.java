@@ -1,4 +1,4 @@
-// Generated from C:/Users/the_p/Desktop/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/the_p/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -106,6 +106,18 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAtStatement(OurParser.AtStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#atParams}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAtParams(OurParser.AtParamsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#boundStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBoundStatement(OurParser.BoundStatementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link OurParser#iterativeStatement}.
 	 * @param ctx the parse tree
