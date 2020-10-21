@@ -27,6 +27,7 @@ public class SemanticChecker {
     }
 
     private ASTNode retrieveSymbol(String name) {
+        /*
         int stackLevel = this.hashMapStack.size() - 1;
 
         while (stackLevel >= 0) {
@@ -35,7 +36,7 @@ public class SemanticChecker {
             else
                 stackLevel -= 1;
         }
-
+        */
         return null;
     }
 
