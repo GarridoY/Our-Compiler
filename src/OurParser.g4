@@ -43,6 +43,7 @@ statement
     | ifElseStatement //conditionalStatement
     | iterativeStatement
     | atStatement
+    | boundStatement
     | returnStatement SEMICOLON;
 
 returnStatement
@@ -61,7 +62,13 @@ conditionalExpression: boolExpr | NOT? variableName | functionCall | SUBSCRIPT;
 
 // at statement for clock and timing purposes
 atStatement
-    : AT LEFT_PAREN variableName boolOp arithExpr RIGHT_PAREN block;
+    : AT LEFT_PAREN atParams RIGHT_PAREN block (FINAL block)?;
+
+atParams
+    : variableName boolOp arithExpr (COMMA variableName boolOp arithExpr (COMMA BOOL_LITERAL)?)?; // at (x, y, z) y z optional, only z if y
+
+boundStatement
+    : BOUND LEFT_PAREN variableName boolOp arithExpr (COMMA BOOL_LITERAL)? RIGHT_PAREN block (FINAL block)?; // bound (y, z) z optional
 
 // ITERATIVE
 iterativeStatement
