@@ -3,7 +3,6 @@ package dk.aau.cs.d703e20.ast.statements;
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class AssignArrayNode extends StatementNode {
