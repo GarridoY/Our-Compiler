@@ -7,28 +7,22 @@ import dk.aau.cs.d703e20.ast.Enums;
 import java.util.List;
 
 public class FunctionParameterNode implements ASTNode {
-    private final Enums.DataType dataType;
-    private final String variableName;
-    private final List<FunctionParameterNode> functionParameterNodes;
+    private final List<String> variableNames;
+    private final List<Enums.DataType> dataTypes;
 
     private CodePosition codePosition;
 
-    public FunctionParameterNode(Enums.DataType dataType,List<FunctionParameterNode> functionParameterNodes,  String variableName) {
-        this.dataType = dataType;
-        this.variableName = variableName;
-        this.functionParameterNodes = functionParameterNodes;
+    public FunctionParameterNode(List<Enums.DataType> dataTypes,  List<String> variableNames) {
+        this.dataTypes = dataTypes;
+        this.variableNames = variableNames;
     }
 
-    public Enums.DataType getDataType() {
-        return dataType;
+    public List<Enums.DataType> getDataTypes() {
+        return dataTypes;
     }
 
-    public String getVariableName() {
-        return variableName;
-    }
-
-    public List<FunctionParameterNode> getFunctionParameterNodes() {
-        return functionParameterNodes;
+    public List<String> getVariableNames() {
+        return variableNames;
     }
 
     @Override
