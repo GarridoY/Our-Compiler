@@ -3,10 +3,17 @@ Setup {
 }
 
 Loop {
-
+    clock x;
+    at (x == 10) {
+        FuncTwo();
+    }
 }
 
 int TestFunction () {
     int value = 0;
     return value;
+}
+
+void FuncTwo () {
+    somePredefinedFunction();
 }

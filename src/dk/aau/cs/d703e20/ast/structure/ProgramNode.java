@@ -32,7 +32,18 @@ public class ProgramNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(setupNode.prettyPrint(indentation));
+        sb.append("\n");
+        sb.append(loopNode.prettyPrint(indentation));
+        sb.append("\n");
+        for (FunctionDeclarationNode funcDecl : functionDeclarationNodes) {
+            sb.append(funcDecl.prettyPrint(indentation));
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 
     @Override

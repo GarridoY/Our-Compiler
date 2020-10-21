@@ -21,7 +21,19 @@ public class BlockNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        indentation++;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{\n");
+        for (StatementNode statementNode : statementNodes) {
+            for (int i = 0; i < indentation; i++)
+                sb.append("\t");
+            sb.append(statementNode.prettyPrint(indentation));
+            sb.append("\n");
+        }
+        sb.append("}");
+
+        return sb.toString();
     }
 
     @Override

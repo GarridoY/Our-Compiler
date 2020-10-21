@@ -56,7 +56,18 @@ public class FunctionDeclarationNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(dataType.toString());
+        sb.append(" ");
+        sb.append(functionName);
+        sb.append(" (");
+        if (functionParameterNode != null)
+            sb.append(functionParameterNode.prettyPrint(indentation));
+        sb.append(") ");
+        sb.append(blockNode.prettyPrint(indentation));
+
+        return sb.toString();
     }
 
     @Override
