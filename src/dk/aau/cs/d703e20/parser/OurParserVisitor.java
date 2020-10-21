@@ -1,4 +1,4 @@
-// Generated from C:/Users/htmle/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/the_p/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -107,6 +107,18 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAtStatement(OurParser.AtStatementContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link OurParser#atParams}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAtParams(OurParser.AtParamsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#boundStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBoundStatement(OurParser.BoundStatementContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link OurParser#iterativeStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -118,6 +130,12 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitForStatement(OurParser.ForStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#whileStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWhileStatement(OurParser.WhileStatementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link OurParser#arithExpr}.
 	 * @param ctx the parse tree
@@ -131,11 +149,23 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitBoolExpr(OurParser.BoolExprContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link OurParser#pinDecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPinDecl(OurParser.PinDeclContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link OurParser#variableDecl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitVariableDecl(OurParser.VariableDeclContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#assignArray}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAssignArray(OurParser.AssignArrayContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link OurParser#assignment}.
 	 * @param ctx the parse tree
@@ -155,11 +185,17 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFunctionName(OurParser.FunctionNameContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link OurParser#datatype}.
+	 * Visit a parse tree produced by {@link OurParser#pinType}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDatatype(OurParser.DatatypeContext ctx);
+	T visitPinType(OurParser.PinTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#dataType}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDataType(OurParser.DataTypeContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link OurParser#literal}.
 	 * @param ctx the parse tree

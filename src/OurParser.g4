@@ -20,11 +20,11 @@ block
 // FUNCTIONS
 // Function declaration, optional argument followed by more optional arguments prefixed by comma
 functionDecl
-    : (VOID | datatype) functionName LEFT_PAREN functionParam? RIGHT_PAREN block;
+    : (VOID | dataType) functionName LEFT_PAREN functionParam? RIGHT_PAREN block;
 
 // Function parameters
 functionParam
-    : datatype variableName ( COMMA datatype variableName)*;
+    : dataType variableName ( COMMA dataType variableName)*;
 
 // Call function given optional arguments (expr)
 functionCall
@@ -38,10 +38,12 @@ functionArgs
 statement
     : variableDecl SEMICOLON
     | assignment SEMICOLON
+    | pinDecl SEMICOLON
     | functionCall SEMICOLON
     | ifElseStatement //conditionalStatement
     | iterativeStatement
     | atStatement
+    | boundStatement
     | returnStatement SEMICOLON;
 
 returnStatement
@@ -56,19 +58,29 @@ ifStatement: IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseStatement: ELSE block;
 
-conditionalExpression: boolExpr | NOT? variableName | functionCall;
+conditionalExpression: boolExpr | NOT? variableName | functionCall | SUBSCRIPT;
 
 // at statement for clock and timing purposes
 atStatement
-    : AT LEFT_PAREN variableName boolOp arithExpr RIGHT_PAREN block;
+    : AT LEFT_PAREN atParams RIGHT_PAREN block (FINAL block)?;
+
+atParams
+    : variableName boolOp arithExpr (COMMA variableName boolOp arithExpr (COMMA BOOL_LITERAL)?)?; // at (x, y, z) y z optional, only z if y
+
+boundStatement
+    : BOUND LEFT_PAREN variableName boolOp arithExpr (COMMA BOOL_LITERAL)? RIGHT_PAREN block (FINAL block)?; // bound (y, z) z optional
 
 // ITERATIVE
 iterativeStatement
-    : forStatement;
+    : forStatement
+    | whileStatement;
 
 // for (* to *) {}
 forStatement
     : FOR LEFT_PAREN arithExpr TO arithExpr RIGHT_PAREN block;
+
+whileStatement
+    : WHILE LEFT_PAREN boolExpr RIGHT_PAREN block;
 
 // EXPRESSIONS
 
@@ -76,7 +88,8 @@ arithExpr
     : arithExpr arithOp arithExpr // Precedence handled by target
     | numLiteral | NOT?'('arithExpr')'
     | variableName
-    | functionCall;
+    | functionCall
+    | SUBSCRIPT;
 
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr
@@ -84,10 +97,17 @@ boolExpr
     | (arithExpr | BOOL_LITERAL) boolOp (BOOL_LITERAL | arithExpr)
     | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
 
+pinDecl
+    : pinType variableName (DIGIT | ANALOGPIN);
 
 // Declaration of variable, all variables must be initialized
 variableDecl
-    : datatype assignment;
+    : dataType variableName
+    | dataType assignment
+    | dataType assignArray;
+
+assignArray
+    : variableName ASSIGN LEFT_BRACKET (arithExpr | literal) (COMMA (arithExpr | literal))* RIGHT_BRACKET;
 
 assignment
     : variableName ASSIGN (arithExpr | literal);
@@ -98,12 +118,19 @@ variableName
 functionName
     : ID;
 
-datatype
+pinType
+    : IPIN
+    | OPIN;
+
+dataType
     : INT
     | DOUBLE
     | BOOLEAN
     | CLOCK
-    | STRING;
+    | STRING
+    | INT_ARRAY
+    | DOUBLE_ARRAY
+    | BOOLEAN_ARRAY;
 
 literal
     : STRING_LITERAL

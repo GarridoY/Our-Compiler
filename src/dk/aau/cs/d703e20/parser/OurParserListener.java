@@ -1,4 +1,4 @@
-// Generated from C:/Users/htmle/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/the_p/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -168,6 +168,26 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitAtStatement(OurParser.AtStatementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link OurParser#atParams}.
+	 * @param ctx the parse tree
+	 */
+	void enterAtParams(OurParser.AtParamsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#atParams}.
+	 * @param ctx the parse tree
+	 */
+	void exitAtParams(OurParser.AtParamsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#boundStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterBoundStatement(OurParser.BoundStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#boundStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitBoundStatement(OurParser.BoundStatementContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link OurParser#iterativeStatement}.
 	 * @param ctx the parse tree
 	 */
@@ -187,6 +207,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitForStatement(OurParser.ForStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#whileStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterWhileStatement(OurParser.WhileStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#whileStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitWhileStatement(OurParser.WhileStatementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#arithExpr}.
 	 * @param ctx the parse tree
@@ -208,6 +238,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitBoolExpr(OurParser.BoolExprContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link OurParser#pinDecl}.
+	 * @param ctx the parse tree
+	 */
+	void enterPinDecl(OurParser.PinDeclContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#pinDecl}.
+	 * @param ctx the parse tree
+	 */
+	void exitPinDecl(OurParser.PinDeclContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link OurParser#variableDecl}.
 	 * @param ctx the parse tree
 	 */
@@ -217,6 +257,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitVariableDecl(OurParser.VariableDeclContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#assignArray}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssignArray(OurParser.AssignArrayContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#assignArray}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssignArray(OurParser.AssignArrayContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#assignment}.
 	 * @param ctx the parse tree
@@ -248,15 +298,25 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitFunctionName(OurParser.FunctionNameContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link OurParser#datatype}.
+	 * Enter a parse tree produced by {@link OurParser#pinType}.
 	 * @param ctx the parse tree
 	 */
-	void enterDatatype(OurParser.DatatypeContext ctx);
+	void enterPinType(OurParser.PinTypeContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link OurParser#datatype}.
+	 * Exit a parse tree produced by {@link OurParser#pinType}.
 	 * @param ctx the parse tree
 	 */
-	void exitDatatype(OurParser.DatatypeContext ctx);
+	void exitPinType(OurParser.PinTypeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#dataType}.
+	 * @param ctx the parse tree
+	 */
+	void enterDataType(OurParser.DataTypeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#dataType}.
+	 * @param ctx the parse tree
+	 */
+	void exitDataType(OurParser.DataTypeContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#literal}.
 	 * @param ctx the parse tree

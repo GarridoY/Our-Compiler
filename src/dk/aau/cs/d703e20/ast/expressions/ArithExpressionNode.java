@@ -21,6 +21,8 @@ public class ArithExpressionNode implements ASTNode {
 
     private String variableName;
 
+    private SubscriptNode subscriptNode;
+
     private CodePosition codePosition;
 
     // arithExpr arithOp arithExpr
@@ -54,6 +56,10 @@ public class ArithExpressionNode implements ASTNode {
         this.optionalNot = optionalNot;
     }
 
+    public ArithExpressionNode(SubscriptNode subscriptNode) {
+        this.subscriptNode = subscriptNode;
+    }
+
     public ArithExpressionNode getArithExpressionNode1() {
         return arithExpressionNode1;
     }
@@ -80,6 +86,10 @@ public class ArithExpressionNode implements ASTNode {
 
     public Enums.BoolOperator getOptionalNot() {
         return optionalNot;
+    }
+
+    public SubscriptNode getSubscriptNode() {
+        return subscriptNode;
     }
 
     @Override
