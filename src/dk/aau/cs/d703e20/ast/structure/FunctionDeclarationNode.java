@@ -5,8 +5,6 @@ import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.FunctionParameterNode;
 
-import java.util.List;
-
 public class FunctionDeclarationNode implements ASTNode {
     private Enums.DataType dataType;
     private final String functionName;

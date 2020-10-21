@@ -30,11 +30,11 @@ public class WhileStatementNode extends StatementNode {
 
     @Override
     public void setCodePosition(CodePosition codePosition) {
-
+        this.codePosition = codePosition;
     }
 
     @Override
     public CodePosition getCodePosition() {
-        return null;
+        return codePosition;
     }
 }

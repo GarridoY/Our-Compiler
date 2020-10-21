@@ -8,14 +8,14 @@ import java.util.List;
 public class ProgramNode implements ASTNode {
     private final SetupNode setupNode;
     private final LoopNode loopNode;
-    private final List<FunctionDeclarationNode> functionDeclarationNode;
+    private final List<FunctionDeclarationNode> functionDeclarationNodes;
 
     private CodePosition codePosition;
 
-    public ProgramNode(SetupNode setupNode, LoopNode loopNode, List<FunctionDeclarationNode> functionDeclarationNode) {
+    public ProgramNode(SetupNode setupNode, LoopNode loopNode, List<FunctionDeclarationNode> functionDeclarationNodes) {
         this.setupNode = setupNode;
         this.loopNode = loopNode;
-        this.functionDeclarationNode = functionDeclarationNode;
+        this.functionDeclarationNodes = functionDeclarationNodes;
     }
 
     public SetupNode getSetupNode() {
@@ -26,8 +26,8 @@ public class ProgramNode implements ASTNode {
         return loopNode;
     }
 
-    public List<FunctionDeclarationNode> getFunctionDeclarationNode() {
-        return functionDeclarationNode;
+    public List<FunctionDeclarationNode> getFunctionDeclarationNodes() {
+        return functionDeclarationNodes;
     }
 
     @Override
