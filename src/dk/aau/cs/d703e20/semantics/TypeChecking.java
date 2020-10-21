@@ -3,8 +3,7 @@ package dk.aau.cs.d703e20.semantics;
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
-import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
-import dk.aau.cs.d703e20.ast.structure.ProgramNode;
+import dk.aau.cs.d703e20.ast.structure.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,7 +23,8 @@ public class TypeChecking {
     private ArrayList<Enums.ArithOperator> arithOperatorList;
 
     public TypeChecking() {
-
+        HashMap<String, ASTNode> newSymbolTable = new HashMap<>();
+        this.hashMapStack.push(newSymbolTable);
     }
 
     private void openScope(){
@@ -51,6 +51,9 @@ public class TypeChecking {
         return null;
     }
 
+    // TODO retrieveAllFunctions?
+    // TODO retrieveAllVariables?
+
     public void printSymbolTable() {
         System.out.println("Symbol table:\n----------------------------------");
         System.out.println("Size of stack: " + hashMapStack.size());
@@ -62,10 +65,58 @@ public class TypeChecking {
         System.out.println("----------------------------------");
     }
 
-
+    /*      VISITOR         */
     public void visitProgram(ProgramNode programNode){
         openScope();
+        visitSetup(programNode.getSetupNode());
+        visitLoop(programNode.getLoopNode());
 
+
+    }
+
+    public void visitSetup(SetupNode setupNode) {
+        visitBlock(setupNode.getBlockNode());
+    }
+
+    public void visitLoop(LoopNode loopNode) {
+        visitBlock(loopNode.getBlockNode());
+    }
+
+    public void visitBlock(BlockNode blockNode) {
+        openScope();
+
+        closeScope();
+    }
+
+    public void visitStatement() {
+
+    }
+
+    public void visitFunctions(ArrayList<FunctionDeclarationNode> functionDeclarationNodes) {
+        for (FunctionDeclarationNode functionDeclaration : functionDeclarationNodes) {
+            visitFunctionDeclaration(functionDeclaration);
+        }
+
+        for (FunctionDeclarationNode functionDeclaration : functionDeclarationNodes) {
+            // functionDeclaration.getDataType() or functionDeclaration.getReturnType()?
+            visitFunctionBlock(functionDeclaration.getBlockNode(), functionDeclaration.getDataType(), functionDeclaration);
+        }
+    }
+
+    private void visitFunctionDeclaration(FunctionDeclarationNode function) {
+
+    }
+
+    private void visitFunctionBlock(BlockNode blockNode, Enums.DataType returnType, FunctionDeclarationNode functionDeclarationNode) {
+
+    }
+
+
+    private void visitVariableDeclaration() {
+
+    }
+
+    private void visitAssignment() {
 
     }
 }
