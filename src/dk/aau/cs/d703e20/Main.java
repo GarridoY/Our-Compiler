@@ -45,6 +45,11 @@ public class Main {
             SemanticChecker semanticChecker = new SemanticChecker();
             semanticChecker.visitProgram(programNode);
             System.out.println("Semantics ok");
+
+            //PRETTY PRINT
+            //TODO: make optional
+            System.out.println("Pretty print:\n");
+            System.out.println(programNode.prettyPrint(0));
         }
         catch (IOException e) {
             e.printStackTrace();
