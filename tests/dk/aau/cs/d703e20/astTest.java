@@ -157,7 +157,50 @@ public class astTest {
 
         AtStatementNode atStatementNode = (AtStatementNode) astBuilder.visitAtStatement(at);
 
-        assertEquals("x", atStatementNode.getVariableName());
+        assertEquals("x", atStatementNode.getAtParamsNode().getVariableNames().get(0));
+    }
+
+    @Test
+    void testATStatementAllParams() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("at (x == varName, x < 10, true) {} final {}");
+        // Get parsed context
+        OurParser.AtStatementContext atCtx = parser.atStatement();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        AtStatementNode atNode = (AtStatementNode) astBuilder.visitAtStatement(atCtx);
+
+        assertAll(
+                () -> assertEquals("x", atNode.getAtParamsNode().getVariableNames().get(0)),
+                () -> assertEquals(Enums.BoolOperator.EQUAL, atNode.getAtParamsNode().getBoolOperators().get(0)),
+                () -> assertEquals("varName", atNode.getAtParamsNode().getArithExpressionNodes().get(0).getVariableName()),
+                () -> assertEquals("x", atNode.getAtParamsNode().getVariableNames().get(1)),
+                () -> assertEquals(Enums.BoolOperator.LESS_THAN, atNode.getAtParamsNode().getBoolOperators().get(1)),
+                () -> assertEquals(10, atNode.getAtParamsNode().getArithExpressionNodes().get(1).getNumber()),
+                () -> assertEquals("true", atNode.getAtParamsNode().getBoolLiteral()),
+                () -> assertNotNull(atNode.getFinalBlock())
+        );
+    }
+
+    @Test
+    void testBoundStatement() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("bound (y < 12, true) {} final {}");
+        // Get parsed context
+        OurParser.BoundStatementContext boundCtx = parser.boundStatement();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        BoundStatementNode boundNode = (BoundStatementNode) astBuilder.visitBoundStatement(boundCtx);
+
+        assertAll(
+                () -> assertEquals("y", boundNode.getVariableName()),
+                () -> assertEquals(Enums.BoolOperator.LESS_THAN, boundNode.getBoolOperator()),
+                () -> assertEquals(12, boundNode.getArithExpressionNode().getNumber()),
+                () -> assertEquals("true", boundNode.getBoolLiteral()),
+                () -> assertNotNull(boundNode.getBlockNode()),
+                () -> assertNotNull(boundNode.getFinalBlock())
+        );
+
     }
 
     // Test AST for conditional statement if

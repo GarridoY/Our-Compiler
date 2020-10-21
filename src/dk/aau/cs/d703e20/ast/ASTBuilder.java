@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
@@ -405,15 +403,85 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitAtStatement(OurParser.AtStatementContext ctx) {
-        try {
-            ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr());
-            BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
-            AtStatementNode atStatementNode = new AtStatementNode(ctx.variableName().getText(), arithExpressionNode, getBoolOperator(ctx.boolOp()), blockNode);
-            setCodePos(atStatementNode, ctx);
-            return atStatementNode;
-        } catch (CompilerException e) {
-            throw new CompilerException("Invalid At Statement", getCodePosition(ctx));
+        AtStatementNode atStatementNode;
+            AtParamsNode atParamsNode = (AtParamsNode) visitAtParams(ctx.atParams());
+            if (ctx.block().size() == 1) {
+                BlockNode blockNode = (BlockNode) visitBlock(ctx.block(0));
+                atStatementNode = new AtStatementNode(atParamsNode, blockNode);
+                setCodePos(atStatementNode, ctx);
+                return atStatementNode;
+            }
+            else if (ctx.block().size() == 2) {
+                BlockNode blockNode = (BlockNode) visitBlock(ctx.block(0));
+                BlockNode finalBlockNode = (BlockNode) visitBlock(ctx.block(1));
+                atStatementNode = new AtStatementNode(atParamsNode, blockNode, finalBlockNode);
+                setCodePos(atStatementNode, ctx);
+                return atStatementNode;
+            }
+            else
+                throw new CompilerException("Invalid At statement (Too many blocks?)", getCodePosition(ctx));
         }
+
+    @Override
+    public ASTNode visitAtParams(OurParser.AtParamsContext ctx) {
+        List<String> variableNames = new ArrayList<>();
+        List<Enums.BoolOperator> boolOperators = new ArrayList<>();
+        List<ArithExpressionNode> arithExpressionNodes = new ArrayList<>();
+
+        // Get all variableNames as strings
+        if (!ctx.variableName().isEmpty()) {
+            for (OurParser.VariableNameContext varName : ctx.variableName()) {
+                variableNames.add(varName.getText());
+            }
+        }
+        // Get all boolOperators
+        if (!ctx.boolOp().isEmpty()) {
+            for (OurParser.BoolOpContext boolOpContext : ctx.boolOp()) {
+                boolOperators.add(getBoolOperator(boolOpContext));
+            }
+        }
+        // Get all arithExpr by visiting
+        if (!ctx.arithExpr().isEmpty()) {
+            arithExpressionNodes = visitList(ArithExpressionNode.class, ctx.arithExpr(), this::visitArithExpr);
+        }
+        if (ctx.BOOL_LITERAL() != null)
+            return new AtParamsNode(variableNames, boolOperators, arithExpressionNodes, ctx.BOOL_LITERAL().getText());
+        else
+            return new AtParamsNode(variableNames, boolOperators, arithExpressionNodes);
+    }
+
+    @Override
+    public ASTNode visitBoundStatement(OurParser.BoundStatementContext ctx) {
+        BoundStatementNode boundStatementNode;
+        // Non optional
+        String variableName = ctx.variableName().getText();
+        Enums.BoolOperator boolOperator = getBoolOperator(ctx.boolOp());
+        ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr());
+        BlockNode blockNode = (BlockNode) visitBlock(ctx.block(0));
+        if (ctx.BOOL_LITERAL() != null) {
+            String boolLiteral = ctx.BOOL_LITERAL().getText();
+            // Both optional BOOL_LITERAL and FINAL block
+            if (ctx.block().size() == 2) {
+                BlockNode finalBlock = (BlockNode) visitBlock(ctx.block(1));
+                boundStatementNode = new BoundStatementNode(variableName, boolOperator, arithExpressionNode, boolLiteral, blockNode, finalBlock);
+            }
+            // Just the optional BOOL_LITERAL
+            else {
+                boundStatementNode = new BoundStatementNode(variableName, boolOperator, arithExpressionNode, boolLiteral, blockNode);
+            }
+        }
+        // Just the optional FINAL block
+        else if (ctx.block().size() == 2) {
+            BlockNode finalBlock = (BlockNode) visitBlock(ctx.block(1));
+            boundStatementNode = new BoundStatementNode(variableName, boolOperator, arithExpressionNode, blockNode, finalBlock);
+        }
+        // Not optional params
+        else if ((ctx.block().size() == 1) && (ctx.BOOL_LITERAL() != null)) {
+            boundStatementNode = new BoundStatementNode(variableName, boolOperator, arithExpressionNode);
+        } else
+            throw new CompilerException("Invalid Bound Statement", getCodePosition(ctx));
+        setCodePos(boundStatementNode, ctx);
+        return boundStatementNode;
     }
 
     @Override
