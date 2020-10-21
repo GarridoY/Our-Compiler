@@ -1,40 +1,37 @@
 package dk.aau.cs.d703e20.ast.statements;
 
 import dk.aau.cs.d703e20.ast.CodePosition;
-import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 
-public class AtStatementNode extends StatementNode{
+public class AtStatementNode extends StatementNode {
 
-    private String variableName;
-    private ArithExpressionNode arithExpressionNode;
-    private Enums.BoolOperator boolOperator;
+    private AtParamsNode atParamsNode;
     private BlockNode blockNode;
+    private BlockNode finalBlock;
 
     private CodePosition codePosition;
 
-    public AtStatementNode(String variableName, ArithExpressionNode arithExpressionNode, Enums.BoolOperator boolOperator, BlockNode blockNode) {
-        this.variableName = variableName;
-        this.arithExpressionNode = arithExpressionNode;
-        this.boolOperator = boolOperator;
+    public AtStatementNode(AtParamsNode atParamsNode, BlockNode blockNode) {
+        this.atParamsNode = atParamsNode;
         this.blockNode = blockNode;
     }
 
-    public String getVariableName() {
-        return variableName;
+    public AtStatementNode(AtParamsNode atParamsNode, BlockNode blockNode, BlockNode finalBlock) {
+        this.atParamsNode = atParamsNode;
+        this.blockNode = blockNode;
+        this.finalBlock = finalBlock;
     }
 
-    public ArithExpressionNode getArithExpressionNode() {
-        return arithExpressionNode;
-    }
-
-    public Enums.BoolOperator getBoolOperator() {
-        return boolOperator;
+    public AtParamsNode getAtParamsNode() {
+        return atParamsNode;
     }
 
     public BlockNode getBlockNode() {
         return blockNode;
+    }
+
+    public BlockNode getFinalBlock() {
+        return finalBlock;
     }
 
     @Override
@@ -43,7 +40,9 @@ public class AtStatementNode extends StatementNode{
     }
 
     @Override
-    public void setCodePosition(CodePosition codePosition) { this.codePosition = codePosition; }
+    public void setCodePosition(CodePosition codePosition) {
+        this.codePosition = codePosition;
+    }
 
     @Override
     public CodePosition getCodePosition() {

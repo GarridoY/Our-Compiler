@@ -8,6 +8,7 @@ public class ConditionalExpressionNode implements ASTNode {
     private BoolExpressionNode boolExpressionNode;
     private String variableName;
     private FunctionCallNode functionCallNode;
+    private SubscriptNode subscriptNode;
 
     private CodePosition codePosition;
 
@@ -23,6 +24,10 @@ public class ConditionalExpressionNode implements ASTNode {
         this.functionCallNode = functionCallNode;
     }
 
+    public ConditionalExpressionNode(SubscriptNode subscriptNode) {
+        this.subscriptNode = subscriptNode;
+    }
+
     public BoolExpressionNode getBoolExpressionNode() {
         return boolExpressionNode;
     }
@@ -33,6 +38,10 @@ public class ConditionalExpressionNode implements ASTNode {
 
     public FunctionCallNode getFunctionCallNode() {
         return functionCallNode;
+    }
+
+    public SubscriptNode getSubscriptNode() {
+        return subscriptNode;
     }
 
     @Override
