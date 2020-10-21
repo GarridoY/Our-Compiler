@@ -8,7 +8,6 @@ public class AssignmentNode extends StatementNode {
     private final String variableName;
     private String literalValue;
     private ArithExpressionNode arithExpressionNode;
-    private FunctionCallNode functionCallNode;
 
     private  CodePosition codePosition;
 
@@ -22,11 +21,6 @@ public class AssignmentNode extends StatementNode {
         this.literalValue = literalValue;
     }
 
-    public AssignmentNode(String variableName, FunctionCallNode functionCallNode) {
-        this.variableName = variableName;
-        this.functionCallNode = functionCallNode;
-    }
-
     public String getVariableName() { return variableName; }
 
     public ArithExpressionNode getArithExpressionNode() { return arithExpressionNode; }
@@ -34,8 +28,6 @@ public class AssignmentNode extends StatementNode {
     public String getLiteralValue() {
         return literalValue;
     }
-
-    public FunctionCallNode getFunctionCallNode() { return functionCallNode; }
 
     @Override
     public String prettyPrint(int indentation) { return null; }
