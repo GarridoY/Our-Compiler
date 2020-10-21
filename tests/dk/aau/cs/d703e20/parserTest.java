@@ -160,4 +160,29 @@ public class parserTest {
         assertNotNull(atCtx.arithExpr().numLiteral().DIGIT());
         assertEquals(OurLexer.LESS_THAN, atCtx.boolOp().LESS_THAN().getSymbol().getType());
     }
+
+    @Test
+    void testAtStatementWithConstraint() {}
+    {
+        String var_name = "Var_name";
+        String var_foo = "Var_foo";
+        List<TestToken> tokens = List.of(
+                new TestToken("At", OurLexer.AT),
+                l_paren,
+                new TestToken(var_name, OurLexer.ID),
+                new TestToken("Operator", OurLexer.LESS_THAN),
+                new TestToken("Expr", OurLexer.DIGIT),
+                new TestToken("Comma", OurLexer.COMMA),
+                new TestToken(var_foo, OurLexer.ID),
+                new TestToken("NotEqual", OurLexer.NOT_EQUAL),
+                new TestToken("Expr2", OurLexer.DIGIT),
+                r_paren,
+                l_bracket,
+                r_bracket
+        );
+        OurParser parser = createParser(tokens);
+        OurParser.AtStatementContext atCtx = parser.atStatement();
+        assertNotNull(atCtx.arithExpr().numLiteral().DIGIT());
+        assertEquals(OurLexer.LESS_THAN, atCtx.boolOp().LESS_THAN().getSymbol().getType());
+    }
 }
