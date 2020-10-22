@@ -2,13 +2,12 @@ package dk.aau.cs.d703e20.semantics;
 
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.Enums;
+import dk.aau.cs.d703e20.ast.statements.AssignmentNode;
+import dk.aau.cs.d703e20.ast.statements.StatementNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 public class TypeChecking {
 
@@ -70,8 +69,7 @@ public class TypeChecking {
         openScope();
         visitSetup(programNode.getSetupNode());
         visitLoop(programNode.getLoopNode());
-
-
+        visitFunctions(programNode.getFunctionDeclarationNodes());
     }
 
     public void visitSetup(SetupNode setupNode) {
@@ -88,11 +86,11 @@ public class TypeChecking {
         closeScope();
     }
 
-    public void visitStatement() {
+    public void visitStatement(StatementNode statementNode) {
 
     }
 
-    public void visitFunctions(ArrayList<FunctionDeclarationNode> functionDeclarationNodes) {
+    public void visitFunctions(List<FunctionDeclarationNode> functionDeclarationNodes) {
         for (FunctionDeclarationNode functionDeclaration : functionDeclarationNodes) {
             visitFunctionDeclaration(functionDeclaration);
         }
@@ -112,11 +110,11 @@ public class TypeChecking {
     }
 
 
-    private void visitVariableDeclaration() {
+    private void visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
 
     }
 
-    private void visitAssignment() {
+    private void visitAssignment(AssignmentNode assignmentNode) {
 
     }
 }
