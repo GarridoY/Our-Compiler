@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+
+//environment
+bool hTraffic;
+bool vTraffic;
+bool noTraffic;
+
+//information
+bool hFirst;
+bool vFirst;
+bool pending;
+
+int maxWait = 20;
+
+clock time;
+
+//channels
+
+chan horizontalGreen;
+chan verticalGreen;
+
+chan horizontalRed;
+chan verticalRed;
+
+
+</declaration>
+	<template>
+		<name x="5" y="5">Controller</name>
+		<declaration>// Place local declarations here.</declaration>
+		<location id="id0" x="-204" y="-85">
+			<name x="-289" y="-110">initialized</name>
+		</location>
+		<location id="id1" x="-416" y="-289">
+			<name x="-467" y="-331">noTraffic</name>
+		</location>
+		<location id="id2" x="25" y="-289">
+			<name x="51" y="-323">horizontalTrafficOnly</name>
+		</location>
+		<location id="id3" x="-459" y="110">
+			<name x="-595" y="84">verticalTrafficOnly</name>
+		</location>
+		<location id="id4" x="34" y="110">
+			<name x="-170" y="102">horizontalAndVerticalTraffic</name>
+		</location>
+		<location id="id5" x="255" y="110">
+		</location>
+		<location id="id6" x="408" y="297">
+			<name x="374" y="314">Conducted</name>
+		</location>
+		<location id="id7" x="153" y="8">
+			<name x="102" y="-25">horizontalFirst</name>
+		</location>
+		<location id="id8" x="153" y="212">
+			<name x="111" y="229">verticalFirst</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id0"/>
+			<nail x="-204" y="297"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<nail x="408" y="110"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id5"/>
+			<label kind="guard" x="204" y="170">(time &gt; maxWait) || !vTraffic</label>
+			<label kind="assignment" x="204" y="195">vFirst = false</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id5"/>
+			<label kind="guard" x="221" y="8">(time &gt; maxWait) || !hTraffic</label>
+			<label kind="assignment" x="221" y="42">hFirst = false</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id8"/>
+			<label kind="guard" x="34" y="144">vFirst</label>
+			<label kind="assignment" x="34" y="161">time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id7"/>
+			<label kind="guard" x="34" y="17">hFirst</label>
+			<label kind="assignment" x="34" y="34">time = 0</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id0"/>
+			<nail x="25" y="-85"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<nail x="-459" y="-85"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<nail x="-204" y="-289"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id4"/>
+			<label kind="guard" x="-102" y="-34">hTraffic &amp;&amp; vTraffic</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-416" y="76">!hTraffic &amp;&amp; vTraffic &amp;&amp; !hFirst</label>
+			<label kind="synchronisation" x="-399" y="127">verticalGreen!</label>
+			<label kind="assignment" x="-382" y="102">vFirst = true</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-195" y="-289">hTraffic &amp;&amp; !vTraffic &amp;&amp; !vFirst</label>
+			<label kind="synchronisation" x="-178" y="-238">horizontalGreen!</label>
+			<label kind="assignment" x="-161" y="-263">hFirst = true</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-484" y="-229">!hTraffic &amp;&amp; !vTraffic</label>
+		</transition>
+	</template>
+	<template>
+		<name>GreenLight</name>
+		<location id="id9" x="-467" y="-331">
+		</location>
+		<location id="id10" x="-697" y="-331">
+			<name x="-782" y="-374">horizontalGreen</name>
+		</location>
+		<location id="id11" x="-229" y="-331">
+			<name x="-239" y="-365">verticalGreen</name>
+		</location>
+		<init ref="id9"/>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id9"/>
+			<nail x="-340" y="-195"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id9"/>
+			<nail x="-561" y="-204"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="-425" y="-357">verticalTrafficOnly?</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-646" y="-357">horizontalTrafficOnly?</label>
+		</transition>
+	</template>
+	<template>
+		<name>RedLight</name>
+		<location id="id12" x="187" y="-34">
+			<name x="177" y="-68">verticalRed</name>
+		</location>
+		<location id="id13" x="-51" y="-34">
+		</location>
+		<location id="id14" x="-281" y="-34">
+			<name x="-366" y="-77">horizontalRed</name>
+		</location>
+		<init ref="id13"/>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id13"/>
+			<nail x="76" y="102"/>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id13"/>
+			<nail x="-145" y="93"/>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="-9" y="-60">verticalTrafficOnly?</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id14"/>
+			<label kind="synchronisation" x="-230" y="-60">horizontalTrafficOnly?</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+Process = Template();
+// List one or more processes to be composed into a system.
+system Process;
+    </system>
+	<queries>
+		<query>
+			<formula></formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>
