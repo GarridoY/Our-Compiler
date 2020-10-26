@@ -7,6 +7,8 @@ public class BoolExprOperandNode implements ASTNode {
     String boolLiteral;
     ArithExpressionNode arithExpressionNode;
 
+    private CodePosition codePosition;
+
     public BoolExprOperandNode(String boolLiteral) {
         this.boolLiteral = boolLiteral;
     }
@@ -25,16 +27,19 @@ public class BoolExprOperandNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        if (arithExpressionNode != null)
+            return arithExpressionNode.prettyPrint(indentation);
+        else
+            return boolLiteral;
     }
 
     @Override
     public void setCodePosition(CodePosition codePosition) {
-
+        this.codePosition = codePosition;
     }
 
     @Override
     public CodePosition getCodePosition() {
-        return null;
+        return codePosition;
     }
 }

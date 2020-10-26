@@ -61,23 +61,16 @@ public class BoolExpressionNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        /* TODO: fix :)
         StringBuilder sb = new StringBuilder();
 
-        if (boolExpressionOperator != null) {
-            if (arithExpressionNode1 != null)
-                sb.append(arithExpressionNode1.prettyPrint(indentation));
-            else
-                sb.append(boolLiteral);
-
-            sb.append(" ");
-            sb.append(Enums.stringFromBoolOperator(boolExpressionOperator));
-            sb.append(" ");
-
-            if (arithExpressionNode2 != null)
-                sb.append(arithExpressionNode2.prettyPrint(indentation));
-            else
-                sb.append(boolLiteral2);
+        if (boolExpressionOperators != null) {
+            for (int i = 0; i < boolExpressionOperators.size(); i++) {
+                sb.append(boolExprOperandNodes.get(i).prettyPrint(indentation));
+                sb.append(" ");
+                sb.append(Enums.stringFromBoolOperator(boolExpressionOperators.get(i)));
+                sb.append(" ");
+                sb.append(boolExprOperandNodes.get(i+1).prettyPrint(indentation));
+            }
         } else if (boolLiteral != null) {
             sb.append(boolLiteral);
         } else if (boolExpressionNode != null) {
@@ -89,8 +82,6 @@ public class BoolExpressionNode implements ASTNode {
         }
 
         return sb.toString();
-        */
-        return null;
     }
 
     @Override

@@ -11,6 +11,8 @@ import java.util.List;
 public class AtParamsNode extends StatementNode {
     BoolExpressionNode boolExpressionNode;
 
+    private CodePosition codePosition;
+
     public AtParamsNode(BoolExpressionNode boolExpressionNode) {
         this.boolExpressionNode = boolExpressionNode;
     }
@@ -21,16 +23,17 @@ public class AtParamsNode extends StatementNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return "AT PARAMS";
+        return boolExpressionNode.prettyPrint(indentation);
     }
+
 
     @Override
     public void setCodePosition(CodePosition codePosition) {
-
+        this.codePosition = codePosition;
     }
 
     @Override
     public CodePosition getCodePosition() {
-        return null;
+        return codePosition;
     }
 }
