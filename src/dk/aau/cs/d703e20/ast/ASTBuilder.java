@@ -101,6 +101,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitStatement(OurParser.StatementContext ctx) {
         if (ctx.variableDecl() != null)
             return visitVariableDecl(ctx.variableDecl());
+        else if (ctx.pinDecl() != null)
+            return visitPinDecl(ctx.pinDecl());
         else if (ctx.assignment() != null)
             return visitAssignment(ctx.assignment());
         else if (ctx.functionCall() != null)

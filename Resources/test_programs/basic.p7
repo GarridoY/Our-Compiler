@@ -1,10 +1,15 @@
 Setup {
-    TestFunction();
+    ipin input 3;
+    opin output 5;
+
     int a = 1;
     int b = 2;
+    
     if (a == b) {
         b = 3;
     }
+
+    TestFunction();
 }
 
 Loop {

@@ -3,7 +3,7 @@ package dk.aau.cs.d703e20.ast.statements;
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
 
-public class PinDeclarationNode extends StatementNode{
+public class PinDeclarationNode extends StatementNode {
     private final Enums.PinType pinType;
     private final String variableName;
     private String pinNumber;
@@ -31,7 +31,9 @@ public class PinDeclarationNode extends StatementNode{
     }
 
     @Override
-    public String prettyPrint(int indentation) { return "PIN DECLARATION"; }
+    public String prettyPrint(int indentation) {
+        return Enums.stringFromPinType(pinType) + " " + variableName + " " + pinNumber + ";";
+    }
 
     @Override
     public void setCodePosition(CodePosition codePosition) { this.codePosition = codePosition; }

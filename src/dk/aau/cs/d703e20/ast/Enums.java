@@ -72,6 +72,19 @@ public class Enums {
         }
     }
 
+    public static String stringFromPinType (PinType pinType) {
+        switch (pinType) {
+            case IPIN:
+                return "ipin";
+
+            case OPIN:
+                return "opin";
+
+            default:
+                return "UNKNOWN BOOL OPERATOR";
+        }
+    }
+
     public static String stringFromBoolOperator (BoolOperator boolOperator) {
         switch (boolOperator) {
             case EQUAL:
