@@ -149,6 +149,12 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitBoolExpr(OurParser.BoolExprContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link OurParser#boolExprOperand}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBoolExprOperand(OurParser.BoolExprOperandContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link OurParser#pinDecl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

@@ -7,6 +7,7 @@ import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.parser.OurParserBaseVisitor;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -203,8 +204,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         } else if (ctx.SUBSCRIPT() != null) {
             SubscriptNode subscriptNode = new SubscriptNode(ctx.SUBSCRIPT().getText());
             conditionalExpressionNode = new ConditionalExpressionNode(subscriptNode);
-        }
-        else {
+        } else {
             throw new CompilerException("Invalid conditional expression", getCodePosition(ctx));
         }
 
@@ -278,6 +278,32 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitBoolExpr(OurParser.BoolExprContext ctx) {
         BoolExpressionNode boolExpressionNode;
 
+        // bool comparisons
+        if (!ctx.boolOp().isEmpty()) {
+            List<BoolExprOperandNode> boolExprOperandNodes = visitList(BoolExprOperandNode.class, ctx.boolExprOperand(), this::visitBoolExprOperand);
+
+            List<Enums.BoolOperator> boolOperators = new ArrayList<>();
+            for (OurParser.BoolOpContext boolOpContext : ctx.boolOp())
+                boolOperators.add(getBoolOperator(boolOpContext));
+
+            boolExpressionNode = new BoolExpressionNode(boolExprOperandNodes, boolOperators);
+            setCodePos(boolExpressionNode, ctx);
+            return boolExpressionNode;
+        }
+        else if (ctx.BOOL_LITERAL() != null) {
+            boolExpressionNode = new BoolExpressionNode(ctx.BOOL_LITERAL().getText());
+        }
+        else if (ctx.boolExpr() != null) {
+                BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+                boolExpressionNode = new BoolExpressionNode(ctx.NOT() != null, nestedBoolExpressionNode);
+        }
+        else
+            throw new CompilerException("Invalid Bool Expression", getCodePosition(ctx));
+        setCodePos(boolExpressionNode, ctx);
+        return boolExpressionNode;
+
+        // TODO: If testBoolExpr passes, delete
+        /*
         if (ctx.BOOL_LITERAL().size() > 0) {
             if (ctx.BOOL_LITERAL().size() > 1) {
                 // LITERAL op LITERAL
@@ -316,10 +342,25 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                 boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
                 setCodePos(boolExpressionNode, ctx);
                 return boolExpressionNode;
-            } else {
-                throw new CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
             }
+        else {
+            throw new CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
         }
+    }
+*/
+}
+
+    @Override
+    public ASTNode visitBoolExprOperand(OurParser.BoolExprOperandContext ctx) {
+        BoolExprOperandNode boolExprOperandNode;
+        if (ctx.arithExpr() != null)
+            boolExprOperandNode = new BoolExprOperandNode((ArithExpressionNode) visitArithExpr(ctx.arithExpr()));
+        else if (ctx.BOOL_LITERAL() != null)
+            boolExprOperandNode = new BoolExprOperandNode(ctx.BOOL_LITERAL().getText());
+        else
+            throw new CompilerException("Invalid Operand", getCodePosition(ctx));
+        setCodePos(boolExprOperandNode, ctx);
+        return boolExprOperandNode;
     }
 
     @Override
@@ -328,14 +369,11 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
         if (ctx.assignment() != null) {
             variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignmentNode) visitAssignment(ctx.assignment()));
-        }
-        else if (ctx.assignArray() != null) {
+        } else if (ctx.assignArray() != null) {
             variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignArrayNode) visitAssignArray(ctx.assignArray()));
-        }
-        else if (ctx.variableName() != null) {
+        } else if (ctx.variableName() != null) {
             variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), ctx.variableName().getText());
-        }
-        else
+        } else
             throw new CompilerException("Invalid Variable Declaration Statement", getCodePosition(ctx));
 
         setCodePos(variableDeclarationNode, ctx);
@@ -349,14 +387,12 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             AssignArrayNode assignArrayNode = new AssignArrayNode(ctx.variableName().getText(), arithExpressionNodes, false);
             setCodePos(assignArrayNode, ctx);
             return assignArrayNode;
-        }
-        else if (!ctx.literal().isEmpty()) {
+        } else if (!ctx.literal().isEmpty()) {
             List<Object> arithExpressionNodes = Collections.singletonList(visitLiterals(ctx.literal()));
             AssignArrayNode assignArrayNode = new AssignArrayNode(ctx.variableName().getText(), arithExpressionNodes, true);
             setCodePos(assignArrayNode, ctx);
             return assignArrayNode;
-        }
-        else
+        } else
             throw new CompilerException("Invalid array assignment", getCodePosition(ctx));
     }
 
@@ -402,50 +438,21 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitAtStatement(OurParser.AtStatementContext ctx) {
         AtStatementNode atStatementNode;
-            AtParamsNode atParamsNode = (AtParamsNode) visitAtParams(ctx.atParams());
-            if (ctx.block().size() == 1) {
-                BlockNode blockNode = (BlockNode) visitBlock(ctx.block(0));
-                atStatementNode = new AtStatementNode(atParamsNode, blockNode);
-                setCodePos(atStatementNode, ctx);
-                return atStatementNode;
-            }
-            else if (ctx.block().size() == 2) {
-                BlockNode blockNode = (BlockNode) visitBlock(ctx.block(0));
-                BlockNode finalBlockNode = (BlockNode) visitBlock(ctx.block(1));
-                atStatementNode = new AtStatementNode(atParamsNode, blockNode, finalBlockNode);
-                setCodePos(atStatementNode, ctx);
-                return atStatementNode;
-            }
-            else
-                throw new CompilerException("Invalid At statement (Too many blocks?)", getCodePosition(ctx));
-        }
+        AtParamsNode atParamsNode = (AtParamsNode) visitAtParams(ctx.atParams());
+        if (ctx.block() != null) {
+            BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
+            atStatementNode = new AtStatementNode(atParamsNode, blockNode);
+            setCodePos(atStatementNode, ctx);
+            return atStatementNode;
+        } else
+            throw new CompilerException("Invalid At statement (Too many blocks?)", getCodePosition(ctx));
+    }
 
     @Override
     public ASTNode visitAtParams(OurParser.AtParamsContext ctx) {
-        List<String> variableNames = new ArrayList<>();
-        List<Enums.BoolOperator> boolOperators = new ArrayList<>();
-        List<ArithExpressionNode> arithExpressionNodes = new ArrayList<>();
-
-        // Get all variableNames as strings
-        if (!ctx.variableName().isEmpty()) {
-            for (OurParser.VariableNameContext varName : ctx.variableName()) {
-                variableNames.add(varName.getText());
-            }
-        }
-        // Get all boolOperators
-        if (!ctx.boolOp().isEmpty()) {
-            for (OurParser.BoolOpContext boolOpContext : ctx.boolOp()) {
-                boolOperators.add(getBoolOperator(boolOpContext));
-            }
-        }
-        // Get all arithExpr by visiting
-        if (!ctx.arithExpr().isEmpty()) {
-            arithExpressionNodes = visitList(ArithExpressionNode.class, ctx.arithExpr(), this::visitArithExpr);
-        }
-        if (ctx.BOOL_LITERAL() != null)
-            return new AtParamsNode(variableNames, boolOperators, arithExpressionNodes, ctx.BOOL_LITERAL().getText());
-        else
-            return new AtParamsNode(variableNames, boolOperators, arithExpressionNodes);
+        AtParamsNode atParamsNode = new AtParamsNode((BoolExpressionNode) visitBoolExpr(ctx.boolExpr()));
+        setCodePos(atParamsNode, ctx);
+        return atParamsNode;
     }
 
     @Override
