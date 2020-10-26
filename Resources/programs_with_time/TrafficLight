@@ -20,37 +20,38 @@ Main {
     //function that gives vertical traffic red, before giving horizontal traffic green
     initiateGreenH(list light){
         clock x = 0;
-        light[4] = true;
+        light[3] = false;   // turn off greenV
+        light[4] = true;    // turn on yellowV
 
         at (yellowTime){
-            light[4] = false;
-            light[5] = false;
-            light[3] = true;
+            light[4] = false;   // turn off yellowV
+            light[5] = true;    // turn on redV
             x = 0;
         }
-        light[1] = true;
+        light[1] = true;    // turn on yellowH
         at (yellowTime){
-            light[1] = false;
-            light[2] = false;
-            light[0] = true;
+            light[1] = false;   // turn off yellowH
+            light[2] = false;   // turn off redH
+            light[0] = true;    // turn on greenH
         }
     }
     //function that gives horizontal traffic red, before giving vertical traffic green
     initiateGreenV(list light){
         x = 0;
-        light[4] = true;
+        light[0] = false;   // turn off greenH
+        light[1] = true;    // turn on yellowH
 
         at (yellowTime){
-            light[4] = false;
-            light[5] = true;
+            light[1] = false;   //turn off yellowH
+            light[2] = true;    //turn on redH
             x = 0;
         }
         x = 0
         light[4] = true;
         at (yellowTime){
-            light[4] = false;
-            light[5] = false;
-            light[3] = true;
+            light[4] = false;   // turn off yellowV
+            light[5] = false;   // turn off redV
+            light[3] = true;    // turn on greenV
         }
     }
 
