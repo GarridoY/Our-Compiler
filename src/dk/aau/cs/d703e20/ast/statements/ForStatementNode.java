@@ -31,7 +31,7 @@ public class ForStatementNode extends StatementNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        return "FOR STATEMENT";
     }
 
     @Override

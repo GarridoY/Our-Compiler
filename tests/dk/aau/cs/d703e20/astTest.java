@@ -157,29 +157,7 @@ public class astTest {
 
         AtStatementNode atStatementNode = (AtStatementNode) astBuilder.visitAtStatement(at);
 
-        assertEquals("x", atStatementNode.getAtParamsNode().getVariableNames().get(0));
-    }
-
-    @Test
-    void testATStatementAllParams() {
-        // String -> Tokens -> Parsing
-        OurParser parser = createParserFromText("at (x == varName, x < 10, true) {} final {}");
-        // Get parsed context
-        OurParser.AtStatementContext atCtx = parser.atStatement();
-        // Context -> ASTNode
-        ASTBuilder astBuilder = new ASTBuilder();
-        AtStatementNode atNode = (AtStatementNode) astBuilder.visitAtStatement(atCtx);
-
-        assertAll(
-                () -> assertEquals("x", atNode.getAtParamsNode().getVariableNames().get(0)),
-                () -> assertEquals(Enums.BoolOperator.EQUAL, atNode.getAtParamsNode().getBoolOperators().get(0)),
-                () -> assertEquals("varName", atNode.getAtParamsNode().getArithExpressionNodes().get(0).getVariableName()),
-                () -> assertEquals("x", atNode.getAtParamsNode().getVariableNames().get(1)),
-                () -> assertEquals(Enums.BoolOperator.LESS_THAN, atNode.getAtParamsNode().getBoolOperators().get(1)),
-                () -> assertEquals(10, atNode.getAtParamsNode().getArithExpressionNodes().get(1).getNumber()),
-                () -> assertEquals("true", atNode.getAtParamsNode().getBoolLiteral()),
-                () -> assertNotNull(atNode.getFinalBlock())
-        );
+        assertEquals("x", atStatementNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(0).getArithExpressionNode().getVariableName());
     }
 
     @Test
@@ -251,9 +229,9 @@ public class astTest {
         ASTBuilder astBuilder = new ASTBuilder();
         BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
 
-        ArithExpressionNode expressionNode1 = boolExpressionNode.getArithExpressionNode1();
-        ArithExpressionNode expressionNode2 = boolExpressionNode.getArithExpressionNode2();
-        Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperator();
+        ArithExpressionNode expressionNode1 = boolExpressionNode.getBoolExprOperandNodes().get(0).getArithExpressionNode();
+        ArithExpressionNode expressionNode2 = boolExpressionNode.getBoolExprOperandNodes().get(1).getArithExpressionNode();
+        Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(0);
 
 
         assertAll(
@@ -270,11 +248,11 @@ public class astTest {
         ASTBuilder astBuilder = new ASTBuilder();
         BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
 
-        ArithExpressionNode expressionNode = boolExpressionNode.getArithExpressionNode1();
-        Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperator();
+        ArithExpressionNode expressionNode = boolExpressionNode.getBoolExprOperandNodes().get(0).getArithExpressionNode();
+        Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(0);
         assertAll(
                 () -> assertEquals("test", expressionNode.getVariableName()),
-                () -> assertEquals("false", boolExpressionNode.getBoolLiteral()),
+                () -> assertEquals("false", boolExpressionNode.getBoolExprOperandNodes().get(1).getBoolLiteral()),
                 () -> assertEquals(Enums.BoolOperator.NOT_EQUAL, operator)
         );
     }
@@ -286,9 +264,9 @@ public class astTest {
         ASTBuilder astBuilder = new ASTBuilder();
         BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
 
-        ArithExpressionNode expressionNode1 = boolExpressionNode.getArithExpressionNode1();
-        ArithExpressionNode expressionNode2 = boolExpressionNode.getArithExpressionNode2();
-        Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperator();
+        ArithExpressionNode expressionNode1 = boolExpressionNode.getBoolExprOperandNodes().get(0).getArithExpressionNode();
+        ArithExpressionNode expressionNode2 = boolExpressionNode.getBoolExprOperandNodes().get(1).getArithExpressionNode();
+        Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(0);
         assertAll(
                 () -> assertEquals("test", expressionNode1.getVariableName()),
                 () -> assertEquals(5, expressionNode2.getNumber()),
@@ -334,7 +312,7 @@ public class astTest {
 
         assertAll(
                 () -> assertEquals("true", boolExpressionNode.getBoolExpressionNode().getBoolLiteral()),
-                () -> assertEquals(Enums.BoolOperator.NOT, boolExpressionNode.getOptionalNot())
+                () -> assertEquals(true, boolExpressionNode.getOptionalNot())
         );
     }
 

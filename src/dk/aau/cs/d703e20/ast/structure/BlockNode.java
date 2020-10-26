@@ -31,6 +31,10 @@ public class BlockNode implements ASTNode {
             sb.append(statementNode.prettyPrint(indentation));
             sb.append("\n");
         }
+
+        indentation--;
+        for (int i = 0; i < indentation; i++)
+            sb.append("\t");
         sb.append("}");
 
         return sb.toString();

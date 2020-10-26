@@ -71,7 +71,7 @@ public class BoundStatementNode extends StatementNode{
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        return "BOUND STATEMENT";
     }
 
     @Override

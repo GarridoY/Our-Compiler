@@ -25,7 +25,7 @@ public class WhileStatementNode extends StatementNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        return "WHILE STATEMENT";
     }
 
     @Override

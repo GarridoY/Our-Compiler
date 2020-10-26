@@ -27,7 +27,7 @@ public class FunctionParameterNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        return "FUNCTION PARAMETER";
     }
 
     @Override

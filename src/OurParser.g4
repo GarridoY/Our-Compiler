@@ -62,10 +62,10 @@ conditionalExpression: boolExpr | NOT? variableName | functionCall | SUBSCRIPT;
 
 // at statement for clock and timing purposes
 atStatement
-    : AT LEFT_PAREN atParams RIGHT_PAREN block (FINAL block)?;
+    : AT LEFT_PAREN atParams RIGHT_PAREN block;
 
 atParams
-    : variableName boolOp arithExpr (COMMA variableName boolOp arithExpr (COMMA BOOL_LITERAL)?)?; // at (x, y, z) y z optional, only z if y
+    : boolExpr;
 
 boundStatement
     : BOUND LEFT_PAREN variableName boolOp arithExpr (COMMA BOOL_LITERAL)? RIGHT_PAREN block (FINAL block)?; // bound (y, z) z optional
@@ -86,7 +86,8 @@ whileStatement
 
 arithExpr
     : arithExpr arithOp arithExpr // Precedence handled by target
-    | numLiteral | NOT?'('arithExpr')'
+    | NOT?'('arithExpr')'
+    | numLiteral
     | variableName
     | functionCall
     | SUBSCRIPT;
@@ -94,8 +95,12 @@ arithExpr
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr
     : BOOL_LITERAL
-    | (arithExpr | BOOL_LITERAL) boolOp (BOOL_LITERAL | arithExpr)
+    | boolExprOperand (boolOp boolExprOperand)+
     | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
+
+boolExprOperand
+    : BOOL_LITERAL
+    | arithExpr;
 
 pinDecl
     : pinType variableName (DIGIT | ANALOGPIN);
@@ -155,4 +160,6 @@ boolOp
     | GREATER_THAN
     | GREATER_OR_EQUAL
     | LESS_THAN
-    | LESS_OR_EQUAL;
+    | LESS_OR_EQUAL
+    | AND
+    | OR;
