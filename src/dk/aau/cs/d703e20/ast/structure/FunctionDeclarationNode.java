@@ -58,7 +58,7 @@ public class FunctionDeclarationNode implements ASTNode {
     public String prettyPrint(int indentation) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(dataType.toString());
+        sb.append(Enums.stringFromDataType(dataType));
         sb.append(" ");
         sb.append(functionName);
         sb.append(" (");

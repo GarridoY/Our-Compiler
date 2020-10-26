@@ -31,7 +31,7 @@ public class PinDeclarationNode extends StatementNode{
     }
 
     @Override
-    public String prettyPrint(int indentation) { return null; }
+    public String prettyPrint(int indentation) { return "PIN DECLARATION"; }
 
     @Override
     public void setCodePosition(CodePosition codePosition) { this.codePosition = codePosition; }

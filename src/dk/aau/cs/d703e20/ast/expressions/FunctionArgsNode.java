@@ -26,7 +26,7 @@ public class FunctionArgsNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        return "FUNCTION ARGS";
     }
 
     @Override

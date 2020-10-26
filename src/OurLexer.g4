@@ -9,7 +9,6 @@ DOUBLE: 'double';
 DOUBLE_ARRAY: 'double' '[' DIGIT? ']';
 CLOCK: 'clock';
 STRING: 'string';
-PIT: 'pit';
 
 // Access arrays
 SUBSCRIPT: ID '[' DIGIT ']';

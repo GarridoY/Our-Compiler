@@ -33,7 +33,7 @@ public class AssignArrayNode extends StatementNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        return "ASSIGN ARRAY";
     }
 
     @Override
