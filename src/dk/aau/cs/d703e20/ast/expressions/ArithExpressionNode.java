@@ -3,6 +3,7 @@ package dk.aau.cs.d703e20.ast.expressions;
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
+import dk.aau.cs.d703e20.ast.Format;
 import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 
 public class ArithExpressionNode implements ASTNode {
@@ -94,7 +95,33 @@ public class ArithExpressionNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return "ARITH EXPRESSION";
+        StringBuilder sb = new StringBuilder();
+
+        if (arithExpressionOperator != null) {
+            sb.append(arithExpressionNode1.prettyPrint(indentation));
+            sb.append(" ");
+            sb.append(arithExpressionOperator);
+            sb.append(" ");
+            sb.append(arithExpressionNode2.prettyPrint(indentation));
+        }
+        else if (arithExpressionNode1 != null) {
+            sb.append("!");
+            sb.append(arithExpressionNode1.prettyPrint(indentation));
+        }
+        else if (number != null) {
+            sb.append(Format.formatNumber(number));
+        }
+        else if (variableName != null) {
+            sb.append(variableName);
+        }
+        else if (functionCallNode != null) {
+            sb.append(functionCallNode.prettyPrint(indentation));
+        }
+        else if (subscriptNode != null) {
+            sb.append(subscriptNode.prettyPrint(indentation));
+        }
+
+        return sb.toString();
     }
 
     @Override

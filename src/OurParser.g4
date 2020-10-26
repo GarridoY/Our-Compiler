@@ -86,7 +86,8 @@ whileStatement
 
 arithExpr
     : arithExpr arithOp arithExpr // Precedence handled by target
-    | numLiteral | NOT?'('arithExpr')'
+    | NOT?'('arithExpr')'
+    | numLiteral
     | variableName
     | functionCall
     | SUBSCRIPT;

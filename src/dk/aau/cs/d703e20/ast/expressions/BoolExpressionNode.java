@@ -7,54 +7,54 @@ import dk.aau.cs.d703e20.ast.Enums;
 public class BoolExpressionNode implements ASTNode {
     // TODO Add boolSymbol
     // private Boolean not;
-    private Enums.BoolOperator optionalNot;
+    private boolean optionalNot;
     private BoolExpressionNode boolExpressionNode;
 
     private ArithExpressionNode arithExpressionNode1;
     private ArithExpressionNode arithExpressionNode2;
 
     private String boolLiteral;
-    private String boolLiteral1;
+    private String boolLiteral2;
 
     private Enums.BoolOperator boolExpressionOperator;
 
     private CodePosition codePosition;
 
-    public BoolExpressionNode(Enums.BoolOperator optionalNot, BoolExpressionNode boolExpressionNode) {
+    // NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
+    public BoolExpressionNode(boolean optionalNot, BoolExpressionNode boolExpressionNode) {
         this.optionalNot = optionalNot;
         this.boolExpressionNode = boolExpressionNode;
     }
 
+    // arithExpr boolOp arithExpr
     public BoolExpressionNode(ArithExpressionNode arithExpressionNode1, ArithExpressionNode arithExpressionNode2, Enums.BoolOperator boolExpressionOperator) {
         this.arithExpressionNode1 = arithExpressionNode1;
-        this.arithExpressionNode2 = arithExpressionNode2;
         this.boolExpressionOperator = boolExpressionOperator;
+        this.arithExpressionNode2 = arithExpressionNode2;
     }
 
-    public BoolExpressionNode(ArithExpressionNode arithExpressionNode1 , String boolLiteral, Enums.BoolOperator boolExpressionOperator) {
+    // arithExpr boolOp BOOL_LITERAL
+    public BoolExpressionNode(ArithExpressionNode arithExpressionNode1 , String boolLiteral2, Enums.BoolOperator boolExpressionOperator) {
         this.arithExpressionNode1 = arithExpressionNode1;
         this.boolExpressionOperator = boolExpressionOperator;
-        this.boolLiteral = boolLiteral;
+        this.boolLiteral2 = boolLiteral2;
     }
 
-    public BoolExpressionNode(BoolExpressionNode boolExpressionNode , String boolLiteral, Enums.BoolOperator boolExpressionOperator) {
-        this.boolExpressionNode = boolExpressionNode;
-        this.boolExpressionOperator = boolExpressionOperator;
-        this.boolLiteral = boolLiteral;
-    }
-
-    public BoolExpressionNode(String boolLiteral, ArithExpressionNode arithExpressionNode2, Enums.BoolOperator boolExpressionOperator) {
-        this.boolLiteral = boolLiteral;
-        this.arithExpressionNode1 = arithExpressionNode2;
-        this.boolExpressionOperator = boolExpressionOperator;
-    }
-
-    public BoolExpressionNode(String boolLiteral1, String boolLiteral2, Enums.BoolOperator boolExpressionOperator) {
-        this.boolExpressionOperator = boolExpressionOperator;
+    // BOOL_LITERAL boolOp arithExpr
+    public BoolExpressionNode(String boolLiteral1, ArithExpressionNode arithExpressionNode2, Enums.BoolOperator boolExpressionOperator) {
         this.boolLiteral = boolLiteral1;
-        this.boolLiteral1 = boolLiteral2;
+        this.boolExpressionOperator = boolExpressionOperator;
+        this.arithExpressionNode1 = arithExpressionNode2;
     }
 
+    // BOOL_LITERAL boolOp BOOL_LITERAL
+    public BoolExpressionNode(String boolLiteral1, String boolLiteral2, Enums.BoolOperator boolExpressionOperator) {
+        this.boolLiteral = boolLiteral1;
+        this.boolExpressionOperator = boolExpressionOperator;
+        this.boolLiteral2 = boolLiteral2;
+    }
+
+    // BOOL_LITERAL
     public BoolExpressionNode(String boolLiteral) {
         this.boolLiteral = boolLiteral;
     }
@@ -67,21 +67,49 @@ public class BoolExpressionNode implements ASTNode {
 
     public String getBoolLiteral() { return boolLiteral; }
 
-    public String getBoolLiteral1() {
-        return boolLiteral1;
+    public String getBoolLiteral2() {
+        return boolLiteral2;
     }
 
     public BoolExpressionNode getBoolExpressionNode() {
         return boolExpressionNode;
     }
 
-    public Enums.BoolOperator getOptionalNot() {
+    public Boolean getOptionalNot() {
         return optionalNot;
     }
 
     @Override
     public String prettyPrint(int indentation) {
-        return "BOOL EXPRESSION";
+        StringBuilder sb = new StringBuilder();
+
+        if (boolExpressionOperator != null) {
+            if (arithExpressionNode1 != null)
+                sb.append(arithExpressionNode1.prettyPrint(indentation));
+            else
+                sb.append(boolLiteral);
+
+            sb.append(" ");
+            sb.append(Enums.stringFromBoolOperator(boolExpressionOperator));
+            sb.append(" ");
+
+            if (arithExpressionNode2 != null)
+                sb.append(arithExpressionNode2.prettyPrint(indentation));
+            else
+                sb.append(boolLiteral2);
+        }
+        else if (boolLiteral != null) {
+            sb.append(boolLiteral);
+        }
+        else if (boolExpressionNode != null) {
+            if (optionalNot)
+                sb.append("!");
+            sb.append("(");
+            sb.append(boolExpressionNode.prettyPrint(indentation));
+            sb.append(")");
+        }
+
+        return sb.toString();
     }
 
     @Override

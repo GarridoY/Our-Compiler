@@ -71,4 +71,38 @@ public class Enums {
                 return "UNKNOWN DATATYPE";
         }
     }
+
+    public static String stringFromBoolOperator (BoolOperator boolOperator) {
+        switch (boolOperator) {
+            case EQUAL:
+                return "==";
+
+            case OR:
+                return "||";
+
+            case AND:
+                return "&&";
+
+            case NOT_EQUAL:
+                return "!=";
+
+            case GREATER_THAN:
+                return ">";
+
+            case GREATER_OR_EQUAL:
+                return ">=";
+
+            case LESS_THAN:
+                return "<";
+
+            case LESS_OR_EQUAL:
+                return "<=";
+
+            case NOT:
+                return "!";
+
+            default:
+                return "UNKNOWN BOOL OPERATOR";
+        }
+    }
 }

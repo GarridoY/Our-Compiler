@@ -307,13 +307,11 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
                 return boolExpressionNode;
             } else if (ctx.boolExpr() != null) {
                 // nested boolExpr
-                if (ctx.NOT() != null) {
-                    if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null) {
-                        BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
-                        boolExpressionNode = new BoolExpressionNode(Enums.BoolOperator.NOT, nestedBoolExpressionNode);
-                        setCodePos(boolExpressionNode, ctx);
-                        return boolExpressionNode;
-                    }
+                if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null) {
+                    BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
+                    boolExpressionNode = new BoolExpressionNode(ctx.NOT() != null, nestedBoolExpressionNode);
+                    setCodePos(boolExpressionNode, ctx);
+                    return boolExpressionNode;
                 }
                 boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
                 setCodePos(boolExpressionNode, ctx);

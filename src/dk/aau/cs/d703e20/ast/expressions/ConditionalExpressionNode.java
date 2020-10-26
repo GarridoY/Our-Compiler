@@ -46,7 +46,23 @@ public class ConditionalExpressionNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return "COND";
+        StringBuilder sb = new StringBuilder();
+
+        if (boolExpressionNode != null) {
+            sb.append(boolExpressionNode.prettyPrint(indentation));
+        }
+        else if (variableName != null) {
+            //TODO: we need to know if we should print "!"
+            sb.append(variableName);
+        }
+        else if (functionCallNode != null) {
+            sb.append(functionCallNode.prettyPrint(indentation));
+        }
+        else if (subscriptNode != null) {
+            sb.append(subscriptNode.prettyPrint(indentation));
+        }
+
+        return sb.toString();
     }
 
     @Override
