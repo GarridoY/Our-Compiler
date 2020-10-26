@@ -178,7 +178,7 @@ public class TypeChecking {
 
     private void visitAssignment(AssignmentNode assignmentNode) {
         String variableName;
-        String dataType;
+        Enums.DataType dataType;
 
         if (assignmentNode.getVariableName() != null) {
             VariableDeclarationNode variableDeclarationNode = null;
@@ -187,22 +187,23 @@ public class TypeChecking {
                 variableDeclarationNode = (VariableDeclarationNode) retrieveSymbol(variableName);
 
             if (variableDeclarationNode != null)
-                dataType = variableDeclarationNode.getDataType().toString();
+                dataType = variableDeclarationNode.getDataType();
             else dataType = null;
 
             if (retrieveSymbol(variableName) == null)
                 throw new CompilerException("ERROR: Variable (" + variableName + ") on left side of assignment is not declared.", assignmentNode.getCodePosition());
 
             if (assignmentNode.getArithExpressionNode() != null) {
-                String assignedDataType = null;
-                /*
+                Enums.DataType assignedDataType = null;
+
                 if (assignmentNode.getLiteralValue() != null) {
-                    if (assignmentNode.getLiteralValue())
-                    assignedDataType = Enums.DataType.BOOL.toString();
-                } else ()
-                if (dataType != null && assignedDataType != null && !assignedDataType.equals(dataType))
+                    assignedDataType = getDataTypeFromLiteral(assignmentNode.getLiteralValue());
+                } else if (assignmentNode.getVariableName() != null) {
+                    //TODO: lookup variablename in symboltable to get datatype
+                }
+                /*if (dataType != null && assignedDataType != null && !assignedDataType.equals(dataType))
                     this
-                 * */
+                 */
             }
 
         }
@@ -263,6 +264,8 @@ public class TypeChecking {
 
     }
 
-
-
+    private Enums.DataType getDataTypeFromLiteral(String literal) {
+        //TODO: do fancy regex to check type
+        return Enums.DataType.VOID;
+    }
 }
