@@ -81,7 +81,7 @@ public class BoolExpressionNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        return "BOOL EXPRESSION";
     }
 
     @Override

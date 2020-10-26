@@ -30,7 +30,19 @@ public class AssignmentNode extends StatementNode {
     }
 
     @Override
-    public String prettyPrint(int indentation) { return null; }
+    public String prettyPrint(int indentation) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(variableName);
+        sb.append(" = ");
+        if (arithExpressionNode != null)
+            sb.append(arithExpressionNode.prettyPrint(indentation));
+        else
+            sb.append(literalValue);
+        sb.append(";");
+
+        return sb.toString();
+    }
 
     @Override
     public void setCodePosition(CodePosition codePosition) { this.codePosition = codePosition; }

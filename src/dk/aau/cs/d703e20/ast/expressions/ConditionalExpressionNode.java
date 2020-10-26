@@ -46,7 +46,7 @@ public class ConditionalExpressionNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        return "COND";
     }
 
     @Override

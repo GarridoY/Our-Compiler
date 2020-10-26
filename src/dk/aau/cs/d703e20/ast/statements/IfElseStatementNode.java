@@ -32,7 +32,15 @@ public class IfElseStatementNode extends StatementNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(ifStatementNode.prettyPrint(indentation));
+        for (ElseIfStatementNode elseif : elseIfStatementNodes)
+            sb.append(elseif.prettyPrint(indentation));
+        if (elseStatementNode != null)
+            sb.append(elseStatementNode.prettyPrint(indentation));
+
+        return sb.toString();
     }
 
     @Override

@@ -36,7 +36,16 @@ public class AtStatementNode extends StatementNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("at (");
+        sb.append(atParamsNode.prettyPrint(indentation));
+        sb.append(") ");
+        sb.append(blockNode.prettyPrint(indentation));
+        if (finalBlock != null)
+            sb.append(finalBlock.prettyPrint(indentation));
+
+        return sb.toString();
     }
 
     @Override

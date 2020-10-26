@@ -43,7 +43,7 @@ public class AtParamsNode extends StatementNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        return "AT PARAMS";
     }
 
     @Override

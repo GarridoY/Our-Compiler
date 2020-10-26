@@ -19,7 +19,12 @@ public class ElseStatementNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("else ");
+        sb.append(blockNode.prettyPrint(indentation));
+
+        return sb.toString();
     }
 
     @Override
