@@ -5,7 +5,7 @@ import dk.aau.cs.d703e20.ast.CodePosition;
 
 import java.util.List;
 
-public class IfElseStatementNode implements ASTNode {
+public class IfElseStatementNode extends StatementNode {
     private final IfStatementNode ifStatementNode;
     private final List<ElseIfStatementNode> elseIfStatementNodes;
     private final ElseStatementNode elseStatementNode;

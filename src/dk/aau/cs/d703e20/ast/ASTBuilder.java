@@ -108,6 +108,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             return visitIterativeStatement(ctx.iterativeStatement());
         else if (ctx.returnStatement() != null)
             return visitReturnStatement(ctx.returnStatement());
+        else if (ctx.ifElseStatement() != null)
+            return visitIfElseStatement(ctx.ifElseStatement());
         else if (ctx.atStatement() != null)
             return visitAtStatement(ctx.atStatement());
         else
