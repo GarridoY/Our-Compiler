@@ -65,7 +65,7 @@ atStatement
     : AT LEFT_PAREN atParams RIGHT_PAREN block (FINAL block)?;
 
 atParams
-    : variableName boolOp arithExpr (COMMA variableName boolOp arithExpr (COMMA BOOL_LITERAL)?)?; // at (x, y, z) y z optional, only z if y
+    : boolExpr; // at (x, y, z) y z optional, only z if y
 
 boundStatement
     : BOUND LEFT_PAREN variableName boolOp arithExpr (COMMA BOOL_LITERAL)? RIGHT_PAREN block (FINAL block)?; // bound (y, z) z optional
@@ -94,7 +94,7 @@ arithExpr
 // TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr
     : BOOL_LITERAL
-    | (arithExpr | BOOL_LITERAL) boolOp (BOOL_LITERAL | arithExpr)
+    | (arithExpr | BOOL_LITERAL) (boolOp (BOOL_LITERAL | arithExpr))+
     | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
 
 pinDecl
@@ -155,4 +155,6 @@ boolOp
     | GREATER_THAN
     | GREATER_OR_EQUAL
     | LESS_THAN
-    | LESS_OR_EQUAL;
+    | LESS_OR_EQUAL
+    | AND
+    | OR;
