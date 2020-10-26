@@ -1,4 +1,4 @@
-// Generated from C:/Users/the_p/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from C:/Users/the_p/Desktop/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
