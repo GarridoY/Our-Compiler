@@ -42,8 +42,8 @@ Main {
         light[1] = true;    // turn on yellowH
 
         at (yellowTime){
-            light[1] = false;   //turn off yellowH
-            light[2] = true;    //turn on redH
+            light[1] = false;   // turn off yellowH
+            light[2] = true;    // turn on redH
             x = 0;
         }
         x = 0
