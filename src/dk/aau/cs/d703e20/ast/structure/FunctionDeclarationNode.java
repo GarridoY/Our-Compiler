@@ -5,8 +5,6 @@ import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.FunctionParameterNode;
 
-import java.util.List;
-
 public class FunctionDeclarationNode implements ASTNode {
     private Enums.DataType dataType;
     private final String functionName;
@@ -58,7 +56,18 @@ public class FunctionDeclarationNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(Enums.stringFromDataType(dataType));
+        sb.append(" ");
+        sb.append(functionName);
+        sb.append(" (");
+        if (functionParameterNode != null)
+            sb.append(functionParameterNode.prettyPrint(indentation));
+        sb.append(") ");
+        sb.append(blockNode.prettyPrint(indentation));
+
+        return sb.toString();
     }
 
     @Override

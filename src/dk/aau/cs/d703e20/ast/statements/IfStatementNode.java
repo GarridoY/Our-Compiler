@@ -26,7 +26,14 @@ public class IfStatementNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("if (");
+        sb.append(conditionalExpressionNode.prettyPrint(indentation));
+        sb.append(") ");
+        sb.append(blockNode.prettyPrint(indentation));
+
+        return sb.toString();
     }
 
     @Override

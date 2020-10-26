@@ -17,7 +17,13 @@ public class ReturnStatementNode extends StatementNode{
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("return ");
+        sb.append(variableName);
+        sb.append(";");
+
+        return sb.toString();
     }
 
     @Override

@@ -5,7 +5,7 @@ import dk.aau.cs.d703e20.ast.CodePosition;
 
 import java.util.List;
 
-public class IfElseStatementNode implements ASTNode {
+public class IfElseStatementNode extends StatementNode {
     private final IfStatementNode ifStatementNode;
     private final List<ElseIfStatementNode> elseIfStatementNodes;
     private final ElseStatementNode elseStatementNode;
@@ -32,7 +32,15 @@ public class IfElseStatementNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(ifStatementNode.prettyPrint(indentation));
+        for (ElseIfStatementNode elseif : elseIfStatementNodes)
+            sb.append(elseif.prettyPrint(indentation));
+        if (elseStatementNode != null)
+            sb.append(elseStatementNode.prettyPrint(indentation));
+
+        return sb.toString();
     }
 
     @Override

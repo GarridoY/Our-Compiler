@@ -29,7 +29,15 @@ public class FunctionCallNode extends StatementNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(functionName);
+        sb.append("(");
+        if (functionargsNode != null)
+            sb.append(functionargsNode.prettyPrint(indentation));
+        sb.append(");");
+
+        return sb.toString();
     }
 
     @Override

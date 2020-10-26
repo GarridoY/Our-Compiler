@@ -3,56 +3,36 @@ package dk.aau.cs.d703e20.ast.statements;
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 
 import java.util.List;
 
 public class AtParamsNode extends StatementNode {
-    List<String> variableNames;
-    List<Enums.BoolOperator> boolOperators;
-    List<ArithExpressionNode> arithExpressionNodes;
-    String boolLiteral;
+    BoolExpressionNode boolExpressionNode;
 
-    public AtParamsNode(List<String> variableNames, List<Enums.BoolOperator> boolOperators, List<ArithExpressionNode> arithExpressionNodes) {
-        this.variableNames = variableNames;
-        this.boolOperators = boolOperators;
-        this.arithExpressionNodes = arithExpressionNodes;
+    private CodePosition codePosition;
+
+    public AtParamsNode(BoolExpressionNode boolExpressionNode) {
+        this.boolExpressionNode = boolExpressionNode;
     }
 
-    public AtParamsNode(List<String> variableNames, List<Enums.BoolOperator> boolOperators, List<ArithExpressionNode> arithExpressionNodes, String boolLiteral) {
-        this.variableNames = variableNames;
-        this.boolOperators = boolOperators;
-        this.arithExpressionNodes = arithExpressionNodes;
-        this.boolLiteral = boolLiteral;
-    }
-
-    public List<String> getVariableNames() {
-        return variableNames;
-    }
-
-    public List<Enums.BoolOperator> getBoolOperators() {
-        return boolOperators;
-    }
-
-    public String getBoolLiteral() {
-        return boolLiteral;
-    }
-
-    public List<ArithExpressionNode> getArithExpressionNodes() {
-        return arithExpressionNodes;
+    public BoolExpressionNode getBoolExpressionNode() {
+        return boolExpressionNode;
     }
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+        return boolExpressionNode.prettyPrint(indentation);
     }
+
 
     @Override
     public void setCodePosition(CodePosition codePosition) {
-
+        this.codePosition = codePosition;
     }
 
     @Override
     public CodePosition getCodePosition() {
-        return null;
+        return codePosition;
     }
 }

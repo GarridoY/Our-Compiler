@@ -238,6 +238,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitBoolExpr(OurParser.BoolExprContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link OurParser#boolExprOperand}.
+	 * @param ctx the parse tree
+	 */
+	void enterBoolExprOperand(OurParser.BoolExprOperandContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#boolExprOperand}.
+	 * @param ctx the parse tree
+	 */
+	void exitBoolExprOperand(OurParser.BoolExprOperandContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link OurParser#pinDecl}.
 	 * @param ctx the parse tree
 	 */
