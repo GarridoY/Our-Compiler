@@ -7,7 +7,6 @@ import dk.aau.cs.d703e20.ast.Enums;
 import java.util.List;
 
 public class BoolExpressionNode implements ASTNode {
-    // TODO Add boolSymbol
     private boolean optionalNot;
     private BoolExpressionNode boolExpressionNode;
     private String boolLiteral;

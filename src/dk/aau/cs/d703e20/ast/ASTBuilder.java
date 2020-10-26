@@ -238,7 +238,6 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitArithExpr(OurParser.ArithExprContext ctx) {
         ArithExpressionNode arithExpressionNode = null;
 
-        // TODO add get num from subscript
         if (ctx.arithExpr().size() > 0) {
             if (ctx.arithExpr(0) != null) {
                 if (ctx.arithExpr(1) != null) {
@@ -301,53 +300,6 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             throw new CompilerException("Invalid Bool Expression", getCodePosition(ctx));
         setCodePos(boolExpressionNode, ctx);
         return boolExpressionNode;
-
-        // TODO: If testBoolExpr passes, delete
-        /*
-        if (ctx.BOOL_LITERAL().size() > 0) {
-            if (ctx.BOOL_LITERAL().size() > 1) {
-                // LITERAL op LITERAL
-                return new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText(), ctx.BOOL_LITERAL(1).getText(), getBoolOperator(ctx.boolOp()));
-            } else {
-                if (ctx.arithExpr() != null && !ctx.arithExpr().isEmpty()) { // ctx.ArithExpr can be empty but not null list, fails when accessing the empty list
-                    // arith op LITERAL | LITERAL op arith
-                    // TODO: figure out order
-                    ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
-                    boolExpressionNode = new BoolExpressionNode(arithExpressionNode, ctx.BOOL_LITERAL(0).getText(), getBoolOperator(ctx.boolOp()));
-                    setCodePos(boolExpressionNode, ctx);
-                    return boolExpressionNode;
-                } else {
-                    // only BOOL
-                    boolExpressionNode = new BoolExpressionNode(ctx.BOOL_LITERAL(0).getText());
-                    setCodePos(boolExpressionNode, ctx);
-                    return boolExpressionNode;
-                }
-            }
-        } else {
-            if (ctx.arithExpr() != null && !ctx.arithExpr().isEmpty()) { // ctx.ArithExpr can be empty
-                // arith op arith
-                ArithExpressionNode arithExpressionNode1 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
-                ArithExpressionNode arithExpressionNode2 = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(1));
-                boolExpressionNode = new BoolExpressionNode(arithExpressionNode1, arithExpressionNode2, getBoolOperator(ctx.boolOp()));
-                setCodePos(boolExpressionNode, ctx);
-                return boolExpressionNode;
-            } else if (ctx.boolExpr() != null) {
-                // nested boolExpr
-                if (ctx.LEFT_PAREN() != null && ctx.RIGHT_PAREN() != null) {
-                    BoolExpressionNode nestedBoolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
-                    boolExpressionNode = new BoolExpressionNode(ctx.NOT() != null, nestedBoolExpressionNode);
-                    setCodePos(boolExpressionNode, ctx);
-                    return boolExpressionNode;
-                }
-                boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
-                setCodePos(boolExpressionNode, ctx);
-                return boolExpressionNode;
-            }
-        else {
-            throw new CompilerException("Invalid Boolean Expression", getCodePosition(ctx));
-        }
-    }
-*/
 }
 
     @Override

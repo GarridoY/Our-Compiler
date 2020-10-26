@@ -7,7 +7,6 @@ import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 
 import java.util.List;
 
-// TODO: fix
 public class AtParamsNode extends StatementNode {
     BoolExpressionNode boolExpressionNode;
 
