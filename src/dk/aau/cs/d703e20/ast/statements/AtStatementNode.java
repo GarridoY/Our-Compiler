@@ -7,19 +7,12 @@ public class AtStatementNode extends StatementNode {
 
     private AtParamsNode atParamsNode;
     private BlockNode blockNode;
-    private BlockNode finalBlock;
 
     private CodePosition codePosition;
 
     public AtStatementNode(AtParamsNode atParamsNode, BlockNode blockNode) {
         this.atParamsNode = atParamsNode;
         this.blockNode = blockNode;
-    }
-
-    public AtStatementNode(AtParamsNode atParamsNode, BlockNode blockNode, BlockNode finalBlock) {
-        this.atParamsNode = atParamsNode;
-        this.blockNode = blockNode;
-        this.finalBlock = finalBlock;
     }
 
     public AtParamsNode getAtParamsNode() {
@@ -30,13 +23,14 @@ public class AtStatementNode extends StatementNode {
         return blockNode;
     }
 
-    public BlockNode getFinalBlock() {
-        return finalBlock;
-    }
 
     @Override
     public String prettyPrint(int indentation) {
-        return null;
+
+        return "at (" +
+                atParamsNode.prettyPrint(indentation) +
+                ") " +
+                blockNode.prettyPrint(indentation);
     }
 
     @Override
