@@ -198,14 +198,21 @@ public class TypeChecking {
 
                 if (assignmentNode.getLiteralValue() != null) {
                     assignedDataType = getDataTypeFromLiteral(assignmentNode.getLiteralValue());
-                } else if (assignmentNode.getVariableName() != null) {
-                    //TODO: lookup variablename in symboltable to get datatype
+                } else if (assignmentNode.getArithExpressionNode() != null) {
+                    //TODO: visit expression and get datatype
+                    visitArithExpression(assignmentNode.getArithExpressionNode());
                 }
                 /*if (dataType != null && assignedDataType != null && !assignedDataType.equals(dataType))
                     this
                  */
             }
 
+        }
+    }
+
+    private void visitArithExpression(ArithExpressionNode arithExpressionNode) {
+        if (arithExpressionNode.getVariableName() != null) {
+            //TODO: lookup variablename in symboltable to get datatype
         }
     }
 
