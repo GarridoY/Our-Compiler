@@ -3,9 +3,10 @@ package dk.aau.cs.d703e20.ast.statements;
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 
+import java.beans.Statement;
 import java.util.List;
 
-public class IfElseStatementNode implements ASTNode {
+public class IfElseStatementNode extends StatementNode implements ASTNode {
     private final IfStatementNode ifStatementNode;
     private final List<ElseIfStatementNode> elseIfStatementNodes;
     private final ElseStatementNode elseStatementNode;
