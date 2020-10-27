@@ -1,11 +1,7 @@
 package dk.aau.cs.d703e20.ast.statements;
 
 import dk.aau.cs.d703e20.ast.CodePosition;
-import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
 import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
-
-import java.util.List;
 
 public class AtParamsNode extends StatementNode {
     BoolExpressionNode boolExpressionNode;

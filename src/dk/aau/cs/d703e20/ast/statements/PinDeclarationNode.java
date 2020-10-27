@@ -6,7 +6,7 @@ import dk.aau.cs.d703e20.ast.Enums;
 public class PinDeclarationNode extends StatementNode {
     private final Enums.PinType pinType;
     private final String variableName;
-    private String pinNumber;
+    private final String pinNumber;
 
     private CodePosition codePosition;
 

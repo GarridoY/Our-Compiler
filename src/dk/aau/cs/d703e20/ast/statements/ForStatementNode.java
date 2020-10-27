@@ -5,9 +5,9 @@ import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 
 public class ForStatementNode extends StatementNode {
-    private ArithExpressionNode arithExpressionNode1;
-    private ArithExpressionNode arithExpressionNode2;
-    private BlockNode blockNode;
+    private final ArithExpressionNode arithExpressionNode1;
+    private final ArithExpressionNode arithExpressionNode2;
+    private final BlockNode blockNode;
 
     private CodePosition codePosition;
 

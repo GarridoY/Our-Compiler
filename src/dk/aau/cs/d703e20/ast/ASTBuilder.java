@@ -7,7 +7,6 @@ import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.parser.OurParserBaseVisitor;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -370,13 +369,6 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             setCodePos(assignmentNode, ctx);
             return assignmentNode;
         }
-        /*
-        else if (ctx.functionCall() != null) {
-            FunctionCallNode functionCallNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
-            AssignmentNode assignmentNode = new AssignmentNode(ctx.variableName().getText(), functionCallNode);
-            setCodePos(assignmentNode, ctx);
-            return assignmentNode;
-        } */
         else {
             throw new CompilerException("Invalid Assignment Statement", getCodePosition(ctx));
         }
@@ -413,32 +405,45 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitBoundStatement(OurParser.BoundStatementContext ctx) {
         BoundStatementNode boundStatementNode;
         // Non optional
-        String variableName = ctx.variableName().getText();
-        Enums.BoolOperator boolOperator = getBoolOperator(ctx.boolOp());
-        ArithExpressionNode arithExpressionNode = (ArithExpressionNode) visitArithExpr(ctx.arithExpr());
-        BlockNode blockNode = (BlockNode) visitBlock(ctx.block(0));
+        AtParamsNode atParamsNode = (AtParamsNode) visitAtParams(ctx.atParams());
+        // ctx block structure follow: 0=body, 1=catch, 2=final, if they all exist
+        BlockNode body = (BlockNode) visitBlock(ctx.block(0));
+
+        // Optional literal
         if (ctx.BOOL_LITERAL() != null) {
-            String boolLiteral = ctx.BOOL_LITERAL().getText();
-            // Both optional BOOL_LITERAL and FINAL block
+            // arg literal block blockNode
             if (ctx.block().size() == 2) {
-                BlockNode finalBlock = (BlockNode) visitBlock(ctx.block(1));
-                boundStatementNode = new BoundStatementNode(variableName, boolOperator, arithExpressionNode, boolLiteral, blockNode, finalBlock);
+                // blockNode is finalBlock
+                if (ctx.FINAL() != null)
+                    boundStatementNode = new BoundStatementNode(atParamsNode, ctx.BOOL_LITERAL().getText(), body,(BlockNode) visitBlock(ctx.block(1)), false);
+                // blockNode is Catch
+                else
+                    boundStatementNode = new BoundStatementNode(atParamsNode, ctx.BOOL_LITERAL().getText(), body,(BlockNode) visitBlock(ctx.block(1)), true);
             }
-            // Just the optional BOOL_LITERAL
-            else {
-                boundStatementNode = new BoundStatementNode(variableName, boolOperator, arithExpressionNode, boolLiteral, blockNode);
+            // arg literal block catch final
+            else if (ctx.block().size() == 3)
+                boundStatementNode = new BoundStatementNode(atParamsNode, ctx.BOOL_LITERAL().getText(), body, (BlockNode) visitBlock(ctx.block(1)), (BlockNode) visitBlock(ctx.block(2)));
+            // arg literal block
+            else boundStatementNode = new BoundStatementNode(atParamsNode, ctx.BOOL_LITERAL().getText(), body);
+        }
+        // without optional literal
+        else {
+            // arg block blockNode
+            if (ctx.block().size() == 2) {
+                // blockNode is finalBlock
+                if (ctx.FINAL() != null)
+                    boundStatementNode = new BoundStatementNode(atParamsNode, body,(BlockNode) visitBlock(ctx.block(1)), false);
+                // blockNode is Catch
+                else
+                    boundStatementNode = new BoundStatementNode(atParamsNode, body,(BlockNode) visitBlock(ctx.block(1)), true);
             }
+            // arg block catch final
+            else if (ctx.block().size() == 3)
+                boundStatementNode = new BoundStatementNode(atParamsNode, body, (BlockNode) visitBlock(ctx.block(1)), (BlockNode) visitBlock(ctx.block(2)));
+            // arg block
+            else boundStatementNode = new BoundStatementNode(atParamsNode, body);
         }
-        // Just the optional FINAL block
-        else if (ctx.block().size() == 2) {
-            BlockNode finalBlock = (BlockNode) visitBlock(ctx.block(1));
-            boundStatementNode = new BoundStatementNode(variableName, boolOperator, arithExpressionNode, blockNode, finalBlock);
-        }
-        // Not optional params
-        else if ((ctx.block().size() == 1) && (ctx.BOOL_LITERAL() != null)) {
-            boundStatementNode = new BoundStatementNode(variableName, boolOperator, arithExpressionNode);
-        } else
-            throw new CompilerException("Invalid Bound Statement", getCodePosition(ctx));
+
         setCodePos(boundStatementNode, ctx);
         return boundStatementNode;
     }
