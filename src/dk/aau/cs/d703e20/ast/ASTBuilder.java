@@ -540,6 +540,10 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             operator = Enums.BoolOperator.LESS_THAN;
         } else if (ctx.LESS_OR_EQUAL() != null) {
             operator = Enums.BoolOperator.LESS_OR_EQUAL;
+        } else if (ctx.AND() != null) {
+            operator = Enums.BoolOperator.AND;
+        } else if (ctx.OR() != null) {
+            operator = Enums.BoolOperator.OR;
         } else {
             throw new CompilerException("Operator is unknown", getCodePosition(ctx));
         }
