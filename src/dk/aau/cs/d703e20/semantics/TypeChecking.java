@@ -8,6 +8,7 @@ import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 
+import javax.xml.crypto.Data;
 import java.util.*;
 
 public class TypeChecking {
@@ -49,29 +50,6 @@ public class TypeChecking {
         }
 
         return null;
-    }
-
-    // TODO retrieveAllVariableDeclarations?
-
-    private ArrayList<FunctionDeclarationNode> retrieveAllFunctions(String name) {
-        ArrayList<FunctionDeclarationNode> functionDeclarations = new ArrayList<>();
-
-        int stackLevel = this.hashMapStack.size() - 1;
-
-        while (stackLevel >= 0) {
-            if (this.hashMapStack.elementAt(stackLevel).get(name) != null) {
-                if (this.hashMapStack.elementAt(stackLevel).get(name) instanceof FunctionDeclarationNode) {
-                    functionDeclarations.add((FunctionDeclarationNode) this.hashMapStack.elementAt(stackLevel).get(name));
-                    if (functionCounter != 1) {
-                        for (int i = 1; i < functionCounter; i++) {
-                            functionDeclarations.add((FunctionDeclarationNode) this.hashMapStack.elementAt(stackLevel).get(i + name));
-                        }
-                    }
-                }
-            }
-            stackLevel -= 1;
-        }
-        return functionDeclarations;
     }
 
     public void printSymbolTable() {
@@ -150,10 +128,6 @@ public class TypeChecking {
 
             if (retrieveSymbol(variableName) == null)
                 throw new CompilerException("ERROR: Variable (" + variableName + ") is not declared.", retrievedNode.getCodePosition());
-
-            if (dataType != null) {
-                // TODO what do we check here?
-            }
         }
 
         if (retrieveSymbol(variableDeclarationNode.getAssignmentNode().getVariableName()) != null && retrieveSymbol(variableDeclarationNode.getAssignmentNode().getVariableName()) instanceof  VariableDeclarationNode)
@@ -162,17 +136,20 @@ public class TypeChecking {
         if (retrieveSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName()) != null && retrieveSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName()) instanceof  VariableDeclarationNode)
             retrievedNode = (VariableDeclarationNode) retrieveSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName());
 
-        if (retrievedNode == null) enterSymbol(variableDeclarationNode.getAssignmentNode().getVariableName(), variableDeclarationNode);
-        else throw new CompilerException("ERROR: A variable (" + variableDeclarationNode.getAssignmentNode().getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
+        if (retrievedNode == null) {
+            if (variableDeclarationNode.getAssignmentNode().getVariableName() != null)
+                enterSymbol(variableDeclarationNode.getAssignmentNode().getVariableName(), variableDeclarationNode);
+            else throw new CompilerException("ERROR: A variable (" + variableDeclarationNode.getAssignmentNode().getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
 
-        if (retrievedNode == null) enterSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName(), variableDeclarationNode);
-        else throw new CompilerException("ERROR: A array variable (" + variableDeclarationNode.getAssignArrayNode().getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
+            if (variableDeclarationNode.getAssignArrayNode().getVariableName() != null)
+                enterSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName(), variableDeclarationNode);
+            else throw new CompilerException("ERROR: A array variable (" + variableDeclarationNode.getAssignArrayNode().getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
 
-        if (retrievedNode == null) enterSymbol(variableDeclarationNode.getVariableName(), variableDeclarationNode);
-        else throw new CompilerException("ERROR: A variable (" + variableDeclarationNode.getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
-
+            if (variableDeclarationNode.getVariableName() != null)
+                enterSymbol(variableDeclarationNode.getVariableName(), variableDeclarationNode);
+            else throw new CompilerException("ERROR: A variable (" + variableDeclarationNode.getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
+        }
         if (variableDeclarationNode.getAssignmentNode() != null) visitAssignment(variableDeclarationNode.getAssignmentNode());
-
         if (variableDeclarationNode.getAssignArrayNode() != null) visitAssignArray(variableDeclarationNode.getAssignArrayNode());
     }
 
@@ -186,34 +163,36 @@ public class TypeChecking {
             if (retrieveSymbol(variableName) instanceof VariableDeclarationNode)
                 variableDeclarationNode = (VariableDeclarationNode) retrieveSymbol(variableName);
 
-            if (variableDeclarationNode != null)
-                dataType = variableDeclarationNode.getDataType();
-            else dataType = null;
+            if (variableDeclarationNode != null) dataType = variableDeclarationNode.getDataType();
+            else throw new CompilerException("ERROR: Variable (" + variableName + ") on left side of assignment is not declared.", assignmentNode.getCodePosition());
 
-            if (retrieveSymbol(variableName) == null)
-                throw new CompilerException("ERROR: Variable (" + variableName + ") on left side of assignment is not declared.", assignmentNode.getCodePosition());
+            Enums.DataType assignedDataType = null;
+            if (assignmentNode.getLiteralValue() != null) { //is it a bool or string?
+                assignedDataType = getDataTypeFromLiteral(assignmentNode.getLiteralValue());
+            } else if (assignmentNode.getArithExpressionNode() != null) //is it a int or double?
+                assignedDataType = visitArithExpression(assignmentNode.getArithExpressionNode());
 
-            if (assignmentNode.getArithExpressionNode() != null) {
-                Enums.DataType assignedDataType = null;
-
-                if (assignmentNode.getLiteralValue() != null) {
-                    assignedDataType = getDataTypeFromLiteral(assignmentNode.getLiteralValue());
-                } else if (assignmentNode.getArithExpressionNode() != null) {
-                    //TODO: visit expression and get datatype
-                    visitArithExpression(assignmentNode.getArithExpressionNode());
-                }
-                /*if (dataType != null && assignedDataType != null && !assignedDataType.equals(dataType))
-                    this
-                 */
-            }
-
+            if (dataType != null && assignedDataType != null && !assignedDataType.equals(dataType))
+                throw new CompilerException("ERROR: Incompatible types. (" + dataType + " and " + assignedDataType + ")", assignmentNode.getCodePosition());
         }
     }
 
-    private void visitArithExpression(ArithExpressionNode arithExpressionNode) {
-        if (arithExpressionNode.getVariableName() != null) {
-            //TODO: lookup variablename in symboltable to get datatype
+    private Enums.DataType visitArithExpression(ArithExpressionNode arithExpressionNode) {
+        //TODO: lookup variablename in symboltable to get datatype
+        if (arithExpressionNode.getVariableName() != null)
+            return ((VariableDeclarationNode) retrieveSymbol(arithExpressionNode.getVariableName())).getDataType();
+        else if (arithExpressionNode.getNumber() != null)
+            return Enums.DataType.INT;
+        else if (arithExpressionNode.getFunctionCallNode() != null)
+            return ((FunctionDeclarationNode) retrieveSymbol(arithExpressionNode.getFunctionCallNode().getFunctionName())).getDataType();
+        else if (arithExpressionNode.getArithExpressionNode2() != null) {
+            Enums.DataType dataType1 = visitArithExpression(arithExpressionNode.getArithExpressionNode1());
+            Enums.DataType dataType2 = visitArithExpression(arithExpressionNode.getArithExpressionNode2());
+            if ((dataType1 != null && dataType2 != null) && dataType1 != dataType2)
+                throw new CompilerException("ERROR: Incompatible types. (" + dataType1 + " and " + dataType2 + ")", arithExpressionNode.getCodePosition());
+            else return dataType1;
         }
+        return null;
     }
 
     private void visitAssignArray(AssignArrayNode assignArrayNode) {
@@ -273,6 +252,13 @@ public class TypeChecking {
 
     private Enums.DataType getDataTypeFromLiteral(String literal) {
         //TODO: do fancy regex to check type
-        return Enums.DataType.VOID;
+        if (literal.equals("true") || literal.equals("false"))
+            return Enums.DataType.BOOL;
+        else if (literal.contains("\""))
+            return Enums.DataType.STRING;
+        else if (literal.contains("."))
+            return Enums.DataType.DOUBLE;
+        else return Enums.DataType.INT ;
+        //return Enums.DataType.VOID;
     }
 }
