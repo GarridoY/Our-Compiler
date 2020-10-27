@@ -160,6 +160,19 @@ public class astTest {
         assertEquals("x", atStatementNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(0).getArithExpressionNode().getVariableName());
     }
 
+    //Test AST for AtStatement with &&
+    @Test
+    void testATStatementWithAND() {
+        OurParser parser = createParserFromText("at (x == 1 && y == true) {}");
+        OurParser.AtStatementContext at = parser.atStatement();
+        ASTBuilder astBuilder = new ASTBuilder();
+
+        AtStatementNode atStatementNode = (AtStatementNode) astBuilder.visitAtStatement(at);
+
+        assertEquals("y", atStatementNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(2).getArithExpressionNode().getVariableName());
+        assertEquals(Enums.BoolOperator.AND, atStatementNode.getAtParamsNode().getBoolExpressionNode().getBoolExpressionOperators().get(1));
+    }
+
     @Test
     void testBoundStatement() {
         // String -> Tokens -> Parsing
