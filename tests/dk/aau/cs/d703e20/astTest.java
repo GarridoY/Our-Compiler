@@ -529,8 +529,8 @@ public class astTest {
 
         assertAll(
                 () -> assertEquals("arr", assignArrayNode.getVariableName()),
-                () -> assertEquals(1.2, assignArrayNode.getArithExpressionNodes().get(0).getNumber()),
-                () -> assertEquals(3.3, assignArrayNode.getArithExpressionNodes().get(1).getNumber())
+                () -> assertEquals(1.2, assignArrayNode.getParamNodes().get(0).getArithExpressionNode().getNumber()),
+                () -> assertEquals(3.3, assignArrayNode.getParamNodes().get(1).getArithExpressionNode().getNumber())
         );
     }
 }

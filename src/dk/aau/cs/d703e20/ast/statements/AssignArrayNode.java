@@ -1,34 +1,25 @@
 package dk.aau.cs.d703e20.ast.statements;
 
 import dk.aau.cs.d703e20.ast.CodePosition;
-import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.ArrayParamNode;
 
 import java.util.List;
 
 public class AssignArrayNode extends StatementNode {
     private final String variableName;
-    private List<ArithExpressionNode> arithExpressionNodes;
-    private List<String> literals;
+    private List<ArrayParamNode> paramNodes;
 
-    // TODO: look into generify
-    public AssignArrayNode(String variableName, List<Object> nodes, Boolean isLiteral) {
+    public AssignArrayNode(String variableName, List<ArrayParamNode> paramNodes) {
         this.variableName = variableName;
-        if (isLiteral)
-            this.literals = (List<String>)(List<?>) nodes; // Weird cast but ok
-        else
-            this.arithExpressionNodes = (List<ArithExpressionNode>)(List<?>) nodes;
+        this.paramNodes = paramNodes;
     }
 
     public String getVariableName() {
         return variableName;
     }
 
-    public List<ArithExpressionNode> getArithExpressionNodes() {
-        return arithExpressionNodes;
-    }
-
-    public List<String> getLiterals() {
-        return literals;
+    public List<ArrayParamNode> getParamNodes() {
+        return paramNodes;
     }
 
     @Override
