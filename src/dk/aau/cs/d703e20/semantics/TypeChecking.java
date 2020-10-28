@@ -262,11 +262,22 @@ public class TypeChecking {
         boolean notFound = true;
         FunctionDeclarationNode functionDeclarationNodeReturn = null;
         String functionName = functionCallNode.getFunctionName();
-        //functionCallNode.ge
+        List<FunctionArgNode> functionArgNodes = functionCallNode.getFunctionArgNodes();
+
+        FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) retrieveSymbol(functionName);
+
+        for (int i = 0; i < functionDeclarationNode.getFunctionParameterNodes().size(); i++) {
+            if (functionDeclarationNode.getFunctionParameterNodes().get(i).getDataType() != null) {
+                Enums.DataType dataType1 = functionDeclarationNode.getFunctionParameterNodes().get(i).getDataType();
+                //Enums.DataType dataType2 = functionCallNode.getFunctionArgNodes().get(i).;
+                //if (!dataType1.equals(dataType1))
+                    //throw new CompilerException("ERROR: Argument type mismatch in function call (" + functionName + "). Found " + dataType1 + " and " + dataType2 + ".", functionCallNode.getCodePosition());
+            }
+        }
 
 
 
-        return ;
+        return functionDeclarationNodeReturn;
 
     }
 
@@ -358,7 +369,8 @@ public class TypeChecking {
         if (functionDeclarationNode.getFunctionParameterNodes() != null) {
             for (FunctionParameterNode functionParameter : functionDeclarationNode.getFunctionParameterNodes()) {
                 if (functionParameter.getDataType() != null) {
-                    AssignmentNode assignmentNode = new AssignmentNode(functionParameter.getVariableName(), null);
+                    // TODO: FINISH IT
+                    //AssignmentNode assignmentNode = new AssignmentNode(functionParameter.getVariableName(), null);
 
                 }
             }
