@@ -571,4 +571,19 @@ public class astTest {
                 () -> assertEquals(3.3, assignArrayNode.getParamNodes().get(1).getArithExpressionNode().getNumber())
         );
     }
+
+    @Test
+    void testVariableDeclArrayAllocated() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("int[5] arr;");
+        // Get parsed context
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        assertAll(
+                () -> assertEquals(Enums.DataType.INT_ARRAY, variableDeclarationNode.getDataType())
+        );
+    }
 }
