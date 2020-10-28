@@ -152,7 +152,7 @@ public class TypeChecking {
         }
         if (variableDeclarationNode.getAssignmentNode() != null) visitAssignment(variableDeclarationNode.getAssignmentNode());
         if (variableDeclarationNode.getAssignArrayNode() != null) {
-            Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode(), 1); //TODO cover array size
+            Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode(), variableDeclarationNode.getAllocatedSize());
             if (arrayDataType != dataType) throw new CompilerException("ERROR: A array variable (" + variableDeclarationNode.getVariableName() + ") contains invalid types.", retrievedNode.getCodePosition());
         }
     }
