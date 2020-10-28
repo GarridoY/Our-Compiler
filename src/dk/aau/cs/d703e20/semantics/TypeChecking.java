@@ -3,9 +3,7 @@ package dk.aau.cs.d703e20.semantics;
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
-import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
-import dk.aau.cs.d703e20.ast.expressions.ArrayParamNode;
-import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 
@@ -105,8 +103,6 @@ public class TypeChecking {
             visitAtStatement((AtStatementNode) statementNode);
         } else if (statementNode instanceof BoundStatementNode) {
             visitBoundStatement((BoundStatementNode) statementNode);
-        } else if (statementNode instanceof ReturnStatementNode) {
-            visitReturnStatement((ReturnStatementNode) statementNode);
         }
     }
 
@@ -262,7 +258,15 @@ public class TypeChecking {
         }
     }
 
-    private void visitFunctionCall(FunctionCallNode functionCallNode) {
+    private FunctionDeclarationNode visitFunctionCall(FunctionCallNode functionCallNode) {
+        boolean notFound = true;
+        FunctionDeclarationNode functionDeclarationNodeReturn = null;
+        String functionName = functionCallNode.getFunctionName();
+        //functionCallNode.ge
+
+
+
+        return ;
 
     }
 
@@ -290,9 +294,7 @@ public class TypeChecking {
 
     }
     
-    private void visitReturnStatement(ReturnStatementNode returnStatementNode) {
 
-    }
 
     public void visitFunctions(List<FunctionDeclarationNode> functionDeclarationNodes) {
         for (FunctionDeclarationNode functionDeclaration : functionDeclarationNodes) {
@@ -305,11 +307,72 @@ public class TypeChecking {
     }
 
     private void visitFunctionDeclaration(FunctionDeclarationNode function) {
+        String functionName = function.getFunctionName();
+        List<FunctionParameterNode> functionParameters = function.getFunctionParameterNodes();
+        Enums.DataType returnType = function.getDataType();
 
+        ArrayList<FunctionDeclarationNode> retrievedFunctions = null;
+        if (retrievedFunctions.isEmpty())
+            enterSymbol(functionName, function);
+
+        if (retrievedFunctions.size() > 0) {
+            boolean sameReturnType = true;
+            boolean sameFunctionArgs = false;
+            boolean sameAmountOfArgs = false;
+
+            outerloop:
+            for (FunctionDeclarationNode retrivedNode : retrievedFunctions) {
+                sameReturnType = retrivedNode.getDataType() == returnType;
+                sameAmountOfArgs = retrivedNode.getFunctionParameterNodes() == null && functionParameters == null;
+
+                if (retrivedNode.getFunctionParameterNodes() != null && functionParameters != null){
+                    if (retrivedNode.getFunctionParameterNodes().size() == functionParameters.size()) {
+                        for (int i = 0; i < functionParameters.size(); i++) {
+                            if (functionParameters.get(i).getDataType() != null) {
+                                if (retrivedNode.getFunctionParameterNodes().get(i).getDataType() != null) {
+                                    if (functionParameters.get(i).getDataType().equals(retrivedNode.getFunctionParameterNodes().get(i).getDataType())) {
+                                        sameFunctionArgs = true;
+                                        break outerloop;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (sameFunctionArgs)
+                throw new CompilerException("ERROR: A function with the same name (" + functionName + ") and arguments already exists.", retrieveSymbol(functionName).getCodePosition());
+            if (sameAmountOfArgs)
+                if (returnType != null)
+                    throw new CompilerException("ERROR: A function with the same name (" + functionName + ") and type (" + returnType + "already exists.", retrieveSymbol(functionName).getCodePosition());
+            enterSymbol(functionName, function);
+        }
     }
 
+    // TODO: FINISH IT
     private void visitFunctionBlock(BlockNode blockNode, Enums.DataType returnType, FunctionDeclarationNode functionDeclarationNode) {
+        openScope();
 
+        boolean pureFunction = returnType != null;
+
+        if (functionDeclarationNode.getFunctionParameterNodes() != null) {
+            for (FunctionParameterNode functionParameter : functionDeclarationNode.getFunctionParameterNodes()) {
+                if (functionParameter.getDataType() != null) {
+                    AssignmentNode assignmentNode = new AssignmentNode(functionParameter.getVariableName(), null);
+
+                }
+            }
+        }
+    }
+
+    private void visitReturnStatement(ReturnStatementNode returnStatementNode, FunctionDeclarationNode functionDeclarationNode) {
+        String returnName = returnStatementNode.getVariableName();
+        Enums.DataType returnType =  functionDeclarationNode.getDataType();
+
+        VariableDeclarationNode variableDeclaration = (VariableDeclarationNode) retrieveSymbol(returnName);
+
+        if (variableDeclaration.getDataType() != returnType)
+            throw new CompilerException("ERROR: Invalid return data type on variable (" + returnName + ").", returnStatementNode.getCodePosition());
     }
 
     private Enums.DataType getDataTypeFromLiteral(String literal) {
