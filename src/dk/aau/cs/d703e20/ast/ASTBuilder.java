@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
@@ -320,12 +322,29 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitVariableDecl(OurParser.VariableDeclContext ctx) {
         VariableDeclarationNode variableDeclarationNode;
 
+        Integer allocatedArraySize = 0;
+        switch (getDataType(ctx.dataType())) {
+            case DOUBLE_ARRAY:
+            case INT_ARRAY:
+            case BOOL_ARRAY:
+                allocatedArraySize = getSizeFromArrayDataType(ctx.dataType());
+                if (allocatedArraySize != null && allocatedArraySize <= 0)
+                    throw new CompilerException("Invalid array size: " + allocatedArraySize, getCodePosition(ctx));
+                break;
+        }
+
         if (ctx.assignment() != null) {
             variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignmentNode) visitAssignment(ctx.assignment()));
         } else if (ctx.assignArray() != null) {
-            variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignArrayNode) visitAssignArray(ctx.assignArray()));
+            if (allocatedArraySize != null && allocatedArraySize > 0)
+                variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), allocatedArraySize, (AssignArrayNode) visitAssignArray(ctx.assignArray()));
+            else
+                variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignArrayNode) visitAssignArray(ctx.assignArray()));
         } else if (ctx.variableName() != null) {
-            variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), ctx.variableName().getText());
+            if (allocatedArraySize != null && allocatedArraySize > 0)
+                variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), allocatedArraySize, ctx.variableName().getText());
+            else
+                variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), ctx.variableName().getText());
         } else
             throw new CompilerException("Invalid Variable Declaration Statement", getCodePosition(ctx));
 
@@ -561,6 +580,15 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         }
 
         return operator;
+    }
+
+    private Integer getSizeFromArrayDataType(OurParser.DataTypeContext ctx) {
+        Pattern pattern = Pattern.compile(".+?\\[(.+?)\\]", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(ctx.getText());
+        if (matcher.matches())
+            return Integer.parseInt(matcher.group(1));
+        else
+            return null;
     }
 
     private String getStringLiteral(OurParser.LiteralContext ctx) {
