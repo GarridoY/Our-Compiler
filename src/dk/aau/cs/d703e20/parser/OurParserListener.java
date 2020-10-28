@@ -78,15 +78,15 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitFunctionCall(OurParser.FunctionCallContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link OurParser#functionArgs}.
+	 * Enter a parse tree produced by {@link OurParser#functionArg}.
 	 * @param ctx the parse tree
 	 */
-	void enterFunctionArgs(OurParser.FunctionArgsContext ctx);
+	void enterFunctionArg(OurParser.FunctionArgContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link OurParser#functionArgs}.
+	 * Exit a parse tree produced by {@link OurParser#functionArg}.
 	 * @param ctx the parse tree
 	 */
-	void exitFunctionArgs(OurParser.FunctionArgsContext ctx);
+	void exitFunctionArg(OurParser.FunctionArgContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#statement}.
 	 * @param ctx the parse tree
