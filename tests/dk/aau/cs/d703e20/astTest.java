@@ -531,13 +531,13 @@ public class astTest {
         ASTBuilder astbuilder = new ASTBuilder();
 
         FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) astbuilder.visitFunctionDecl(functionDeclContext);
-        FunctionParameterNode functionParameterNode = functionDeclarationNode.getFunctionParameterNode();
+        List<FunctionParameterNode> functionParameterNodes = functionDeclarationNode.getFunctionParameterNodes();
 
         assertAll(
-                () -> assertEquals(Enums.DataType.INT, functionParameterNode.getDataTypes().get(0)),
-                () -> assertEquals(Enums.DataType.STRING, functionParameterNode.getDataTypes().get(1)),
-                () -> assertEquals("ID2", functionParameterNode.getVariableNames().get(0)),
-                () -> assertEquals("varName", functionParameterNode.getVariableNames().get(1))
+                () -> assertEquals(Enums.DataType.INT, functionParameterNodes.get(0).getDataType()),
+                () -> assertEquals(Enums.DataType.STRING, functionParameterNodes.get(1).getDataType()),
+                () -> assertEquals("ID2", functionParameterNodes.get(0).getVariableName()),
+                () -> assertEquals("varName", functionParameterNodes.get(1).getVariableName())
         );
     }
 
@@ -569,6 +569,21 @@ public class astTest {
                 () -> assertEquals("arr", assignArrayNode.getVariableName()),
                 () -> assertEquals(1.2, assignArrayNode.getParamNodes().get(0).getArithExpressionNode().getNumber()),
                 () -> assertEquals(3.3, assignArrayNode.getParamNodes().get(1).getArithExpressionNode().getNumber())
+        );
+    }
+
+    @Test
+    void testVariableDeclArrayAllocated() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("int[5] arr;");
+        // Get parsed context
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        assertAll(
+                () -> assertEquals(Enums.DataType.INT_ARRAY, variableDeclarationNode.getDataType())
         );
     }
 }
