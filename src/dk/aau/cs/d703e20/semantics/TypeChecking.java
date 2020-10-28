@@ -4,6 +4,7 @@ import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
 import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.ArrayParamNode;
 import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
@@ -115,7 +116,7 @@ public class TypeChecking {
         VariableDeclarationNode retrievedNode = null;
 
         String variableName;
-        String dataType;
+        Enums.DataType dataType = null;
 
         if (variableDeclarationNode.getVariableName() != null) {
             variableName = variableDeclarationNode.getVariableName();
@@ -123,7 +124,7 @@ public class TypeChecking {
                 retrievedNode = (VariableDeclarationNode) retrieveSymbol(variableName);
 
             if (retrievedNode != null)
-                dataType = retrievedNode.getDataType().toString();
+                dataType = retrievedNode.getDataType();
             else dataType = null;
 
             if (retrieveSymbol(variableName) == null)
@@ -150,7 +151,10 @@ public class TypeChecking {
             else throw new CompilerException("ERROR: A variable (" + variableDeclarationNode.getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
         }
         if (variableDeclarationNode.getAssignmentNode() != null) visitAssignment(variableDeclarationNode.getAssignmentNode());
-        if (variableDeclarationNode.getAssignArrayNode() != null) visitAssignArray(variableDeclarationNode.getAssignArrayNode());
+        if (variableDeclarationNode.getAssignArrayNode() != null) {
+            Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode(), 1); //TODO cover array size
+            if (arrayDataType != dataType) throw new CompilerException("ERROR: A array variable (" + variableDeclarationNode.getVariableName() + ") contains invalid types.", retrievedNode.getCodePosition());
+        }
     }
 
     private void visitAssignment(AssignmentNode assignmentNode) {
@@ -194,13 +198,9 @@ public class TypeChecking {
         return null;
     }
 
-    private void visitAssignArray(AssignArrayNode assignArrayNode) {
-        //int[] a = {1};
-        //int[3] b;
-        //int[6] c = {1, 3, 5, "asd"};
-
+    private Enums.DataType visitAssignArray(AssignArrayNode assignArrayNode, int allocatedSize) {
         String variableName;
-        Enums.DataType dataType;
+        Enums.DataType assignedDataType = null;
 
         if (assignArrayNode.getVariableName() != null) {
             VariableDeclarationNode variableDeclarationNode = null;
@@ -208,12 +208,26 @@ public class TypeChecking {
             if (retrieveSymbol(variableName) instanceof VariableDeclarationNode)
                 variableDeclarationNode = (VariableDeclarationNode) retrieveSymbol(variableName);
 
-            if (variableDeclarationNode != null) dataType = variableDeclarationNode.getDataType();
-            else throw new CompilerException("ERROR: Array (" + variableName + ") is not declared.", assignArrayNode.getCodePosition());
+            if (variableDeclarationNode != null) assignedDataType = variableDeclarationNode.getDataType();
+            else throw new CompilerException("ERROR: Array variable (" + variableName + ") is not declared.", assignArrayNode.getCodePosition());
 
-            Enums.DataType assignedDataType = null;
-            assignedDataType = getDataTypeFromLiteral(a)
+            if (allocatedSize < assignArrayNode.getParamNodes().size())
+                throw new CompilerException("ERROR: Size exceeded in Array variable(" + variableName + ")." ,assignArrayNode.getCodePosition());
+
+            for (ArrayParamNode arrayParam : assignArrayNode.getParamNodes()){
+                if (assignedDataType == null) {
+                    assignedDataType = visitArrayParameters(arrayParam);
+                } else if (visitArrayParameters(arrayParam) != assignedDataType)
+                    throw new CompilerException("ERROR: Incompatible types (" +  assignedDataType + ")", assignArrayNode.getCodePosition());
+            }
         }
+        return assignedDataType;
+    }
+
+    private Enums.DataType visitArrayParameters(ArrayParamNode arrayParamNode) {
+        if (arrayParamNode.getArithExpressionNode() != null)
+            return visitArithmeticExpression(arrayParamNode.getArithExpressionNode());
+        else return getDataTypeFromLiteral(arrayParamNode.getLiteral());
     }
 
     private void visitPinDeclaration(PinDeclarationNode pinDeclarationNode) {
