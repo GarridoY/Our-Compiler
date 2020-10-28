@@ -48,7 +48,6 @@ public class TypeChecking {
             else
                 stackLevel -= 1;
         }
-
         return null;
     }
 
@@ -129,6 +128,10 @@ public class TypeChecking {
 
             if (retrieveSymbol(variableName) == null)
                 throw new CompilerException("ERROR: Variable (" + variableName + ") is not declared.", retrievedNode.getCodePosition());
+
+            if (dataType.equals(Enums.DataType.CLOCK))
+                if (retrievedNode.getVariableName() == null)
+                    throw new CompilerException("ERROR: Invalid declaration of a clock variable (" + variableName + ").", retrievedNode.getCodePosition());
         }
 
         if (retrieveSymbol(variableDeclarationNode.getAssignmentNode().getVariableName()) != null && retrieveSymbol(variableDeclarationNode.getAssignmentNode().getVariableName()) instanceof  VariableDeclarationNode)
@@ -231,7 +234,32 @@ public class TypeChecking {
     }
 
     private void visitPinDeclaration(PinDeclarationNode pinDeclarationNode) {
+        PinDeclarationNode retrievedNode = null;
 
+        String variableName;
+        Enums.PinType pinType = null;
+
+        if (pinDeclarationNode.getVariableName() != null) {
+            variableName = pinDeclarationNode.getVariableName();
+            if (retrieveSymbol(variableName) instanceof VariableDeclarationNode)
+                retrievedNode = (PinDeclarationNode) retrieveSymbol(variableName);
+
+            if (retrievedNode != null)
+                pinType = retrievedNode.getPinType();
+            else pinType = null;
+
+            if (retrieveSymbol(variableName) == null)
+                throw new CompilerException("ERROR: Pin Variable (" + variableName + ") is not declared.", retrievedNode.getCodePosition());
+        }
+
+        if (retrieveSymbol(pinDeclarationNode.getVariableName()) != null && retrieveSymbol(pinDeclarationNode.getVariableName()) instanceof PinDeclarationNode)
+            retrievedNode = (PinDeclarationNode) retrieveSymbol(pinDeclarationNode.getVariableName());
+
+        if (retrievedNode == null) {
+            if (pinDeclarationNode.getVariableName() != null)
+                enterSymbol(pinDeclarationNode.getVariableName(), pinDeclarationNode);
+            else throw new CompilerException("ERROR: A pin variable (" + pinDeclarationNode.getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
+        }
     }
 
     private void visitFunctionCall(FunctionCallNode functionCallNode) {
@@ -272,7 +300,6 @@ public class TypeChecking {
         }
 
         for (FunctionDeclarationNode functionDeclaration : functionDeclarationNodes) {
-            // functionDeclaration.getDataType() or functionDeclaration.getReturnType()?
             visitFunctionBlock(functionDeclaration.getBlockNode(), functionDeclaration.getDataType(), functionDeclaration);
         }
     }
