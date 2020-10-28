@@ -20,11 +20,11 @@ block
 // FUNCTIONS
 // Function declaration, optional argument followed by more optional arguments prefixed by comma
 functionDecl
-    : (VOID | dataType) functionName LEFT_PAREN functionParam? RIGHT_PAREN block;
+    : dataType functionName LEFT_PAREN (functionParam (COMMA functionParam)*)? RIGHT_PAREN block;
 
 // Function parameters
 functionParam
-    : dataType variableName ( COMMA dataType variableName)*;
+    : dataType variableName;
 
 // Call function given optional arguments (expr)
 functionCall
@@ -137,6 +137,7 @@ dataType
     | BOOLEAN
     | CLOCK
     | STRING
+    | VOID
     | INT_ARRAY
     | DOUBLE_ARRAY
     | BOOLEAN_ARRAY;

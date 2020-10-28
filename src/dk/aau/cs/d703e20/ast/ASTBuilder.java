@@ -57,43 +57,20 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitFunctionDecl(OurParser.FunctionDeclContext ctx) {
-        FunctionDeclarationNode functionDeclarationNode = null;
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
 
-        if (ctx.functionParam() != null) {
-            FunctionParameterNode functionParameterNode = (FunctionParameterNode) visitFunctionParam(ctx.functionParam());
-            if (ctx.VOID() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(ctx.functionName().getText(), blockNode, functionParameterNode);
-            } else if (ctx.dataType() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.dataType()), ctx.functionName().getText(), blockNode, functionParameterNode);
-            }
-        } else {
-            if (ctx.VOID() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(ctx.functionName().getText(), blockNode);
-            } else if (ctx.dataType() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.dataType()), ctx.functionName().getText(), blockNode);
-            } else {
-                throw new CompilerException("Invalid Function Declaration", getCodePosition(ctx));
-            }
-        }
+        List<FunctionParameterNode> functionParameterNodes = new ArrayList<FunctionParameterNode>();
+        if (ctx.functionParam().size() > 0)
+            functionParameterNodes = visitList(FunctionParameterNode.class, ctx.functionParam(), this::visitFunctionParam);
+
+        FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.dataType()), ctx.functionName().getText(), blockNode, functionParameterNodes);
         setCodePos(functionDeclarationNode, ctx);
         return functionDeclarationNode;
     }
 
     @Override
     public ASTNode visitFunctionParam(OurParser.FunctionParamContext ctx) {
-        List<Enums.DataType> dataTypes = new ArrayList<Enums.DataType>();
-        List<String> variableNames = new ArrayList<String>();
-
-        for (OurParser.DataTypeContext datatypeContext : ctx.dataType()) {
-            dataTypes.add(getDataType(datatypeContext));
-        }
-
-        for (OurParser.VariableNameContext variableNameContext : ctx.variableName()) {
-            variableNames.add(variableNameContext.getText());
-        }
-
-        FunctionParameterNode functionParameterNode = new FunctionParameterNode(dataTypes, variableNames);
+        FunctionParameterNode functionParameterNode = new FunctionParameterNode(getDataType(ctx.dataType()), ctx.variableName().getText());
         setCodePos(functionParameterNode, ctx);
         return functionParameterNode;
     }
@@ -531,6 +508,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             dataType = Enums.DataType.BOOL_ARRAY;
         else if (ctx.INT_ARRAY() != null)
             dataType = Enums.DataType.INT_ARRAY;
+        else if (ctx.VOID() != null)
+            dataType = Enums.DataType.VOID;
         else
             throw new CompilerException("DataType is unknown", getCodePosition(ctx));
 

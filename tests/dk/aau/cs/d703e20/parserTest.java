@@ -80,7 +80,7 @@ public class parserTest {
         );
         OurParser parser = createParser(tokens);
         OurParser.FunctionDeclContext func = parser.functionDecl();
-        assertNotNull(func.functionParam().dataType(0).INT());
+        assertNotNull(func.functionParam().get(0).dataType().INT());
     }
 
     @Test
