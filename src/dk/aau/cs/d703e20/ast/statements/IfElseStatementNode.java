@@ -1,6 +1,5 @@
 package dk.aau.cs.d703e20.ast.statements;
 
-import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 
 import java.util.List;
