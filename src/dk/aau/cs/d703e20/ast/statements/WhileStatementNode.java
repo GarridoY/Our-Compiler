@@ -5,8 +5,8 @@ import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 
 public class WhileStatementNode extends StatementNode {
-    private BoolExpressionNode boolExpressionNode;
-    private BlockNode blockNode;
+    private final BoolExpressionNode boolExpressionNode;
+    private final BlockNode blockNode;
 
     private CodePosition codePosition;
 

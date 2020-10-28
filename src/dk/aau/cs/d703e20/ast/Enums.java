@@ -39,70 +39,40 @@ public class Enums {
     }
 
     public static String stringFromDataType (DataType dataType) {
-        switch (dataType) {
-            case INT:
-                return "int";
+        return switch (dataType) {
+            case INT -> "int";
+            case STRING -> "string";
+            case CLOCK -> "clock";
+            case BOOL -> "bool";
+            case DOUBLE -> "double";
+            case INT_ARRAY -> "int[]";
+            case DOUBLE_ARRAY -> "double[]";
+            case BOOL_ARRAY -> "bool[]";
+            case VOID -> "void";
+            default -> "UNKNOWN DATATYPE";
+        };
+    }
 
-            case STRING:
-                return "string";
-
-            case CLOCK:
-                return "clock";
-
-            case BOOL:
-                return "bool";
-
-            case DOUBLE:
-                return "double";
-
-            case INT_ARRAY:
-                return "int[]";
-
-            case DOUBLE_ARRAY:
-                return "double[]";
-
-            case BOOL_ARRAY:
-                return "bool[]";
-
-            case VOID:
-                return "void";
-
-            default:
-                return "UNKNOWN DATATYPE";
-        }
+    public static String stringFromPinType (PinType pinType) {
+        return switch (pinType) {
+            case IPIN -> "ipin";
+            case OPIN -> "opin";
+            default -> "UNKNOWN BOOL OPERATOR";
+        };
     }
 
     public static String stringFromBoolOperator (BoolOperator boolOperator) {
-        switch (boolOperator) {
-            case EQUAL:
-                return "==";
-
-            case OR:
-                return "||";
-
-            case AND:
-                return "&&";
-
-            case NOT_EQUAL:
-                return "!=";
-
-            case GREATER_THAN:
-                return ">";
-
-            case GREATER_OR_EQUAL:
-                return ">=";
-
-            case LESS_THAN:
-                return "<";
-
-            case LESS_OR_EQUAL:
-                return "<=";
-
-            case NOT:
-                return "!";
-
-            default:
-                return "UNKNOWN BOOL OPERATOR";
-        }
+        return switch (boolOperator) {
+            case EQUAL -> "==";
+            case OR -> "||";
+            case AND -> "&&";
+            case NOT_EQUAL -> "!=";
+            case GREATER_THAN -> ">";
+            case GREATER_OR_EQUAL -> ">=";
+            case LESS_THAN -> "<";
+            case LESS_OR_EQUAL -> "<=";
+            case NOT -> "!";
+            default -> "UNKNOWN BOOL OPERATOR";
+        };
     }
 }

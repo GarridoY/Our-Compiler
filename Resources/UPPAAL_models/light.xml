@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+// Use abstractions for lights, using two directional lanes
+const int N = 2; // # Lanes
+typedef int[0, N-1] id_l; //  lane ID
+
+// Controller outputs
+chan opin_green[N];
+chan opin_red[N];
+chan opin_yellow[N];
+chan opin_red_yellow[N];
+
+// Controller sensor inputs, 2 for each lane, but as they would send the same input we use 1 for each lane
+chan ipin[N];</declaration>
+	<template>
+		<name>Lane</name>
+		<parameter>const id_l id</parameter>
+		<declaration>// Place local declarations here.
+/*
+clock x;
+bool red;
+bool green;
+bool yellow;
+
+void initialize() {
+x = 0;
+red = true;
+green = false;
+yellow = false;
+}
+
+void goGreen(){ green = true;}
+void goRed() { red = true;}
+void goYellow() {yellow = true;}
+*/
+</declaration>
+		<location id="id0" x="-1164" y="-884">
+			<name x="-1174" y="-918">Red</name>
+		</location>
+		<location id="id1" x="-952" y="-739">
+			<name x="-977" y="-781">RedYellow_to_Green</name>
+		</location>
+		<location id="id2" x="-1164" y="-586">
+			<name x="-1181" y="-569">Green</name>
+		</location>
+		<location id="id3" x="-1164" y="-739">
+			<name x="-1156" y="-765">Yellow_To_Red</name>
+		</location>
+		<location id="id4" x="-1317" y="-748">
+			<name x="-1334" y="-782">Start</name>
+		</location>
+		<init ref="id4"/>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-1062" y="-654">opin_green[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-1079" y="-858">opin_red_yellow[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-1164" y="-824">opin_red[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="-1164" y="-688">opin_yellow[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-1343" y="-663">opin_green[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-1317" y="-850">opin_red[id]?</label>
+		</transition>
+	</template>
+	<template>
+		<name>Simple_Lane</name>
+		<parameter>const id_l id</parameter>
+		<declaration>// Place local declarations here.
+/*
+clock x;
+bool red;
+bool green;
+bool yellow;
+
+void initialize() {
+x = 0;
+red = true;
+green = false;
+yellow = false;
+}
+
+void goGreen(){ green = true;}
+void goRed() { red = true;}
+void goYellow() {yellow = true;}
+*/
+</declaration>
+		<location id="id5" x="-178" y="8">
+			<name x="-195" y="-34">Start</name>
+			<label kind="comments" x="-255" y="119">Controller handles all safety</label>
+		</location>
+		<location id="id6" x="-280" y="93">
+			<name x="-340" y="85">Yellow</name>
+		</location>
+		<location id="id7" x="-280" y="-85">
+			<name x="-290" y="-119">Green</name>
+		</location>
+		<location id="id8" x="-68" y="-76">
+			<name x="-78" y="-110">Red</name>
+		</location>
+		<location id="id9" x="-68" y="93">
+			<name x="-51" y="93">Red_Yellow</name>
+		</location>
+		<init ref="id5"/>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id8"/>
+			<label kind="synchronisation" x="-93" y="-42">opin_red[id]?</label>
+			<nail x="-110" y="-17"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id5"/>
+			<nail x="-127" y="68"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id5"/>
+			<nail x="-136" y="-42"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id5"/>
+			<nail x="-221" y="-51"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id5"/>
+			<nail x="-221" y="59"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="-85" y="34">opin_red_yellow[id]?</label>
+			<nail x="-102" y="42"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-357" y="-34">opin_green[id]?</label>
+			<nail x="-246" y="-25"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-357" y="34">opin_yellow[id]?</label>
+			<nail x="-246" y="34"/>
+		</transition>
+	</template>
+	<template>
+		<name>Controller</name>
+		<declaration>clock v;
+clock h;</declaration>
+		<location id="id10" x="-612" y="-382">
+			<name x="-663" y="-391">Start</name>
+		</location>
+		<location id="id11" x="-450" y="-450">
+			<name x="-467" y="-433">V_Lane_Sched</name>
+			<label kind="comments" x="-586" y="-552">Schedule vertical lane to become green in 20</label>
+		</location>
+		<location id="id12" x="-450" y="-306">
+			<name x="-467" y="-340">H_Lane_Sched</name>
+			<label kind="comments" x="-595" y="-272">Schedule horizontal lane to become green in 20</label>
+		</location>
+		<location id="id13" x="-255" y="-450">
+			<name x="-272" y="-433">V_Lane_Green</name>
+		</location>
+		<location id="id14" x="-263" y="-306">
+			<name x="-273" y="-340">H_Lane_Green</name>
+		</location>
+		<location id="id15" x="-170" y="-552">
+		</location>
+		<init ref="id10"/>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id15"/>
+			<label kind="synchronisation" x="-237" y="-518">opin_green[0]!
+opin_red[1]!</label>
+			<label kind="comments" x="-102" y="-493">May need channel for each lane
+Send lane1! = lane1 green, lane2 red</label>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id12"/>
+			<nail x="-476" y="-280"/>
+			<nail x="-433" y="-280"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id11"/>
+			<nail x="-476" y="-467"/>
+			<nail x="-450" y="-484"/>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id11"/>
+			<label kind="comments" x="-442" y="-391">Possible to schedule both?</label>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id10"/>
+			<label kind="guard" x="-467" y="-620">v &gt; 40</label>
+			<label kind="comments" x="-612" y="-620">Green for atleast 20</label>
+			<nail x="-255" y="-595"/>
+			<nail x="-612" y="-595"/>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id10"/>
+			<label kind="guard" x="-459" y="-212">h &gt; 40</label>
+			<label kind="comments" x="-612" y="-204">Green for atleast 20</label>
+			<nail x="-263" y="-212"/>
+			<nail x="-612" y="-212"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id13"/>
+			<label kind="guard" x="-391" y="-467">v == 20</label>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id14"/>
+			<label kind="guard" x="-391" y="-306">h == 20</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="-569" y="-340">ipin[1]?</label>
+			<label kind="assignment" x="-569" y="-323">h = 0</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="-561" y="-467">ipin[0]?</label>
+			<label kind="assignment" x="-561" y="-450">v = 0</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+
+// List one or more processes to be composed into a system.
+system Controller, Lane;</system>
+	<queries>
+		<query>
+			<formula></formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>

@@ -6,9 +6,10 @@ import dk.aau.cs.d703e20.ast.Enums;
 public class VariableDeclarationNode extends StatementNode {
 
     private final Enums.DataType dataType;
+    private int allocatedSize;
 
-    private AssignmentNode assignmentNode;
     private String variableName;
+    private AssignmentNode assignmentNode;
     private AssignArrayNode assignArrayNode;
 
     private CodePosition codePosition;
@@ -28,8 +29,24 @@ public class VariableDeclarationNode extends StatementNode {
         this.variableName = variableName;
     }
 
+    public VariableDeclarationNode(Enums.DataType dataType, int allocatedSize, AssignArrayNode assignArrayNode) {
+        this.dataType = dataType;
+        this.allocatedSize = allocatedSize;
+        this.assignArrayNode = assignArrayNode;
+    }
+
+    public VariableDeclarationNode(Enums.DataType dataType, int allocatedSize, String variableName) {
+        this.dataType = dataType;
+        this.allocatedSize = allocatedSize;
+        this.variableName = variableName;
+    }
+
     public Enums.DataType getDataType() {
         return dataType;
+    }
+
+    public int getAllocatedSize() {
+        return allocatedSize;
     }
 
     public AssignmentNode getAssignmentNode() {

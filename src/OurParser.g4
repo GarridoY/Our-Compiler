@@ -68,7 +68,7 @@ atParams
     : boolExpr;
 
 boundStatement
-    : BOUND LEFT_PAREN variableName boolOp arithExpr (COMMA BOOL_LITERAL)? RIGHT_PAREN block (CATCH block)? (FINAL block)?; // bound (y, z) z optional
+    : BOUND LEFT_PAREN atParams (COMMA BOOL_LITERAL)? RIGHT_PAREN block (CATCH block)? (FINAL block)?; // bound (y, z) z optional
 
 // ITERATIVE
 iterativeStatement

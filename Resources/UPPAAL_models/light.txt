@@ -1,0 +1,33 @@
+setup {
+	clock h;
+	clock v;
+	
+	opin lane1_green
+	opin lane1_red
+	opin lane1_yellow
+	opin lane2_green
+	opin lane2_red
+	opin lane2_yellow
+	
+	// sensor thingies
+	ipin lane1;
+	ipin lane2;
+}
+
+loop {
+
+	// Traffic on lane 1, set lane 2 to yellow then red
+	if (lane1 == true) { // is pins true/false?
+		int x = h;
+		at (h == x + 20) {
+			bound (h > x + 25, true) { // Yellow for 5
+				lane2_green = false;
+				lane2_yellow = true;
+			} final {
+				lane1_yellow = false;
+				lane2_red = true;
+			}
+			lane1_green = true;
+		}
+	}
+}
