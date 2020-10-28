@@ -8,7 +8,6 @@ import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 
-import javax.xml.crypto.Data;
 import java.util.*;
 
 public class TypeChecking {
@@ -63,7 +62,7 @@ public class TypeChecking {
         System.out.println("----------------------------------");
     }
 
-    /*      VISITOR         */
+    /*      VISITOR       */
     public void visitProgram(ProgramNode programNode){
         openScope();
         visitSetup(programNode.getSetupNode());
@@ -71,15 +70,15 @@ public class TypeChecking {
         visitFunctions(programNode.getFunctionDeclarationNodes());
     }
 
-    public void visitSetup(SetupNode setupNode) {
+    private void visitSetup(SetupNode setupNode) {
         visitBlock(setupNode.getBlockNode());
     }
 
-    public void visitLoop(LoopNode loopNode) {
+    private void visitLoop(LoopNode loopNode) {
         visitBlock(loopNode.getBlockNode());
     }
 
-    public void visitBlock(BlockNode blockNode) {
+    private void visitBlock(BlockNode blockNode) {
         openScope();
         for (StatementNode statement : blockNode.getStatementNodes()) {
             visitStatement(statement);
@@ -87,7 +86,7 @@ public class TypeChecking {
         closeScope();
     }
 
-    public void visitStatement(StatementNode statementNode) {
+    private void visitStatement(StatementNode statementNode) {
         if (statementNode instanceof VariableDeclarationNode) {
             visitVariableDeclaration((VariableDeclarationNode) statementNode);
         } else if (statementNode instanceof AssignmentNode) {
@@ -110,6 +109,7 @@ public class TypeChecking {
             visitReturnStatement((ReturnStatementNode) statementNode);
         }
     }
+
     /*         STATEMENTS         */
     private void visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
         VariableDeclarationNode retrievedNode = null;
@@ -170,15 +170,14 @@ public class TypeChecking {
             if (assignmentNode.getLiteralValue() != null) { //is it a bool or string?
                 assignedDataType = getDataTypeFromLiteral(assignmentNode.getLiteralValue());
             } else if (assignmentNode.getArithExpressionNode() != null) //is it a int or double?
-                assignedDataType = visitArithExpression(assignmentNode.getArithExpressionNode());
+                assignedDataType = visitArithmeticExpression(assignmentNode.getArithExpressionNode());
 
             if (dataType != null && assignedDataType != null && !assignedDataType.equals(dataType))
                 throw new CompilerException("ERROR: Incompatible types. (" + dataType + " and " + assignedDataType + ")", assignmentNode.getCodePosition());
         }
     }
 
-    private Enums.DataType visitArithExpression(ArithExpressionNode arithExpressionNode) {
-        //TODO: lookup variablename in symboltable to get datatype
+    private Enums.DataType visitArithmeticExpression(ArithExpressionNode arithExpressionNode) {
         if (arithExpressionNode.getVariableName() != null)
             return ((VariableDeclarationNode) retrieveSymbol(arithExpressionNode.getVariableName())).getDataType();
         else if (arithExpressionNode.getNumber() != null)
@@ -186,8 +185,8 @@ public class TypeChecking {
         else if (arithExpressionNode.getFunctionCallNode() != null)
             return ((FunctionDeclarationNode) retrieveSymbol(arithExpressionNode.getFunctionCallNode().getFunctionName())).getDataType();
         else if (arithExpressionNode.getArithExpressionNode2() != null) {
-            Enums.DataType dataType1 = visitArithExpression(arithExpressionNode.getArithExpressionNode1());
-            Enums.DataType dataType2 = visitArithExpression(arithExpressionNode.getArithExpressionNode2());
+            Enums.DataType dataType1 = visitArithmeticExpression(arithExpressionNode.getArithExpressionNode1());
+            Enums.DataType dataType2 = visitArithmeticExpression(arithExpressionNode.getArithExpressionNode2());
             if ((dataType1 != null && dataType2 != null) && dataType1 != dataType2)
                 throw new CompilerException("ERROR: Incompatible types. (" + dataType1 + " and " + dataType2 + ")", arithExpressionNode.getCodePosition());
             else return dataType1;
@@ -196,7 +195,25 @@ public class TypeChecking {
     }
 
     private void visitAssignArray(AssignArrayNode assignArrayNode) {
+        //int[] a = {1};
+        //int[3] b;
+        //int[6] c = {1, 3, 5, "asd"};
 
+        String variableName;
+        Enums.DataType dataType;
+
+        if (assignArrayNode.getVariableName() != null) {
+            VariableDeclarationNode variableDeclarationNode = null;
+            variableName = assignArrayNode.getVariableName();
+            if (retrieveSymbol(variableName) instanceof VariableDeclarationNode)
+                variableDeclarationNode = (VariableDeclarationNode) retrieveSymbol(variableName);
+
+            if (variableDeclarationNode != null) dataType = variableDeclarationNode.getDataType();
+            else throw new CompilerException("ERROR: Array (" + variableName + ") is not declared.", assignArrayNode.getCodePosition());
+
+            Enums.DataType assignedDataType = null;
+            assignedDataType = getDataTypeFromLiteral(a)
+        }
     }
 
     private void visitPinDeclaration(PinDeclarationNode pinDeclarationNode) {
@@ -227,6 +244,10 @@ public class TypeChecking {
 
     }
 
+    private void visitBooleanExpression(BoolExpressionNode boolExpressionNode) {
+
+    }
+    
     private void visitReturnStatement(ReturnStatementNode returnStatementNode) {
 
     }
