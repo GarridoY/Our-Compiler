@@ -335,18 +335,25 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitAssignArray(OurParser.AssignArrayContext ctx) {
-        if (!ctx.arithExpr().isEmpty()) {
-            List<Object> arithExpressionNodes = visitList(Object.class, ctx.arithExpr(), this::visitArithExpr);
-            AssignArrayNode assignArrayNode = new AssignArrayNode(ctx.variableName().getText(), arithExpressionNodes, false);
-            setCodePos(assignArrayNode, ctx);
-            return assignArrayNode;
-        } else if (!ctx.literal().isEmpty()) {
-            List<Object> arithExpressionNodes = Collections.singletonList(visitLiterals(ctx.literal()));
-            AssignArrayNode assignArrayNode = new AssignArrayNode(ctx.variableName().getText(), arithExpressionNodes, true);
-            setCodePos(assignArrayNode, ctx);
-            return assignArrayNode;
-        } else
+        List<ArrayParamNode> arrayParamNodes = visitList(ArrayParamNode.class, ctx.arrayParam(), this::visitArrayParam);
+        AssignArrayNode assignArrayNode = new AssignArrayNode(ctx.variableName().getText(), arrayParamNodes);
+        setCodePos(assignArrayNode, ctx);
+        return assignArrayNode;
+    }
+
+    @Override
+    public ASTNode visitArrayParam(OurParser.ArrayParamContext ctx) {
+        ArrayParamNode arrayParamNode;
+
+        if (!ctx.arithExpr().isEmpty())
+            arrayParamNode = new ArrayParamNode((ArithExpressionNode) visitArithExpr(ctx.arithExpr()));
+        else if (!ctx.literal().isEmpty())
+            arrayParamNode = new ArrayParamNode(ctx.literal().getText());
+        else
             throw new CompilerException("Invalid array assignment", getCodePosition(ctx));
+
+        setCodePos(arrayParamNode, ctx);
+        return arrayParamNode;
     }
 
     @Override

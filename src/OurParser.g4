@@ -112,7 +112,11 @@ variableDecl
     | dataType assignArray;
 
 assignArray
-    : variableName ASSIGN LEFT_BRACKET (arithExpr | literal) (COMMA (arithExpr | literal))* RIGHT_BRACKET;
+    : variableName ASSIGN LEFT_BRACKET arrayParam (COMMA arrayParam)* RIGHT_BRACKET;
+
+arrayParam
+    : arithExpr
+    | literal;
 
 assignment
     : variableName ASSIGN (arithExpr | literal);

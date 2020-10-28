@@ -1,4 +1,4 @@
-// Generated from C:/Users/the_p/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from D:/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -36,9 +36,10 @@ public class OurParser extends Parser {
 		RULE_conditionalExpression = 14, RULE_atStatement = 15, RULE_atParams = 16, 
 		RULE_boundStatement = 17, RULE_iterativeStatement = 18, RULE_forStatement = 19, 
 		RULE_whileStatement = 20, RULE_arithExpr = 21, RULE_boolExpr = 22, RULE_boolExprOperand = 23, 
-		RULE_pinDecl = 24, RULE_variableDecl = 25, RULE_assignArray = 26, RULE_assignment = 27, 
-		RULE_variableName = 28, RULE_functionName = 29, RULE_pinType = 30, RULE_dataType = 31, 
-		RULE_literal = 32, RULE_numLiteral = 33, RULE_arithOp = 34, RULE_boolOp = 35;
+		RULE_pinDecl = 24, RULE_variableDecl = 25, RULE_assignArray = 26, RULE_arrayParam = 27, 
+		RULE_assignment = 28, RULE_variableName = 29, RULE_functionName = 30, 
+		RULE_pinType = 31, RULE_dataType = 32, RULE_literal = 33, RULE_numLiteral = 34, 
+		RULE_arithOp = 35, RULE_boolOp = 36;
 	private static String[] makeRuleNames() {
 		return new String[] {
 			"program", "loop", "setup", "block", "functionDecl", "functionParam", 
@@ -46,8 +47,9 @@ public class OurParser extends Parser {
 			"ifStatement", "elseIfStatement", "elseStatement", "conditionalExpression", 
 			"atStatement", "atParams", "boundStatement", "iterativeStatement", "forStatement", 
 			"whileStatement", "arithExpr", "boolExpr", "boolExprOperand", "pinDecl", 
-			"variableDecl", "assignArray", "assignment", "variableName", "functionName", 
-			"pinType", "dataType", "literal", "numLiteral", "arithOp", "boolOp"
+			"variableDecl", "assignArray", "arrayParam", "assignment", "variableName", 
+			"functionName", "pinType", "dataType", "literal", "numLiteral", "arithOp", 
+			"boolOp"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -174,16 +176,16 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(72);
+			setState(74);
 			setup();
-			setState(73);
+			setState(75);
 			loop();
-			setState(78);
+			setState(80);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << INT_ARRAY) | (1L << BOOLEAN) | (1L << BOOLEAN_ARRAY) | (1L << DOUBLE) | (1L << DOUBLE_ARRAY) | (1L << CLOCK) | (1L << STRING) | (1L << VOID) | (1L << ID))) != 0)) {
 				{
-				setState(76);
+				setState(78);
 				_errHandler.sync(this);
 				switch (_input.LA(1)) {
 				case INT:
@@ -196,13 +198,13 @@ public class OurParser extends Parser {
 				case STRING:
 				case VOID:
 					{
-					setState(74);
+					setState(76);
 					functionDecl();
 					}
 					break;
 				case ID:
 					{
-					setState(75);
+					setState(77);
 					variableName();
 					}
 					break;
@@ -210,7 +212,7 @@ public class OurParser extends Parser {
 					throw new NoViableAltException(this);
 				}
 				}
-				setState(80);
+				setState(82);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -257,9 +259,9 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(81);
+			setState(83);
 			match(LOOP);
-			setState(82);
+			setState(84);
 			block();
 			}
 		}
@@ -304,9 +306,9 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(84);
+			setState(86);
 			match(SETUP);
-			setState(85);
+			setState(87);
 			block();
 			}
 		}
@@ -356,23 +358,23 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(87);
+			setState(89);
 			match(LEFT_BRACKET);
-			setState(91);
+			setState(93);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << INT_ARRAY) | (1L << BOOLEAN) | (1L << BOOLEAN_ARRAY) | (1L << DOUBLE) | (1L << DOUBLE_ARRAY) | (1L << CLOCK) | (1L << STRING) | (1L << IPIN) | (1L << OPIN) | (1L << RETURN) | (1L << IF) | (1L << FOR) | (1L << WHILE) | (1L << AT) | (1L << BOUND) | (1L << ID))) != 0)) {
 				{
 				{
-				setState(88);
+				setState(90);
 				statement();
 				}
 				}
-				setState(93);
+				setState(95);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
-			setState(94);
+			setState(96);
 			match(RIGHT_BRACKET);
 			}
 		}
@@ -429,12 +431,12 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(98);
+			setState(100);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case VOID:
 				{
-				setState(96);
+				setState(98);
 				match(VOID);
 				}
 				break;
@@ -447,30 +449,30 @@ public class OurParser extends Parser {
 			case CLOCK:
 			case STRING:
 				{
-				setState(97);
+				setState(99);
 				dataType();
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
 			}
-			setState(100);
+			setState(102);
 			functionName();
-			setState(101);
-			match(LEFT_PAREN);
 			setState(103);
+			match(LEFT_PAREN);
+			setState(105);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << INT_ARRAY) | (1L << BOOLEAN) | (1L << BOOLEAN_ARRAY) | (1L << DOUBLE) | (1L << DOUBLE_ARRAY) | (1L << CLOCK) | (1L << STRING))) != 0)) {
 				{
-				setState(102);
+				setState(104);
 				functionParam();
 				}
 			}
 
-			setState(105);
+			setState(107);
 			match(RIGHT_PAREN);
-			setState(106);
+			setState(108);
 			block();
 			}
 		}
@@ -528,25 +530,25 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(108);
+			setState(110);
 			dataType();
-			setState(109);
+			setState(111);
 			variableName();
-			setState(116);
+			setState(118);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				setState(110);
-				match(COMMA);
-				setState(111);
-				dataType();
 				setState(112);
+				match(COMMA);
+				setState(113);
+				dataType();
+				setState(114);
 				variableName();
 				}
 				}
-				setState(118);
+				setState(120);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -598,21 +600,21 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(119);
+			setState(121);
 			functionName();
-			setState(120);
-			match(LEFT_PAREN);
 			setState(122);
+			match(LEFT_PAREN);
+			setState(124);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << SUBSCRIPT) | (1L << DIGIT) | (1L << DIGIT_NEGATIVE) | (1L << DOUBLE_DIGIT) | (1L << DOUBLE_DIGIT_NEGATIVE) | (1L << BOOL_LITERAL) | (1L << LEFT_PAREN) | (1L << NOT) | (1L << ID))) != 0)) {
 				{
-				setState(121);
+				setState(123);
 				functionArgs();
 				}
 			}
 
-			setState(124);
+			setState(126);
 			match(RIGHT_PAREN);
 			}
 		}
@@ -670,49 +672,49 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(128);
+			setState(130);
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,7,_ctx) ) {
 			case 1:
 				{
-				setState(126);
+				setState(128);
 				arithExpr(0);
 				}
 				break;
 			case 2:
 				{
-				setState(127);
+				setState(129);
 				boolExpr();
 				}
 				break;
 			}
-			setState(137);
+			setState(139);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				setState(130);
+				setState(132);
 				match(COMMA);
-				setState(133);
+				setState(135);
 				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,8,_ctx) ) {
 				case 1:
 					{
-					setState(131);
+					setState(133);
 					arithExpr(0);
 					}
 					break;
 				case 2:
 					{
-					setState(132);
+					setState(134);
 					boolExpr();
 					}
 					break;
 				}
 				}
 				}
-				setState(139);
+				setState(141);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -781,79 +783,79 @@ public class OurParser extends Parser {
 		StatementContext _localctx = new StatementContext(_ctx, getState());
 		enterRule(_localctx, 16, RULE_statement);
 		try {
-			setState(159);
+			setState(161);
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,10,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(140);
+				setState(142);
 				variableDecl();
-				setState(141);
+				setState(143);
 				match(SEMICOLON);
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(143);
+				setState(145);
 				assignment();
-				setState(144);
+				setState(146);
 				match(SEMICOLON);
 				}
 				break;
 			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(146);
+				setState(148);
 				pinDecl();
-				setState(147);
+				setState(149);
 				match(SEMICOLON);
 				}
 				break;
 			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(149);
+				setState(151);
 				functionCall();
-				setState(150);
+				setState(152);
 				match(SEMICOLON);
 				}
 				break;
 			case 5:
 				enterOuterAlt(_localctx, 5);
 				{
-				setState(152);
+				setState(154);
 				ifElseStatement();
 				}
 				break;
 			case 6:
 				enterOuterAlt(_localctx, 6);
 				{
-				setState(153);
+				setState(155);
 				iterativeStatement();
 				}
 				break;
 			case 7:
 				enterOuterAlt(_localctx, 7);
 				{
-				setState(154);
+				setState(156);
 				atStatement();
 				}
 				break;
 			case 8:
 				enterOuterAlt(_localctx, 8);
 				{
-				setState(155);
+				setState(157);
 				boundStatement();
 				}
 				break;
 			case 9:
 				enterOuterAlt(_localctx, 9);
 				{
-				setState(156);
+				setState(158);
 				returnStatement();
-				setState(157);
+				setState(159);
 				match(SEMICOLON);
 				}
 				break;
@@ -900,9 +902,9 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(161);
+			setState(163);
 			match(RETURN);
-			setState(162);
+			setState(164);
 			variableName();
 			}
 		}
@@ -956,28 +958,28 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(164);
+			setState(166);
 			ifStatement();
-			setState(168);
+			setState(170);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==ELSE_IF) {
 				{
 				{
-				setState(165);
+				setState(167);
 				elseIfStatement();
 				}
 				}
-				setState(170);
+				setState(172);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
-			setState(172);
+			setState(174);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			if (_la==ELSE) {
 				{
-				setState(171);
+				setState(173);
 				elseStatement();
 				}
 			}
@@ -1030,15 +1032,15 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(174);
-			match(IF);
-			setState(175);
-			match(LEFT_PAREN);
 			setState(176);
-			conditionalExpression();
+			match(IF);
 			setState(177);
-			match(RIGHT_PAREN);
+			match(LEFT_PAREN);
 			setState(178);
+			conditionalExpression();
+			setState(179);
+			match(RIGHT_PAREN);
+			setState(180);
 			block();
 			}
 		}
@@ -1088,15 +1090,15 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(180);
-			match(ELSE_IF);
-			setState(181);
-			match(LEFT_PAREN);
 			setState(182);
-			conditionalExpression();
+			match(ELSE_IF);
 			setState(183);
-			match(RIGHT_PAREN);
+			match(LEFT_PAREN);
 			setState(184);
+			conditionalExpression();
+			setState(185);
+			match(RIGHT_PAREN);
+			setState(186);
 			block();
 			}
 		}
@@ -1141,9 +1143,9 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(186);
+			setState(188);
 			match(ELSE);
-			setState(187);
+			setState(189);
 			block();
 			}
 		}
@@ -1194,44 +1196,44 @@ public class OurParser extends Parser {
 		enterRule(_localctx, 28, RULE_conditionalExpression);
 		int _la;
 		try {
-			setState(196);
+			setState(198);
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,14,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(189);
+				setState(191);
 				boolExpr();
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(191);
+				setState(193);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				if (_la==NOT) {
 					{
-					setState(190);
+					setState(192);
 					match(NOT);
 					}
 				}
 
-				setState(193);
+				setState(195);
 				variableName();
 				}
 				break;
 			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(194);
+				setState(196);
 				functionCall();
 				}
 				break;
 			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(195);
+				setState(197);
 				match(SUBSCRIPT);
 				}
 				break;
@@ -1283,15 +1285,15 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(198);
-			match(AT);
-			setState(199);
-			match(LEFT_PAREN);
 			setState(200);
-			atParams();
+			match(AT);
 			setState(201);
-			match(RIGHT_PAREN);
+			match(LEFT_PAREN);
 			setState(202);
+			atParams();
+			setState(203);
+			match(RIGHT_PAREN);
+			setState(204);
 			block();
 			}
 		}
@@ -1335,7 +1337,7 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(204);
+			setState(206);
 			boolExpr();
 			}
 		}
@@ -1393,9 +1395,9 @@ public class OurParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(206);
+			setState(208);
 			match(BOUND);
-			setState(207);
+			setState(209);
 			match(LEFT_PAREN);
 			setState(208);
 			atParams();
@@ -2107,19 +2109,13 @@ public class OurParser extends Parser {
 		}
 		public TerminalNode ASSIGN() { return getToken(OurParser.ASSIGN, 0); }
 		public TerminalNode LEFT_BRACKET() { return getToken(OurParser.LEFT_BRACKET, 0); }
+		public List<ArrayParamContext> arrayParam() {
+			return getRuleContexts(ArrayParamContext.class);
+		}
+		public ArrayParamContext arrayParam(int i) {
+			return getRuleContext(ArrayParamContext.class,i);
+		}
 		public TerminalNode RIGHT_BRACKET() { return getToken(OurParser.RIGHT_BRACKET, 0); }
-		public List<ArithExprContext> arithExpr() {
-			return getRuleContexts(ArithExprContext.class);
-		}
-		public ArithExprContext arithExpr(int i) {
-			return getRuleContext(ArithExprContext.class,i);
-		}
-		public List<LiteralContext> literal() {
-			return getRuleContexts(LiteralContext.class);
-		}
-		public LiteralContext literal(int i) {
-			return getRuleContext(LiteralContext.class,i);
-		}
 		public List<TerminalNode> COMMA() { return getTokens(OurParser.COMMA); }
 		public TerminalNode COMMA(int i) {
 			return getToken(OurParser.COMMA, i);
@@ -2158,6 +2154,67 @@ public class OurParser extends Parser {
 			match(LEFT_BRACKET);
 			setState(306);
 			_errHandler.sync(this);
+			_la = _input.LA(1);
+			while (_la==COMMA) {
+				{
+				{
+				setState(309);
+				match(COMMA);
+				setState(310);
+				arrayParam();
+				}
+				}
+				setState(315);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+			}
+			setState(316);
+			match(RIGHT_BRACKET);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class ArrayParamContext extends ParserRuleContext {
+		public ArithExprContext arithExpr() {
+			return getRuleContext(ArithExprContext.class,0);
+		}
+		public LiteralContext literal() {
+			return getRuleContext(LiteralContext.class,0);
+		}
+		public ArrayParamContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_arrayParam; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof OurParserListener ) ((OurParserListener)listener).enterArrayParam(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof OurParserListener ) ((OurParserListener)listener).exitArrayParam(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof OurParserVisitor ) return ((OurParserVisitor<? extends T>)visitor).visitArrayParam(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final ArrayParamContext arrayParam() throws RecognitionException {
+		ArrayParamContext _localctx = new ArrayParamContext(_ctx, getState());
+		enterRule(_localctx, 54, RULE_arrayParam);
+		try {
+			setState(320);
+			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case SUBSCRIPT:
 			case DIGIT:
@@ -2167,6 +2224,7 @@ public class OurParser extends Parser {
 			case LEFT_PAREN:
 			case NOT:
 			case ID:
+				enterOuterAlt(_localctx, 1);
 				{
 				setState(304);
 				arithExpr(0);
@@ -2174,6 +2232,7 @@ public class OurParser extends Parser {
 				break;
 			case BOOL_LITERAL:
 			case STRING_LITERAL:
+				enterOuterAlt(_localctx, 2);
 				{
 				setState(305);
 				literal();
@@ -2269,7 +2328,7 @@ public class OurParser extends Parser {
 
 	public final AssignmentContext assignment() throws RecognitionException {
 		AssignmentContext _localctx = new AssignmentContext(_ctx, getState());
-		enterRule(_localctx, 54, RULE_assignment);
+		enterRule(_localctx, 56, RULE_assignment);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -2339,7 +2398,7 @@ public class OurParser extends Parser {
 
 	public final VariableNameContext variableName() throws RecognitionException {
 		VariableNameContext _localctx = new VariableNameContext(_ctx, getState());
-		enterRule(_localctx, 56, RULE_variableName);
+		enterRule(_localctx, 58, RULE_variableName);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -2381,7 +2440,7 @@ public class OurParser extends Parser {
 
 	public final FunctionNameContext functionName() throws RecognitionException {
 		FunctionNameContext _localctx = new FunctionNameContext(_ctx, getState());
-		enterRule(_localctx, 58, RULE_functionName);
+		enterRule(_localctx, 60, RULE_functionName);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -2424,7 +2483,7 @@ public class OurParser extends Parser {
 
 	public final PinTypeContext pinType() throws RecognitionException {
 		PinTypeContext _localctx = new PinTypeContext(_ctx, getState());
-		enterRule(_localctx, 60, RULE_pinType);
+		enterRule(_localctx, 62, RULE_pinType);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -2482,7 +2541,7 @@ public class OurParser extends Parser {
 
 	public final DataTypeContext dataType() throws RecognitionException {
 		DataTypeContext _localctx = new DataTypeContext(_ctx, getState());
-		enterRule(_localctx, 62, RULE_dataType);
+		enterRule(_localctx, 64, RULE_dataType);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -2534,7 +2593,7 @@ public class OurParser extends Parser {
 
 	public final LiteralContext literal() throws RecognitionException {
 		LiteralContext _localctx = new LiteralContext(_ctx, getState());
-		enterRule(_localctx, 64, RULE_literal);
+		enterRule(_localctx, 66, RULE_literal);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -2588,7 +2647,7 @@ public class OurParser extends Parser {
 
 	public final NumLiteralContext numLiteral() throws RecognitionException {
 		NumLiteralContext _localctx = new NumLiteralContext(_ctx, getState());
-		enterRule(_localctx, 66, RULE_numLiteral);
+		enterRule(_localctx, 68, RULE_numLiteral);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -2643,7 +2702,7 @@ public class OurParser extends Parser {
 
 	public final ArithOpContext arithOp() throws RecognitionException {
 		ArithOpContext _localctx = new ArithOpContext(_ctx, getState());
-		enterRule(_localctx, 68, RULE_arithOp);
+		enterRule(_localctx, 70, RULE_arithOp);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -2701,7 +2760,7 @@ public class OurParser extends Parser {
 
 	public final BoolOpContext boolOp() throws RecognitionException {
 		BoolOpContext _localctx = new BoolOpContext(_ctx, getState());
-		enterRule(_localctx, 70, RULE_boolOp);
+		enterRule(_localctx, 72, RULE_boolOp);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);

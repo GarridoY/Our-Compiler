@@ -1,4 +1,4 @@
-// Generated from C:/Users/the_p/Documents/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from D:/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -277,6 +277,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAssignArray(OurParser.AssignArrayContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#arrayParam}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrayParam(OurParser.ArrayParamContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#arrayParam}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrayParam(OurParser.ArrayParamContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#assignment}.
 	 * @param ctx the parse tree

@@ -156,6 +156,7 @@ boolExprOperand
 pinDecl
 variableDecl
 assignArray
+arrayParam
 assignment
 variableName
 functionName
