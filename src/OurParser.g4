@@ -68,7 +68,7 @@ atParams
     : boolExpr;
 
 boundStatement
-    : BOUND LEFT_PAREN variableName boolOp arithExpr (COMMA BOOL_LITERAL)? RIGHT_PAREN block (FINAL block)?; // bound (y, z) z optional
+    : BOUND LEFT_PAREN atParams (COMMA BOOL_LITERAL)? RIGHT_PAREN block (CATCH block)? (FINAL block)?; // bound (y, z) z optional
 
 // ITERATIVE
 iterativeStatement
@@ -112,7 +112,11 @@ variableDecl
     | dataType assignArray;
 
 assignArray
-    : variableName ASSIGN LEFT_BRACKET (arithExpr | literal) (COMMA (arithExpr | literal))* RIGHT_BRACKET;
+    : variableName ASSIGN LEFT_BRACKET arrayParam (COMMA arrayParam)* RIGHT_BRACKET;
+
+arrayParam
+    : arithExpr
+    | literal;
 
 assignment
     : variableName ASSIGN (arithExpr | literal);

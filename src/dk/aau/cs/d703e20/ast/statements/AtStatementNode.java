@@ -5,8 +5,8 @@ import dk.aau.cs.d703e20.ast.structure.BlockNode;
 
 public class AtStatementNode extends StatementNode {
 
-    private AtParamsNode atParamsNode;
-    private BlockNode blockNode;
+    private final AtParamsNode atParamsNode;
+    private final BlockNode blockNode;
 
     private CodePosition codePosition;
 

@@ -1,4 +1,4 @@
-// Generated from C:/Users/the_p/Desktop/P7/src\OurParser.g4 by ANTLR 4.8
+// Generated from D:/GitHub/P7/src\OurParser.g4 by ANTLR 4.8
 package dk.aau.cs.d703e20.parser;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -172,6 +172,12 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAssignArray(OurParser.AssignArrayContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#arrayParam}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrayParam(OurParser.ArrayParamContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link OurParser#assignment}.
 	 * @param ctx the parse tree
