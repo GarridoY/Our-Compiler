@@ -53,11 +53,11 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFunctionCall(OurParser.FunctionCallContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link OurParser#functionArgs}.
+	 * Visit a parse tree produced by {@link OurParser#functionArg}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunctionArgs(OurParser.FunctionArgsContext ctx);
+	T visitFunctionArg(OurParser.FunctionArgContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link OurParser#statement}.
 	 * @param ctx the parse tree

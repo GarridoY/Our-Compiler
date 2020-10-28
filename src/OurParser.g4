@@ -28,11 +28,12 @@ functionParam
 
 // Call function given optional arguments (expr)
 functionCall
-    : functionName LEFT_PAREN functionArgs? RIGHT_PAREN;
+    : functionName LEFT_PAREN (functionArg (COMMA functionArg)*)? RIGHT_PAREN;
 
 // Function arguments for calling function(s)
-functionArgs
-    : (arithExpr | boolExpr) ( COMMA (arithExpr | boolExpr))*;
+functionArg
+    : arithExpr
+    | boolExpr;
 
 // Statements available in main
 statement
