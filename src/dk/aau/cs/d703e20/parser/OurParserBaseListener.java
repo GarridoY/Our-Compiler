@@ -100,13 +100,13 @@ public class OurParserBaseListener implements OurParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunctionArgs(OurParser.FunctionArgsContext ctx) { }
+	@Override public void enterFunctionArg(OurParser.FunctionArgContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFunctionArgs(OurParser.FunctionArgsContext ctx) { }
+	@Override public void exitFunctionArg(OurParser.FunctionArgContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

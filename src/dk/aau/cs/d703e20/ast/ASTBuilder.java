@@ -9,7 +9,6 @@ import dk.aau.cs.d703e20.parser.OurParserBaseVisitor;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -100,24 +99,29 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFunctionCall(OurParser.FunctionCallContext ctx) {
         FunctionCallNode functionCallNode;
-        if (ctx.functionArgs() != null && !ctx.functionArgs().isEmpty())
-            functionCallNode = new FunctionCallNode(ctx.functionName().getText(), (FunctionArgsNode) visitFunctionArgs(ctx.functionArgs()));
-        else
-            functionCallNode = new FunctionCallNode(ctx.functionName().getText());
+        List<FunctionArgNode> functionArgNodes = new ArrayList<FunctionArgNode>();
+        if (ctx.functionArg().size() > 0)
+            functionArgNodes = visitList(FunctionArgNode.class, ctx.functionArg(), this::visitFunctionArg);
+
+        functionCallNode = new FunctionCallNode(ctx.functionName().getText(), functionArgNodes);
 
         setCodePos(functionCallNode, ctx);
         return functionCallNode;
     }
 
     @Override
-    public ASTNode visitFunctionArgs(OurParser.FunctionArgsContext ctx) {
-        List<ArithExpressionNode> arithExpressionNodes = visitList(ArithExpressionNode.class, ctx.arithExpr(), this::visitArithExpr);
+    public ASTNode visitFunctionArg(OurParser.FunctionArgContext ctx) {
+        FunctionArgNode functionArgNode;
 
-        List<BoolExpressionNode> boolExpressionNodes = visitList(BoolExpressionNode.class, ctx.boolExpr(), this::visitBoolExpr);
+        if (ctx.arithExpr() != null)
+            functionArgNode = new FunctionArgNode((ArithExpressionNode)visitArithExpr(ctx.arithExpr()));
+        else if (ctx.boolExpr() != null)
+            functionArgNode = new FunctionArgNode((BoolExpressionNode) visitBoolExpr(ctx.boolExpr()));
+        else
+            throw new CompilerException("Invalid Function Argument", getCodePosition(ctx));
 
-        FunctionArgsNode functionArgsNode = new FunctionArgsNode(arithExpressionNodes, boolExpressionNodes);
-        setCodePos(functionArgsNode, ctx);
-        return functionArgsNode;
+        setCodePos(functionArgNode, ctx);
+        return functionArgNode;
     }
 
     @Override

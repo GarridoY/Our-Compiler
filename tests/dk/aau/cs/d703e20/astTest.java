@@ -471,8 +471,8 @@ public class astTest {
 
         assertAll(
                 () -> assertEquals("function", functionCallNode.getFunctionName()),
-                () -> assertEquals(2, functionCallNode.getFunctionArgsNode().getArithExpressionNodes().get(0).getNumber()),
-                () -> assertEquals("varName", functionCallNode.getFunctionArgsNode().getArithExpressionNodes().get(1).getVariableName())
+                () -> assertEquals(2, functionCallNode.getFunctionArgNodes().get(0).getArithExpressionNode().getNumber()),
+                () -> assertEquals("varName", functionCallNode.getFunctionArgNodes().get(1).getArithExpressionNode().getVariableName())
         );
     }
 
