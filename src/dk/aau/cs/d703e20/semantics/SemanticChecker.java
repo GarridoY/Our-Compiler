@@ -3,6 +3,7 @@ package dk.aau.cs.d703e20.semantics;
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
+import dk.aau.cs.d703e20.ast.errorhandling.InconsistentTypeException;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
@@ -68,15 +69,15 @@ public class SemanticChecker {
         visitFunctions(programNode.getFunctionDeclarationNodes());
     }
 
-    private void visitSetup(SetupNode setupNode) {
+    public void visitSetup(SetupNode setupNode) {
         visitBlock(setupNode.getBlockNode());
     }
 
-    private void visitLoop(LoopNode loopNode) {
+    public void visitLoop(LoopNode loopNode) {
         visitBlock(loopNode.getBlockNode());
     }
 
-    private void visitBlock(BlockNode blockNode) {
+    public void visitBlock(BlockNode blockNode) {
         openScope();
         for (StatementNode statement : blockNode.getStatementNodes()) {
             visitStatement(statement);
@@ -84,7 +85,7 @@ public class SemanticChecker {
         closeScope();
     }
 
-    private void visitStatement(StatementNode statementNode) {
+    public void visitStatement(StatementNode statementNode) {
         if (statementNode instanceof VariableDeclarationNode) {
             visitVariableDeclaration((VariableDeclarationNode) statementNode);
         } else if (statementNode instanceof AssignmentNode) {
@@ -107,7 +108,7 @@ public class SemanticChecker {
     }
 
     /*         STATEMENTS         */
-    private void visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
+    public void visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
         Enums.DataType dataType = variableDeclarationNode.getDataType();
         String variableName = variableDeclarationNode.getVariableName();
 
@@ -117,7 +118,7 @@ public class SemanticChecker {
                 Enums.DataType assignmentDataType = visitAssignment(variableDeclarationNode.getAssignmentNode());
 
                 if (assignmentDataType != dataType)
-                    throw new CompilerException("ERROR: Variable declaration (" + variableDeclarationNode.getVariableName() + ") contains inconsistent types.", variableDeclarationNode.getCodePosition());
+                    throw new InconsistentTypeException(variableDeclarationNode.getVariableName(), variableDeclarationNode.getCodePosition());
                 else
                     enterSymbol(variableDeclarationNode.getAssignmentNode().getVariableName(), variableDeclarationNode);
             }
@@ -125,7 +126,7 @@ public class SemanticChecker {
                 Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode(), variableDeclarationNode.getAllocatedSize());
 
                 if (arrayDataType != dataType)
-                    throw new CompilerException("ERROR: Array declaration (" + variableDeclarationNode.getVariableName() + ") contains inconsistent types.", variableDeclarationNode.getCodePosition());
+                    throw new InconsistentTypeException(variableDeclarationNode.getVariableName(), variableDeclarationNode.getCodePosition());
                 else
                     enterSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName(), variableDeclarationNode);
             }
@@ -137,7 +138,7 @@ public class SemanticChecker {
             throw new CompilerException("ERROR: " + variableName + " has already been declared.", variableDeclarationNode.getCodePosition());
     }
 
-    private Enums.DataType visitAssignment(AssignmentNode assignmentNode) {
+    public Enums.DataType visitAssignment(AssignmentNode assignmentNode) {
         Enums.DataType dataType;
 
         if (assignmentNode.getArithExpressionNode() != null) {
@@ -150,7 +151,7 @@ public class SemanticChecker {
         }
     }
 
-    private Enums.DataType visitArithmeticExpression(ArithExpressionNode arithExpressionNode) {
+    public Enums.DataType visitArithmeticExpression(ArithExpressionNode arithExpressionNode) {
         if (arithExpressionNode.getVariableName() != null)
             return ((VariableDeclarationNode) retrieveSymbol(arithExpressionNode.getVariableName())).getDataType();
         else if (arithExpressionNode.getNumber() != null)
@@ -167,7 +168,7 @@ public class SemanticChecker {
         return null;
     }
 
-    private Enums.DataType visitAssignArray(AssignArrayNode assignArrayNode, int allocatedSize) {
+    public Enums.DataType visitAssignArray(AssignArrayNode assignArrayNode, int allocatedSize) {
         String variableName;
         Enums.DataType assignedDataType = null;
 
@@ -193,13 +194,13 @@ public class SemanticChecker {
         return assignedDataType;
     }
 
-    private Enums.DataType visitArrayParameters(ArrayParamNode arrayParamNode) {
+    public Enums.DataType visitArrayParameters(ArrayParamNode arrayParamNode) {
         if (arrayParamNode.getArithExpressionNode() != null)
             return visitArithmeticExpression(arrayParamNode.getArithExpressionNode());
         else return getDataTypeFromLiteral(arrayParamNode.getLiteral());
     }
 
-    private void visitPinDeclaration(PinDeclarationNode pinDeclarationNode) {
+    public void visitPinDeclaration(PinDeclarationNode pinDeclarationNode) {
         PinDeclarationNode retrievedNode = null;
 
         Enums.PinType pinType = pinDeclarationNode.getPinType();
@@ -212,7 +213,7 @@ public class SemanticChecker {
             enterSymbol(pinDeclarationNode.getVariableName(), pinDeclarationNode);
     }
 
-    private FunctionDeclarationNode visitFunctionCall(FunctionCallNode functionCallNode) {
+    public FunctionDeclarationNode visitFunctionCall(FunctionCallNode functionCallNode) {
         boolean notFound = true;
         FunctionDeclarationNode functionDeclarationNodeReturn = null;
         String functionName = functionCallNode.getFunctionName();
@@ -220,7 +221,7 @@ public class SemanticChecker {
 
         FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) retrieveSymbol(functionName);
 
-        
+
         for (int i = 0; i < functionDeclarationNode.getFunctionParameterNodes().size(); i++) {
             if (functionDeclarationNode.getFunctionParameterNodes().get(i).getDataType() != null) {
                 Enums.DataType dataType1 = functionDeclarationNode.getFunctionParameterNodes().get(i).getDataType();
@@ -236,27 +237,27 @@ public class SemanticChecker {
 
     }
 
-    private void visitIfElseStatement(IfElseStatementNode ifElseStatementNode) {
+    public void visitIfElseStatement(IfElseStatementNode ifElseStatementNode) {
 
     }
 
-    private void visitForStatement(ForStatementNode forStatementNode) {
+    public void visitForStatement(ForStatementNode forStatementNode) {
 
     }
 
-    private void visitWhileStatement(WhileStatementNode whileStatementNode) {
+    public void visitWhileStatement(WhileStatementNode whileStatementNode) {
 
     }
 
-    private void visitAtStatement(AtStatementNode atStatementNode) {
+    public void visitAtStatement(AtStatementNode atStatementNode) {
 
     }
 
-    private void visitBoundStatement(BoundStatementNode boundStatementNode) {
+    public void visitBoundStatement(BoundStatementNode boundStatementNode) {
 
     }
 
-    private void visitBooleanExpression(BoolExpressionNode boolExpressionNode) {
+    public void visitBooleanExpression(BoolExpressionNode boolExpressionNode) {
 
     }
     
@@ -272,7 +273,7 @@ public class SemanticChecker {
         }
     }
 
-    private void visitFunctionDeclaration(FunctionDeclarationNode function) {
+    public void visitFunctionDeclaration(FunctionDeclarationNode function) {
         String functionName = function.getFunctionName();
         List<FunctionParameterNode> functionParameters = function.getFunctionParameterNodes();
         Enums.DataType returnType = function.getDataType();
@@ -316,7 +317,7 @@ public class SemanticChecker {
     }
 
     // TODO: FINISH IT
-    private void visitFunctionBlock(BlockNode blockNode, Enums.DataType returnType, FunctionDeclarationNode functionDeclarationNode) {
+    public void visitFunctionBlock(BlockNode blockNode, Enums.DataType returnType, FunctionDeclarationNode functionDeclarationNode) {
         openScope();
 
         boolean pureFunction = returnType != null;
@@ -332,7 +333,7 @@ public class SemanticChecker {
         }
     }
 
-    private void visitReturnStatement(ReturnStatementNode returnStatementNode, FunctionDeclarationNode functionDeclarationNode) {
+    public void visitReturnStatement(ReturnStatementNode returnStatementNode, FunctionDeclarationNode functionDeclarationNode) {
         String returnName = returnStatementNode.getVariableName();
         Enums.DataType returnType =  functionDeclarationNode.getDataType();
 
