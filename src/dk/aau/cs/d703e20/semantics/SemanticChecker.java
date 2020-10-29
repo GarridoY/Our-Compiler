@@ -108,75 +108,45 @@ public class SemanticChecker {
 
     /*         STATEMENTS         */
     private void visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
-        VariableDeclarationNode retrievedNode = null;
+        Enums.DataType dataType = variableDeclarationNode.getDataType();
+        String variableName = variableDeclarationNode.getVariableName();
 
-        String variableName;
-        Enums.DataType dataType = null;
+        if (retrieveSymbol(variableName) == null)
+        {
+            if (variableDeclarationNode.getAssignmentNode() != null) {
+                Enums.DataType assignmentDataType = visitAssignment(variableDeclarationNode.getAssignmentNode());
 
-        if (variableDeclarationNode.getVariableName() != null) {
-            variableName = variableDeclarationNode.getVariableName();
-            if (retrieveSymbol(variableName) instanceof VariableDeclarationNode)
-                retrievedNode = (VariableDeclarationNode) retrieveSymbol(variableName);
+                if (assignmentDataType != dataType)
+                    throw new CompilerException("ERROR: Variable declaration (" + variableDeclarationNode.getVariableName() + ") contains inconsistent types.", variableDeclarationNode.getCodePosition());
+                else
+                    enterSymbol(variableDeclarationNode.getAssignmentNode().getVariableName(), variableDeclarationNode);
+            }
+            else if (variableDeclarationNode.getAssignArrayNode() != null) {
+                Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode(), variableDeclarationNode.getAllocatedSize());
 
-            if (retrievedNode != null)
-                dataType = retrievedNode.getDataType();
-            else dataType = null;
-
-            if (retrieveSymbol(variableName) == null)
-                throw new CompilerException("ERROR: Variable (" + variableName + ") is not declared.", retrievedNode.getCodePosition());
-
-            if (dataType.equals(Enums.DataType.CLOCK))
-                if (retrievedNode.getVariableName() == null)
-                    throw new CompilerException("ERROR: Invalid declaration of a clock variable (" + variableName + ").", retrievedNode.getCodePosition());
-        }
-
-        if (retrieveSymbol(variableDeclarationNode.getAssignmentNode().getVariableName()) != null && retrieveSymbol(variableDeclarationNode.getAssignmentNode().getVariableName()) instanceof  VariableDeclarationNode)
-            retrievedNode = (VariableDeclarationNode) retrieveSymbol(variableDeclarationNode.getAssignmentNode().getVariableName());
-
-        if (retrieveSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName()) != null && retrieveSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName()) instanceof  VariableDeclarationNode)
-            retrievedNode = (VariableDeclarationNode) retrieveSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName());
-
-        if (retrievedNode == null) {
-            if (variableDeclarationNode.getAssignmentNode().getVariableName() != null)
-                enterSymbol(variableDeclarationNode.getAssignmentNode().getVariableName(), variableDeclarationNode);
-            else throw new CompilerException("ERROR: A variable (" + variableDeclarationNode.getAssignmentNode().getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
-
-            if (variableDeclarationNode.getAssignArrayNode().getVariableName() != null)
-                enterSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName(), variableDeclarationNode);
-            else throw new CompilerException("ERROR: A array variable (" + variableDeclarationNode.getAssignArrayNode().getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
-
-            if (variableDeclarationNode.getVariableName() != null)
+                if (arrayDataType != dataType)
+                    throw new CompilerException("ERROR: Array declaration (" + variableDeclarationNode.getVariableName() + ") contains inconsistent types.", variableDeclarationNode.getCodePosition());
+                else
+                    enterSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName(), variableDeclarationNode);
+            }
+            else {
                 enterSymbol(variableDeclarationNode.getVariableName(), variableDeclarationNode);
-            else throw new CompilerException("ERROR: A variable (" + variableDeclarationNode.getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
+            }
         }
-        if (variableDeclarationNode.getAssignmentNode() != null) visitAssignment(variableDeclarationNode.getAssignmentNode());
-        if (variableDeclarationNode.getAssignArrayNode() != null) {
-            Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode(), variableDeclarationNode.getAllocatedSize());
-            if (arrayDataType != dataType) throw new CompilerException("ERROR: A array variable (" + variableDeclarationNode.getVariableName() + ") contains invalid types.", retrievedNode.getCodePosition());
-        }
+        else
+            throw new CompilerException("ERROR: " + variableName + " has already been declared.", variableDeclarationNode.getCodePosition());
     }
 
-    private void visitAssignment(AssignmentNode assignmentNode) {
-        String variableName;
+    private Enums.DataType visitAssignment(AssignmentNode assignmentNode) {
         Enums.DataType dataType;
 
-        if (assignmentNode.getVariableName() != null) {
-            VariableDeclarationNode variableDeclarationNode = null;
-            variableName = assignmentNode.getVariableName();
-            if (retrieveSymbol(variableName) instanceof VariableDeclarationNode)
-                variableDeclarationNode = (VariableDeclarationNode) retrieveSymbol(variableName);
-
-            if (variableDeclarationNode != null) dataType = variableDeclarationNode.getDataType();
-            else throw new CompilerException("ERROR: Variable (" + variableName + ") on left side of assignment is not declared.", assignmentNode.getCodePosition());
-
-            Enums.DataType assignedDataType = null;
-            if (assignmentNode.getLiteralValue() != null) { //is it a bool or string?
-                assignedDataType = getDataTypeFromLiteral(assignmentNode.getLiteralValue());
-            } else if (assignmentNode.getArithExpressionNode() != null) //is it a int or double?
-                assignedDataType = visitArithmeticExpression(assignmentNode.getArithExpressionNode());
-
-            if (dataType != null && assignedDataType != null && !assignedDataType.equals(dataType))
-                throw new CompilerException("ERROR: Incompatible types. (" + dataType + " and " + assignedDataType + ")", assignmentNode.getCodePosition());
+        if (assignmentNode.getArithExpressionNode() != null) {
+            dataType = visitArithmeticExpression(assignmentNode.getArithExpressionNode());
+            return dataType;
+        }
+        else {
+            dataType = getDataTypeFromLiteral(assignmentNode.getLiteralValue());
+            return dataType;
         }
     }
 
@@ -232,30 +202,14 @@ public class SemanticChecker {
     private void visitPinDeclaration(PinDeclarationNode pinDeclarationNode) {
         PinDeclarationNode retrievedNode = null;
 
-        String variableName;
-        Enums.PinType pinType = null;
+        Enums.PinType pinType = pinDeclarationNode.getPinType();
+        String variableName = pinDeclarationNode.getVariableName();
+        String pinNumber = pinDeclarationNode.getPinNumber();
 
-        if (pinDeclarationNode.getVariableName() != null) {
-            variableName = pinDeclarationNode.getVariableName();
-            if (retrieveSymbol(variableName) instanceof VariableDeclarationNode)
-                retrievedNode = (PinDeclarationNode) retrieveSymbol(variableName);
-
-            if (retrievedNode != null)
-                pinType = retrievedNode.getPinType();
-            else pinType = null;
-
-            if (retrieveSymbol(variableName) == null)
-                throw new CompilerException("ERROR: Pin Variable (" + variableName + ") is not declared.", retrievedNode.getCodePosition());
-        }
-
-        if (retrieveSymbol(pinDeclarationNode.getVariableName()) != null && retrieveSymbol(pinDeclarationNode.getVariableName()) instanceof PinDeclarationNode)
-            retrievedNode = (PinDeclarationNode) retrieveSymbol(pinDeclarationNode.getVariableName());
-
-        if (retrievedNode == null) {
-            if (pinDeclarationNode.getVariableName() != null)
-                enterSymbol(pinDeclarationNode.getVariableName(), pinDeclarationNode);
-            else throw new CompilerException("ERROR: A pin variable (" + pinDeclarationNode.getVariableName() + ") with the same name already exists.", retrievedNode.getCodePosition());
-        }
+        if (retrieveSymbol(variableName) != null)
+            throw new CompilerException("ERROR: " + variableName + " is already declared." + pinDeclarationNode.getCodePosition());
+        else
+            enterSymbol(pinDeclarationNode.getVariableName(), pinDeclarationNode);
     }
 
     private FunctionDeclarationNode visitFunctionCall(FunctionCallNode functionCallNode) {
@@ -266,6 +220,7 @@ public class SemanticChecker {
 
         FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) retrieveSymbol(functionName);
 
+        
         for (int i = 0; i < functionDeclarationNode.getFunctionParameterNodes().size(); i++) {
             if (functionDeclarationNode.getFunctionParameterNodes().get(i).getDataType() != null) {
                 Enums.DataType dataType1 = functionDeclarationNode.getFunctionParameterNodes().get(i).getDataType();
