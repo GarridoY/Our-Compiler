@@ -279,6 +279,7 @@ public class SemanticChecker {
         List<FunctionParameterNode> functionParameters = function.getFunctionParameterNodes();
         Enums.DataType returnType = function.getDataType();
 
+        // Check if function is already in symbol table
         if (retrieveSymbol(functionName) == null) {
             enterSymbol(functionName, function);
             visitFunctionBlock(function.getBlockNode(), returnType, functionParameters);
@@ -286,45 +287,6 @@ public class SemanticChecker {
         else {
             throw new FunctionAlreadyDeclaredException(functionName, function.getCodePosition());
         }
-
-        /*
-        ArrayList<FunctionDeclarationNode> retrievedFunctions = null;
-        if (retrievedFunctions.isEmpty())
-            enterSymbol(functionName, function);
-
-        if (retrievedFunctions.size() > 0) {
-            boolean sameReturnType = true;
-            boolean sameFunctionArgs = false;
-            boolean sameAmountOfArgs = false;
-
-            outerloop:
-            for (FunctionDeclarationNode retrivedNode : retrievedFunctions) {
-                sameReturnType = retrivedNode.getDataType() == returnType;
-                sameAmountOfArgs = retrivedNode.getFunctionParameterNodes() == null && functionParameters == null;
-
-                if (retrivedNode.getFunctionParameterNodes() != null && functionParameters != null){
-                    if (retrivedNode.getFunctionParameterNodes().size() == functionParameters.size()) {
-                        for (int i = 0; i < functionParameters.size(); i++) {
-                            if (functionParameters.get(i).getDataType() != null) {
-                                if (retrivedNode.getFunctionParameterNodes().get(i).getDataType() != null) {
-                                    if (functionParameters.get(i).getDataType().equals(retrivedNode.getFunctionParameterNodes().get(i).getDataType())) {
-                                        sameFunctionArgs = true;
-                                        break outerloop;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (sameFunctionArgs)
-                throw new CompilerException("ERROR: A function with the same name (" + functionName + ") and arguments already exists.", retrieveSymbol(functionName).getCodePosition());
-            if (sameAmountOfArgs)
-                if (returnType != null)
-                    throw new CompilerException("ERROR: A function with the same name (" + functionName + ") and type (" + returnType + "already exists.", retrieveSymbol(functionName).getCodePosition());
-            enterSymbol(functionName, function);
-        }
-        */
     }
 
     // TODO: FINISH IT
