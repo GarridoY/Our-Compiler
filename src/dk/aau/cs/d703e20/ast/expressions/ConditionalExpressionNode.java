@@ -7,6 +7,7 @@ import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 public class ConditionalExpressionNode implements ASTNode {
     private BoolExpressionNode boolExpressionNode;
     private String variableName;
+    private boolean negated;
     private FunctionCallNode functionCallNode;
     private SubscriptNode subscriptNode;
 
@@ -16,8 +17,9 @@ public class ConditionalExpressionNode implements ASTNode {
         this.boolExpressionNode = boolExpressionNode;
     }
 
-    public ConditionalExpressionNode(String variableName) {
+    public ConditionalExpressionNode(String variableName, boolean negated) {
         this.variableName = variableName;
+        this.negated = negated;
     }
 
     public ConditionalExpressionNode(FunctionCallNode functionCallNode) {
@@ -36,6 +38,10 @@ public class ConditionalExpressionNode implements ASTNode {
         return variableName;
     }
 
+    public boolean isNegated() {
+        return negated;
+    }
+
     public FunctionCallNode getFunctionCallNode() {
         return functionCallNode;
     }
@@ -52,7 +58,8 @@ public class ConditionalExpressionNode implements ASTNode {
             sb.append(boolExpressionNode.prettyPrint(indentation));
         }
         else if (variableName != null) {
-            //TODO: we need to know if we should print "!"
+            if (negated)
+                sb.append("!");
             sb.append(variableName);
         }
         else if (functionCallNode != null) {

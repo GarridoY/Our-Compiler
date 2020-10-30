@@ -59,7 +59,11 @@ ifStatement: IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseStatement: ELSE block;
 
-conditionalExpression: boolExpr | NOT? variableName | functionCall | SUBSCRIPT;
+conditionalExpression
+    : boolExpr
+    | NOT? variableName
+    | functionCall
+    | SUBSCRIPT;
 
 // at statement for clock and timing purposes
 atStatement
