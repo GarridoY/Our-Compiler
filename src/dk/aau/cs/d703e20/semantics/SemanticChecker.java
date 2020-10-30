@@ -16,6 +16,12 @@ public class SemanticChecker {
     public SemanticChecker() {
         HashMap<String, ASTNode> newSymbolTable = new HashMap<>();
         this.hashMapStack.push(newSymbolTable);
+
+        enterSymbol("delay", new FunctionDeclarationNode(Enums.DataType.VOID,
+                                                   "delay",
+                                                                new BlockNode(new ArrayList<>()),
+                                                                new ArrayList<>()
+        ));
     }
 
     private void openScope(){
@@ -55,9 +61,9 @@ public class SemanticChecker {
     /*      VISITOR       */
     public void visitProgram(ProgramNode programNode){
         openScope();
+        visitFunctions(programNode.getFunctionDeclarationNodes());
         visitSetup(programNode.getSetupNode());
         visitLoop(programNode.getLoopNode());
-        visitFunctions(programNode.getFunctionDeclarationNodes());
         closeScope();
     }
 
