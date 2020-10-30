@@ -1,14 +1,11 @@
 package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.ASTBuilder;
-import dk.aau.cs.d703e20.ast.ASTNode;
-import dk.aau.cs.d703e20.ast.errorhandling.AlreadyDeclaredException;
-import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
-import dk.aau.cs.d703e20.ast.errorhandling.InconsistentTypeException;
-import dk.aau.cs.d703e20.ast.errorhandling.UndeclaredVariableException;
-import dk.aau.cs.d703e20.ast.statements.AssignmentNode;
+import dk.aau.cs.d703e20.ast.errorhandling.*;
+import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
+import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.resources.FailTestErrorListener;
@@ -70,7 +67,7 @@ public class semanticTest {
         BlockNode blockNode = (BlockNode) astBuilder.visitBlock(block);
 
         SemanticChecker semanticChecker = new SemanticChecker();
-        assertThrows(AlreadyDeclaredException.class,
+        assertThrows(VariableAlreadyDeclaredException.class,
                 ()-> semanticChecker.visitBlock(blockNode)
         );
     }
@@ -86,6 +83,34 @@ public class semanticTest {
         SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(UndeclaredVariableException.class,
                 ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
+
+    @Test
+    void testAlreadyDeclaredFunction() {
+        OurParser parser = createParserFromText("Setup{} Loop{} UniqueFunctionName(){} UniqueFunctionName(){}");
+        OurParser.ProgramContext program = parser.program();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        ProgramNode programNode = (ProgramNode) astBuilder.visitProgram(program);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(FunctionAlreadyDeclaredException.class,
+                ()-> semanticChecker.visitProgram(programNode)
+        );
+    }
+
+    @Test
+    void testUndeclaredFunction() {
+        OurParser parser = createParserFromText("undeclaredFunc()");
+        OurParser.FunctionCallContext functionCall = parser.functionCall();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        FunctionCallNode functionCallNode = (FunctionCallNode) astBuilder.visitFunctionCall(functionCall);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(UndeclaredFunctionException.class,
+                ()-> semanticChecker.visitFunctionCall(functionCallNode)
         );
     }
 }
