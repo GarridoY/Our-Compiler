@@ -180,17 +180,19 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         if (ctx.boolExpr() != null) {
             BoolExpressionNode boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
             conditionalExpressionNode = new ConditionalExpressionNode(boolExpressionNode);
-        } else if (ctx.variableName() != null) {
-            conditionalExpressionNode = new ConditionalExpressionNode(ctx.variableName().getText());
-        } else if (ctx.functionCall() != null) {
+        }
+        else if (ctx.variableName() != null)
+            conditionalExpressionNode = new ConditionalExpressionNode(ctx.variableName().getText(), ctx.NOT() != null);
+        else if (ctx.functionCall() != null) {
             FunctionCallNode functionCallNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
             conditionalExpressionNode = new ConditionalExpressionNode(functionCallNode);
-        } else if (ctx.SUBSCRIPT() != null) {
+        }
+        else if (ctx.SUBSCRIPT() != null) {
             SubscriptNode subscriptNode = new SubscriptNode(ctx.SUBSCRIPT().getText());
             conditionalExpressionNode = new ConditionalExpressionNode(subscriptNode);
-        } else {
-            throw new CompilerException("Invalid conditional expression", getCodePosition(ctx));
         }
+        else
+            throw new CompilerException("Invalid conditional expression", getCodePosition(ctx));
 
         setCodePos(conditionalExpressionNode, ctx);
         return conditionalExpressionNode;

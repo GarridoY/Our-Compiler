@@ -30,9 +30,11 @@ public class FunctionCallNode extends StatementNode {
 
         sb.append(functionName);
         sb.append("(");
+        String prefix = "";
         for (FunctionArgNode functionArgNode : functionargNodes) {
+            sb.append(prefix);
             sb.append(functionArgNode.prettyPrint(indentation));
-            sb.append(", "); //TODO: don't put comma after last parameter
+            prefix = ", ";
         }
         sb.append(");");
 
