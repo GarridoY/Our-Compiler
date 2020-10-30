@@ -24,7 +24,17 @@ public class AssignArrayNode extends StatementNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        return "ASSIGN ARRAY";
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(variableName);
+        sb.append(" = {");
+        for (ArrayParamNode param : paramNodes) {
+            sb.append(param.prettyPrint(indentation));
+            sb.append(", "); //TODO: don't put comma after last parameter
+        }
+        sb.append("};");
+
+        return sb.toString();
     }
 
     @Override
