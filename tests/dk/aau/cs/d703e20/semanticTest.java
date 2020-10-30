@@ -2,10 +2,13 @@ package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.ASTBuilder;
 import dk.aau.cs.d703e20.ast.ASTNode;
+import dk.aau.cs.d703e20.ast.errorhandling.AlreadyDeclaredException;
 import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
 import dk.aau.cs.d703e20.ast.errorhandling.InconsistentTypeException;
+import dk.aau.cs.d703e20.ast.errorhandling.UndeclaredVariableException;
 import dk.aau.cs.d703e20.ast.statements.AssignmentNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
+import dk.aau.cs.d703e20.ast.structure.BlockNode;
 import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.resources.FailTestErrorListener;
@@ -55,6 +58,34 @@ public class semanticTest {
         SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(InconsistentTypeException.class,
                 ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode)
+        );
+    }
+
+    @Test
+    void testAlreadyDeclaredVariable() {
+        OurParser parser = createParserFromText("{int a = 0; int a = 1;}");
+        OurParser.BlockContext block = parser.block();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        BlockNode blockNode = (BlockNode) astBuilder.visitBlock(block);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(AlreadyDeclaredException.class,
+                ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
+
+    @Test
+    void testUndeclaredVariable() {
+        OurParser parser = createParserFromText("{int a = b;}");
+        OurParser.BlockContext block = parser.block();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        BlockNode blockNode = (BlockNode) astBuilder.visitBlock(block);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(UndeclaredVariableException.class,
+                ()-> semanticChecker.visitBlock(blockNode)
         );
     }
 }
