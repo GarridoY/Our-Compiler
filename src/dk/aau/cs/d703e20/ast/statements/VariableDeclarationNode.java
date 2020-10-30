@@ -17,11 +17,13 @@ public class VariableDeclarationNode extends StatementNode {
     public VariableDeclarationNode(Enums.DataType dataType, AssignmentNode assignmentNode) {
         this.dataType = dataType;
         this.assignmentNode = assignmentNode;
+        this.variableName = assignmentNode.getVariableName();
     }
 
     public VariableDeclarationNode(Enums.DataType dataType, AssignArrayNode assignArrayNode) {
         this.dataType = dataType;
         this.assignArrayNode = assignArrayNode;
+        this.variableName = assignArrayNode.getVariableName();
     }
 
     public VariableDeclarationNode(Enums.DataType dataType, String variableName) {
