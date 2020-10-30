@@ -88,7 +88,7 @@ public class semanticTest {
 
     @Test
     void testAlreadyDeclaredFunction() {
-        OurParser parser = createParserFromText("Setup{} Loop{} UniqueFunctionName(){} UniqueFunctionName(){}");
+        OurParser parser = createParserFromText("Setup{} Loop{} void UniqueFunctionName(){} double UniqueFunctionName(){}");
         OurParser.ProgramContext program = parser.program();
 
         ASTBuilder astBuilder = new ASTBuilder();
