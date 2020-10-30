@@ -573,7 +573,7 @@ public class astTest {
     }
 
     @Test
-    void testVariableDeclArrayAllocated() {
+    void testVariableDeclArrayDatatype() {
         // String -> Tokens -> Parsing
         OurParser parser = createParserFromText("int[5] arr;");
         // Get parsed context
@@ -582,8 +582,19 @@ public class astTest {
         ASTBuilder astBuilder = new ASTBuilder();
         VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
 
-        assertAll(
-                () -> assertEquals(Enums.DataType.INT_ARRAY, variableDeclarationNode.getDataType())
-        );
+        assertEquals(Enums.DataType.INT_ARRAY, variableDeclarationNode.getDataType());
+    }
+
+    @Test
+    void testVariableDeclArrayIndex() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("int[] arr = {q, 4, 35};");
+        // Get parsed context
+        OurParser.VariableDeclContext variableDeclContext = parser.variableDecl();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDeclContext);
+
+        assertEquals(35, variableDeclarationNode.getAssignArrayNode().getParamNodes().get(2).getArithExpressionNode().getNumber());
     }
 }

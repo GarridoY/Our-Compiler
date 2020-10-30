@@ -467,6 +467,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         else
             throw new CompilerException("Invalid pin declaration", getCodePosition(ctx));
 
+        setCodePos(pinDeclarationNode, ctx);
         return pinDeclarationNode;
     }
 
