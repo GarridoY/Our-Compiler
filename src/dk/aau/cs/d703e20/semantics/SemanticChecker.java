@@ -127,7 +127,7 @@ public class SemanticChecker {
             else if (variableDeclarationNode.getAssignArrayNode() != null) {
                 Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode(), variableDeclarationNode.getAllocatedSize());
 
-                if (arrayDataType != dataType)
+                if (arrayDataType != Enums.dataTypeFromDatatype(dataType))
                     throw new InconsistentTypeException(variableDeclarationNode.getVariableName(), variableDeclarationNode.getCodePosition());
                 else
                     enterSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName(), variableDeclarationNode);
@@ -183,33 +183,25 @@ public class SemanticChecker {
             Enums.DataType dataType1 = visitArithmeticExpression(arithExpressionNode.getArithExpressionNode1());
             Enums.DataType dataType2 = visitArithmeticExpression(arithExpressionNode.getArithExpressionNode2());
             if ((dataType1 != null && dataType2 != null) && dataType1 != dataType2)
-                throw new CompilerException("ERROR: Incompatible types. (" + dataType1 + " and " + dataType2 + ")", arithExpressionNode.getCodePosition());
+                throw new InconsistentTypeException(arithExpressionNode.getVariableName(), arithExpressionNode.getCodePosition(), dataType1, dataType2);
             else return dataType1;
         }
         return null;
     }
 
     public Enums.DataType visitAssignArray(AssignArrayNode assignArrayNode, int allocatedSize) {
-        String variableName;
+        String variableName = assignArrayNode.getVariableName();
         Enums.DataType assignedDataType = null;
 
-        if (assignArrayNode.getVariableName() != null) {
-            VariableDeclarationNode variableDeclarationNode = null;
-            variableName = assignArrayNode.getVariableName();
-            if (retrieveSymbol(variableName) instanceof VariableDeclarationNode)
-                variableDeclarationNode = (VariableDeclarationNode) retrieveSymbol(variableName);
-
-            if (variableDeclarationNode != null) assignedDataType = variableDeclarationNode.getDataType();
-            else throw new UndeclaredVariableException(variableName, assignArrayNode.getCodePosition());
-
+        if (variableName != null) {
             if (allocatedSize < assignArrayNode.getParamNodes().size())
-                throw new CompilerException("ERROR: Size exceeded in Array variable(" + variableName + ")." ,assignArrayNode.getCodePosition());
+                throw new ArraySizeExceedsException(variableName, assignArrayNode.getCodePosition());
 
             for (ArrayParamNode arrayParam : assignArrayNode.getParamNodes()){
                 if (assignedDataType == null) {
                     assignedDataType = visitArrayParameters(arrayParam);
                 } else if (visitArrayParameters(arrayParam) != assignedDataType)
-                    throw new CompilerException("ERROR: Incompatible types (" +  assignedDataType + ")", assignArrayNode.getCodePosition());
+                    throw new InconsistentTypeException(assignArrayNode.getVariableName(), assignArrayNode.getCodePosition());
             }
         }
         return assignedDataType;

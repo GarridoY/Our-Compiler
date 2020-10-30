@@ -15,6 +15,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class semanticTest {
@@ -58,6 +59,26 @@ public class semanticTest {
                 ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode)
         );
     }
+
+    @Test
+    void testInvalidDeclarationType03() {
+        OurParser parser = createParserFromText("int[6] a = {1, 2, 3, 4, 5, 6, 7};");
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(ArraySizeExceedsException.class,
+                ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode));
+    }
+
+    /*
+    @Test
+    void testInvalidDeclarationType03() {
+
+    }
+     */
 
     @Test
     void testAlreadyDeclaredVariable() {
