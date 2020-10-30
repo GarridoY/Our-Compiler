@@ -2,8 +2,7 @@ package dk.aau.cs.d703e20.semantics;
 
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
-import dk.aau.cs.d703e20.ast.errorhandling.InconsistentTypeException;
+import dk.aau.cs.d703e20.ast.errorhandling.*;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
@@ -13,14 +12,6 @@ import java.util.*;
 public class SemanticChecker {
 
     private Stack<HashMap<String, ASTNode>> hashMapStack = new Stack<>();
-    private Integer functionCounter = 1;
-    private FunctionDeclarationNode currentFuncNode;
-
-    private ArrayList<String> listOfPredefined;
-    private HashMap<String, Enums.DataType> predefinedFunctions;
-    private ArrayList<VariableDeclarationNode> listOfPredefinedVariables;
-    private ArrayList<Enums.BoolOperator> boolOperatorList;
-    private ArrayList<Enums.ArithOperator> arithOperatorList;
 
     public SemanticChecker() {
         HashMap<String, ASTNode> newSymbolTable = new HashMap<>();
@@ -67,6 +58,7 @@ public class SemanticChecker {
         visitSetup(programNode.getSetupNode());
         visitLoop(programNode.getLoopNode());
         visitFunctions(programNode.getFunctionDeclarationNodes());
+        closeScope();
     }
 
     public void visitSetup(SetupNode setupNode) {
@@ -112,8 +104,10 @@ public class SemanticChecker {
         Enums.DataType dataType = variableDeclarationNode.getDataType();
         String variableName = variableDeclarationNode.getVariableName();
 
+        // Check if variable is already in symbol table
         if (retrieveSymbol(variableName) == null)
         {
+            // Variable assignment rule
             if (variableDeclarationNode.getAssignmentNode() != null) {
                 Enums.DataType assignmentDataType = visitAssignment(variableDeclarationNode.getAssignmentNode());
 
@@ -122,6 +116,7 @@ public class SemanticChecker {
                 else
                     enterSymbol(variableDeclarationNode.getAssignmentNode().getVariableName(), variableDeclarationNode);
             }
+            // Array assignment rule
             else if (variableDeclarationNode.getAssignArrayNode() != null) {
                 Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode(), variableDeclarationNode.getAllocatedSize());
 
@@ -135,7 +130,7 @@ public class SemanticChecker {
             }
         }
         else
-            throw new CompilerException("ERROR: " + variableName + " has already been declared.", variableDeclarationNode.getCodePosition());
+            throw new VariableAlreadyDeclaredException(variableName, variableDeclarationNode.getCodePosition());
     }
 
     public Enums.DataType visitAssignment(AssignmentNode assignmentNode) {
@@ -152,12 +147,22 @@ public class SemanticChecker {
     }
 
     public Enums.DataType visitArithmeticExpression(ArithExpressionNode arithExpressionNode) {
-        if (arithExpressionNode.getVariableName() != null)
-            return ((VariableDeclarationNode) retrieveSymbol(arithExpressionNode.getVariableName())).getDataType();
+        if (arithExpressionNode.getVariableName() != null) {
+            ASTNode declaration = retrieveSymbol(arithExpressionNode.getVariableName());
+            if (declaration != null)
+                return ((VariableDeclarationNode) declaration).getDataType();
+            else
+                throw new UndeclaredVariableException(arithExpressionNode.getVariableName(), arithExpressionNode.getCodePosition());
+        }
         else if (arithExpressionNode.getNumber() != null)
             return Enums.DataType.INT;
-        else if (arithExpressionNode.getFunctionCallNode() != null)
-            return ((FunctionDeclarationNode) retrieveSymbol(arithExpressionNode.getFunctionCallNode().getFunctionName())).getDataType();
+        else if (arithExpressionNode.getFunctionCallNode() != null) {
+            ASTNode declaration = retrieveSymbol(arithExpressionNode.getFunctionCallNode().getFunctionName());
+            if (declaration != null)
+                return ((FunctionDeclarationNode) declaration).getDataType();
+            else
+                throw new UndeclaredFunctionException(arithExpressionNode.getFunctionCallNode().getFunctionName(), arithExpressionNode.getCodePosition());
+        }
         else if (arithExpressionNode.getArithExpressionNode2() != null) {
             Enums.DataType dataType1 = visitArithmeticExpression(arithExpressionNode.getArithExpressionNode1());
             Enums.DataType dataType2 = visitArithmeticExpression(arithExpressionNode.getArithExpressionNode2());
@@ -179,7 +184,7 @@ public class SemanticChecker {
                 variableDeclarationNode = (VariableDeclarationNode) retrieveSymbol(variableName);
 
             if (variableDeclarationNode != null) assignedDataType = variableDeclarationNode.getDataType();
-            else throw new CompilerException("ERROR: Array variable (" + variableName + ") is not declared.", assignArrayNode.getCodePosition());
+            else throw new UndeclaredVariableException(variableName, assignArrayNode.getCodePosition());
 
             if (allocatedSize < assignArrayNode.getParamNodes().size())
                 throw new CompilerException("ERROR: Size exceeded in Array variable(" + variableName + ")." ,assignArrayNode.getCodePosition());
@@ -208,33 +213,23 @@ public class SemanticChecker {
         String pinNumber = pinDeclarationNode.getPinNumber();
 
         if (retrieveSymbol(variableName) != null)
-            throw new CompilerException("ERROR: " + variableName + " is already declared." + pinDeclarationNode.getCodePosition());
+            throw new VariableAlreadyDeclaredException(variableName, pinDeclarationNode.getCodePosition());
         else
             enterSymbol(pinDeclarationNode.getVariableName(), pinDeclarationNode);
     }
 
-    public FunctionDeclarationNode visitFunctionCall(FunctionCallNode functionCallNode) {
-        boolean notFound = true;
-        FunctionDeclarationNode functionDeclarationNodeReturn = null;
-        String functionName = functionCallNode.getFunctionName();
-        List<FunctionArgNode> functionArgNodes = functionCallNode.getFunctionArgNodes();
+    public Enums.DataType visitFunctionCall(FunctionCallNode functionCallNode) {
+        ASTNode declaration = retrieveSymbol(functionCallNode.getFunctionName());
+        if (declaration != null) {
+            FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode)declaration;
 
-        FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) retrieveSymbol(functionName);
+            //TODO: check if arguments/parameters match etc.
 
-
-        for (int i = 0; i < functionDeclarationNode.getFunctionParameterNodes().size(); i++) {
-            if (functionDeclarationNode.getFunctionParameterNodes().get(i).getDataType() != null) {
-                Enums.DataType dataType1 = functionDeclarationNode.getFunctionParameterNodes().get(i).getDataType();
-                //Enums.DataType dataType2 = functionCallNode.getFunctionArgNodes().get(i).;
-                //if (!dataType1.equals(dataType1))
-                    //throw new CompilerException("ERROR: Argument type mismatch in function call (" + functionName + "). Found " + dataType1 + " and " + dataType2 + ".", functionCallNode.getCodePosition());
-            }
+            return functionDeclarationNode.getDataType();
         }
-
-
-
-        return functionDeclarationNodeReturn;
-
+        else {
+            throw new UndeclaredFunctionException(functionCallNode.getFunctionName(), functionCallNode.getCodePosition());
+        }
     }
 
     public void visitIfElseStatement(IfElseStatementNode ifElseStatementNode) {
@@ -267,10 +262,6 @@ public class SemanticChecker {
         for (FunctionDeclarationNode functionDeclaration : functionDeclarationNodes) {
             visitFunctionDeclaration(functionDeclaration);
         }
-
-        for (FunctionDeclarationNode functionDeclaration : functionDeclarationNodes) {
-            visitFunctionBlock(functionDeclaration.getBlockNode(), functionDeclaration.getDataType(), functionDeclaration);
-        }
     }
 
     public void visitFunctionDeclaration(FunctionDeclarationNode function) {
@@ -278,6 +269,15 @@ public class SemanticChecker {
         List<FunctionParameterNode> functionParameters = function.getFunctionParameterNodes();
         Enums.DataType returnType = function.getDataType();
 
+        if (retrieveSymbol(functionName) != null) {
+            enterSymbol(functionName, function);
+            visitFunctionBlock(function.getBlockNode(), returnType, functionParameters);
+        }
+        else {
+            throw new FunctionAlreadyDeclaredException(functionName, function.getCodePosition());
+        }
+
+        /*
         ArrayList<FunctionDeclarationNode> retrievedFunctions = null;
         if (retrievedFunctions.isEmpty())
             enterSymbol(functionName, function);
@@ -314,16 +314,17 @@ public class SemanticChecker {
                     throw new CompilerException("ERROR: A function with the same name (" + functionName + ") and type (" + returnType + "already exists.", retrieveSymbol(functionName).getCodePosition());
             enterSymbol(functionName, function);
         }
+        */
     }
 
     // TODO: FINISH IT
-    public void visitFunctionBlock(BlockNode blockNode, Enums.DataType returnType, FunctionDeclarationNode functionDeclarationNode) {
+    public void visitFunctionBlock(BlockNode blockNode, Enums.DataType returnType, List<FunctionParameterNode> functionParameters) {
         openScope();
 
         boolean pureFunction = returnType != null;
 
-        if (functionDeclarationNode.getFunctionParameterNodes() != null) {
-            for (FunctionParameterNode functionParameter : functionDeclarationNode.getFunctionParameterNodes()) {
+        if (functionParameters != null) {
+            for (FunctionParameterNode functionParameter : functionParameters) {
                 if (functionParameter.getDataType() != null) {
                     // TODO: FINISH IT
                     //AssignmentNode assignmentNode = new AssignmentNode(functionParameter.getVariableName(), null);
@@ -331,6 +332,7 @@ public class SemanticChecker {
                 }
             }
         }
+        closeScope();
     }
 
     public void visitReturnStatement(ReturnStatementNode returnStatementNode, FunctionDeclarationNode functionDeclarationNode) {
@@ -340,7 +342,7 @@ public class SemanticChecker {
         VariableDeclarationNode variableDeclaration = (VariableDeclarationNode) retrieveSymbol(returnName);
 
         if (variableDeclaration.getDataType() != returnType)
-            throw new CompilerException("ERROR: Invalid return data type on variable (" + returnName + ").", returnStatementNode.getCodePosition());
+            throw new IncorrectReturnTypeException(returnType, variableDeclaration.getDataType(), returnStatementNode.getCodePosition());
     }
 
     private Enums.DataType getDataTypeFromLiteral(String literal) {
