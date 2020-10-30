@@ -18,68 +18,80 @@ setup{
     bool sulfuricAcidCooled;
     bool addedToColdWater;
     bool drainAcid;
-    Bool nitroglycerinExtracted;
+    bool nitroglycerinExtracted;
+
+    // guards
+    bool step1Done
+    bool step2Done
+    bool step3Done
+    bool step4Done
+    bool step5Done
+    bool step6Done
 }
 
 loop{
     //1. add 10 mL of sulfuric acid to the conical flask and put it in the ice bath
     conicalFlask = conicalFlask + sulfuricAcid;
     addedToIceBatch = true;
+    step1Done = true;
 
     //2. when the sulfuric acid is cooled to about 10 degrees C add 10mL of nitric acid "slowly"
-    while (!done){
+    if (step1Done && !step2Done){
         if (sulfuricAcidCooled){
-            while (nitricAcid != 0){
-                x = 0;
-                at (x = 2){
-                    nitricAcid = nitricAcid - 1;
-                    conicalFlask = conicalFlask + 1;
-                }
+            x = 0;
+            at (x > 2){
+                nitricAcid = nitricAcid - 1;
+                conicalFlask = conicalFlask + 1;
             }
-            done = true;
         }
-        if (temp < 10.5)
+        if (temp < 10.5){
             sulfuricAcidCooled = true;
+        }
+        if (nitricAcid == 0){
+            step2Done = true;
+        }
     }
 
     //3. cool the solution and keep temperature around 10 degrees and then add few drops of glycerol
+    if (step2Done && !step3Done){
     if (temp < 11 && temp > 9) {
-        while (glycerol != 0){
-            glycerol = glycerol - 1;
-            conicalFlask = conicalFlask + 1;
+            while (glycerol != 0){
+                glycerol = glycerol - 1;
+                conicalFlask = conicalFlask + 1;
+            }
+            step3Done = true;
         }
     }
 
     //4. wait 30 min and transfer the mixture to a bottle with ice cold water
-    x = 0;
-    at (x > 30) {
-        addedToColdWater = true;
+    if (step3Done && !step4Done){
+        x = 0;
+        at (x > 30) {
+            addedToColdWater = true;
+            step4Done = true;
+        }
     }
 
     //5. wait for nitro glycerin to settle at the bottom before transferring, then drain away the acid
-    done = false
-    while (!done){
-    if (glycerinSettled)
-        drainAcid= true;
-        done = true;
-        conicalFlask = 0;
+    if (step4Done && !step5Done){
+        done = false
+        while (!done){
+        if (glycerinSettled)
+            drainAcid = true;
+            done = true;
+            conicalFlask = 0;
+            step5Done = true;
+        }
     }
 
     //6. add sodiumBicarbonate to neutralize remaining acid
-    while (sodiumBicarbonate != 0){
-                    x = 0;
-                    at (x = 2){
-                        sodiumBicarbonate = sodiumBicarbonate - 1;
-                        conicalFlask = conicalFlask + 1;
-                    }
-                }
+    if (step5Done && !step6Done){
+        conicalFlask = conicalFlask + sodiumBicarbonate;
+        step6Done = true;
+    }
 
     // finally extract the nitroglycerin
-    nitroglycerinExtracted = true;
+    if (step6Done){
+        nitroglycerinExtracted = true;
+    }
 }
-
-
-
-
-
-
