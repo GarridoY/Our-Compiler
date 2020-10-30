@@ -20,19 +20,20 @@ block
 // FUNCTIONS
 // Function declaration, optional argument followed by more optional arguments prefixed by comma
 functionDecl
-    : (VOID | dataType) functionName LEFT_PAREN functionParam? RIGHT_PAREN block;
+    : dataType functionName LEFT_PAREN (functionParam (COMMA functionParam)*)? RIGHT_PAREN block;
 
 // Function parameters
 functionParam
-    : dataType variableName ( COMMA dataType variableName)*;
+    : dataType variableName;
 
 // Call function given optional arguments (expr)
 functionCall
-    : functionName LEFT_PAREN functionArgs? RIGHT_PAREN;
+    : functionName LEFT_PAREN (functionArg (COMMA functionArg)*)? RIGHT_PAREN;
 
 // Function arguments for calling function(s)
-functionArgs
-    : (arithExpr | boolExpr) ( COMMA (arithExpr | boolExpr))*;
+functionArg
+    : arithExpr
+    | boolExpr;
 
 // Statements available in main
 statement
@@ -58,7 +59,11 @@ ifStatement: IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseStatement: ELSE block;
 
-conditionalExpression: boolExpr | NOT? variableName | functionCall | SUBSCRIPT;
+conditionalExpression
+    : boolExpr
+    | NOT? variableName
+    | functionCall
+    | SUBSCRIPT;
 
 // at statement for clock and timing purposes
 atStatement
@@ -137,6 +142,7 @@ dataType
     | BOOLEAN
     | CLOCK
     | STRING
+    | VOID
     | INT_ARRAY
     | DOUBLE_ARRAY
     | BOOLEAN_ARRAY;

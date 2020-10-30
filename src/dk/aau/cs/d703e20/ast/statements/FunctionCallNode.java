@@ -1,30 +1,27 @@
 package dk.aau.cs.d703e20.ast.statements;
 
 import dk.aau.cs.d703e20.ast.CodePosition;
-import dk.aau.cs.d703e20.ast.expressions.FunctionArgsNode;
+import dk.aau.cs.d703e20.ast.expressions.FunctionArgNode;
+
+import java.util.List;
 
 public class FunctionCallNode extends StatementNode {
     private final String functionName;
-    private final FunctionArgsNode functionargsNode;
+    private final List<FunctionArgNode> functionargNodes;
 
     private CodePosition codePosition;
 
-    public FunctionCallNode(String functionName) {
+    public FunctionCallNode(String functionName, List<FunctionArgNode> functionargNodes) {
         this.functionName = functionName;
-        this.functionargsNode = null;
-    }
-
-    public FunctionCallNode(String functionName, FunctionArgsNode functionargsNode) {
-        this.functionName = functionName;
-        this.functionargsNode = functionargsNode;
+        this.functionargNodes = functionargNodes;
     }
 
     public String getFunctionName() {
         return functionName;
     }
 
-    public FunctionArgsNode getFunctionArgsNode() {
-        return functionargsNode;
+    public List<FunctionArgNode> getFunctionArgNodes() {
+        return functionargNodes;
     }
 
     @Override
@@ -33,8 +30,12 @@ public class FunctionCallNode extends StatementNode {
 
         sb.append(functionName);
         sb.append("(");
-        if (functionargsNode != null)
-            sb.append(functionargsNode.prettyPrint(indentation));
+        String prefix = "";
+        for (FunctionArgNode functionArgNode : functionargNodes) {
+            sb.append(prefix);
+            sb.append(functionArgNode.prettyPrint(indentation));
+            prefix = ", ";
+        }
         sb.append(");");
 
         return sb.toString();

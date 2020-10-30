@@ -4,29 +4,28 @@ import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
 
-import java.util.List;
-
 public class FunctionParameterNode implements ASTNode {
-    private final List<String> variableNames;
-    private final List<Enums.DataType> dataTypes;
+    private final String variableName;
+    private final Enums.DataType dataType;
 
     private CodePosition codePosition;
 
-    public FunctionParameterNode(List<Enums.DataType> dataTypes,  List<String> variableNames) {
-        this.dataTypes = dataTypes;
-        this.variableNames = variableNames;
+    public FunctionParameterNode(Enums.DataType dataType,  String variableName) {
+        this.dataType = dataType;
+        this.variableName = variableName;
     }
 
-    public List<Enums.DataType> getDataTypes() {
-        return dataTypes;
+    public Enums.DataType getDataType() {
+        return dataType;
     }
 
-    public List<String> getVariableNames() {
-        return variableNames;
+    public String getVariableName() {
+        return variableName;
     }
 
     @Override
     public String prettyPrint(int indentation) {
+        // TODO: implement pretty print
         return "FUNCTION PARAMETER";
     }
 

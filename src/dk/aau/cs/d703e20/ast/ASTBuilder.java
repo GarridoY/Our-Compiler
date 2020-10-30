@@ -9,7 +9,6 @@ import dk.aau.cs.d703e20.parser.OurParserBaseVisitor;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -57,43 +56,20 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitFunctionDecl(OurParser.FunctionDeclContext ctx) {
-        FunctionDeclarationNode functionDeclarationNode = null;
         BlockNode blockNode = (BlockNode) visitBlock(ctx.block());
 
-        if (ctx.functionParam() != null) {
-            FunctionParameterNode functionParameterNode = (FunctionParameterNode) visitFunctionParam(ctx.functionParam());
-            if (ctx.VOID() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(ctx.functionName().getText(), blockNode, functionParameterNode);
-            } else if (ctx.dataType() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.dataType()), ctx.functionName().getText(), blockNode, functionParameterNode);
-            }
-        } else {
-            if (ctx.VOID() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(ctx.functionName().getText(), blockNode);
-            } else if (ctx.dataType() != null) {
-                functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.dataType()), ctx.functionName().getText(), blockNode);
-            } else {
-                throw new CompilerException("Invalid Function Declaration", getCodePosition(ctx));
-            }
-        }
+        List<FunctionParameterNode> functionParameterNodes = new ArrayList<FunctionParameterNode>();
+        if (ctx.functionParam().size() > 0)
+            functionParameterNodes = visitList(FunctionParameterNode.class, ctx.functionParam(), this::visitFunctionParam);
+
+        FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode(getDataType(ctx.dataType()), ctx.functionName().getText(), blockNode, functionParameterNodes);
         setCodePos(functionDeclarationNode, ctx);
         return functionDeclarationNode;
     }
 
     @Override
     public ASTNode visitFunctionParam(OurParser.FunctionParamContext ctx) {
-        List<Enums.DataType> dataTypes = new ArrayList<Enums.DataType>();
-        List<String> variableNames = new ArrayList<String>();
-
-        for (OurParser.DataTypeContext datatypeContext : ctx.dataType()) {
-            dataTypes.add(getDataType(datatypeContext));
-        }
-
-        for (OurParser.VariableNameContext variableNameContext : ctx.variableName()) {
-            variableNames.add(variableNameContext.getText());
-        }
-
-        FunctionParameterNode functionParameterNode = new FunctionParameterNode(dataTypes, variableNames);
+        FunctionParameterNode functionParameterNode = new FunctionParameterNode(getDataType(ctx.dataType()), ctx.variableName().getText());
         setCodePos(functionParameterNode, ctx);
         return functionParameterNode;
     }
@@ -123,24 +99,29 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFunctionCall(OurParser.FunctionCallContext ctx) {
         FunctionCallNode functionCallNode;
-        if (ctx.functionArgs() != null && !ctx.functionArgs().isEmpty())
-            functionCallNode = new FunctionCallNode(ctx.functionName().getText(), (FunctionArgsNode) visitFunctionArgs(ctx.functionArgs()));
-        else
-            functionCallNode = new FunctionCallNode(ctx.functionName().getText());
+        List<FunctionArgNode> functionArgNodes = new ArrayList<FunctionArgNode>();
+        if (ctx.functionArg().size() > 0)
+            functionArgNodes = visitList(FunctionArgNode.class, ctx.functionArg(), this::visitFunctionArg);
+
+        functionCallNode = new FunctionCallNode(ctx.functionName().getText(), functionArgNodes);
 
         setCodePos(functionCallNode, ctx);
         return functionCallNode;
     }
 
     @Override
-    public ASTNode visitFunctionArgs(OurParser.FunctionArgsContext ctx) {
-        List<ArithExpressionNode> arithExpressionNodes = visitList(ArithExpressionNode.class, ctx.arithExpr(), this::visitArithExpr);
+    public ASTNode visitFunctionArg(OurParser.FunctionArgContext ctx) {
+        FunctionArgNode functionArgNode;
 
-        List<BoolExpressionNode> boolExpressionNodes = visitList(BoolExpressionNode.class, ctx.boolExpr(), this::visitBoolExpr);
+        if (ctx.arithExpr() != null)
+            functionArgNode = new FunctionArgNode((ArithExpressionNode)visitArithExpr(ctx.arithExpr()));
+        else if (ctx.boolExpr() != null)
+            functionArgNode = new FunctionArgNode((BoolExpressionNode) visitBoolExpr(ctx.boolExpr()));
+        else
+            throw new CompilerException("Invalid Function Argument", getCodePosition(ctx));
 
-        FunctionArgsNode functionArgsNode = new FunctionArgsNode(arithExpressionNodes, boolExpressionNodes);
-        setCodePos(functionArgsNode, ctx);
-        return functionArgsNode;
+        setCodePos(functionArgNode, ctx);
+        return functionArgNode;
     }
 
     @Override
@@ -199,17 +180,19 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         if (ctx.boolExpr() != null) {
             BoolExpressionNode boolExpressionNode = (BoolExpressionNode) visitBoolExpr(ctx.boolExpr());
             conditionalExpressionNode = new ConditionalExpressionNode(boolExpressionNode);
-        } else if (ctx.variableName() != null) {
-            conditionalExpressionNode = new ConditionalExpressionNode(ctx.variableName().getText());
-        } else if (ctx.functionCall() != null) {
+        }
+        else if (ctx.variableName() != null)
+            conditionalExpressionNode = new ConditionalExpressionNode(ctx.variableName().getText(), ctx.NOT() != null);
+        else if (ctx.functionCall() != null) {
             FunctionCallNode functionCallNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
             conditionalExpressionNode = new ConditionalExpressionNode(functionCallNode);
-        } else if (ctx.SUBSCRIPT() != null) {
+        }
+        else if (ctx.SUBSCRIPT() != null) {
             SubscriptNode subscriptNode = new SubscriptNode(ctx.SUBSCRIPT().getText());
             conditionalExpressionNode = new ConditionalExpressionNode(subscriptNode);
-        } else {
-            throw new CompilerException("Invalid conditional expression", getCodePosition(ctx));
         }
+        else
+            throw new CompilerException("Invalid conditional expression", getCodePosition(ctx));
 
         setCodePos(conditionalExpressionNode, ctx);
         return conditionalExpressionNode;
@@ -486,6 +469,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         else
             throw new CompilerException("Invalid pin declaration", getCodePosition(ctx));
 
+        setCodePos(pinDeclarationNode, ctx);
         return pinDeclarationNode;
     }
 
@@ -531,6 +515,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             dataType = Enums.DataType.BOOL_ARRAY;
         else if (ctx.INT_ARRAY() != null)
             dataType = Enums.DataType.INT_ARRAY;
+        else if (ctx.VOID() != null)
+            dataType = Enums.DataType.VOID;
         else
             throw new CompilerException("DataType is unknown", getCodePosition(ctx));
 

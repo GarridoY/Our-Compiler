@@ -5,37 +5,20 @@ import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.FunctionParameterNode;
 
+import java.util.List;
+
 public class FunctionDeclarationNode implements ASTNode {
     private Enums.DataType dataType;
     private final String functionName;
     private final BlockNode blockNode;
-    private FunctionParameterNode functionParameterNode;
+    private List<FunctionParameterNode> functionParameterNodes;
     private CodePosition codePosition;
 
-    public FunctionDeclarationNode(Enums.DataType dataType, String functionName, BlockNode blockNode) {
+    public FunctionDeclarationNode(Enums.DataType dataType, String functionName, BlockNode blockNode, List<FunctionParameterNode> functionParameterNodes) {
         this.dataType = dataType;
         this.functionName = functionName;
         this.blockNode = blockNode;
-    }
-
-    public FunctionDeclarationNode(String functionName, BlockNode blockNode) {
-        this.dataType = Enums.DataType.VOID;
-        this.functionName = functionName;
-        this.blockNode = blockNode;
-    }
-
-    public FunctionDeclarationNode(Enums.DataType dataType, String functionName, BlockNode blockNode, FunctionParameterNode functionParameterNode) {
-        this.dataType = dataType;
-        this.functionName = functionName;
-        this.blockNode = blockNode;
-        this.functionParameterNode = functionParameterNode;
-    }
-
-    public FunctionDeclarationNode(String functionName, BlockNode blockNode, FunctionParameterNode functionParameterNode) {
-        this.dataType = Enums.DataType.VOID;
-        this.functionName = functionName;
-        this.blockNode = blockNode;
-        this.functionParameterNode = functionParameterNode;
+        this.functionParameterNodes = functionParameterNodes;
     }
 
     public Enums.DataType getDataType() {
@@ -50,8 +33,8 @@ public class FunctionDeclarationNode implements ASTNode {
         return blockNode;
     }
 
-    public FunctionParameterNode getFunctionParameterNode() {
-        return functionParameterNode;
+    public List<FunctionParameterNode> getFunctionParameterNodes() {
+        return functionParameterNodes;
     }
 
     @Override
@@ -62,8 +45,12 @@ public class FunctionDeclarationNode implements ASTNode {
         sb.append(" ");
         sb.append(functionName);
         sb.append(" (");
-        if (functionParameterNode != null)
+        String prefix = "";
+        for (FunctionParameterNode functionParameterNode : functionParameterNodes) {
+            sb.append(prefix);
             sb.append(functionParameterNode.prettyPrint(indentation));
+            prefix = ", ";
+        }
         sb.append(") ");
         sb.append(blockNode.prettyPrint(indentation));
 

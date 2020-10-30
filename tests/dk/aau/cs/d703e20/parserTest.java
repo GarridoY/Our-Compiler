@@ -80,7 +80,7 @@ public class parserTest {
         );
         OurParser parser = createParser(tokens);
         OurParser.FunctionDeclContext func = parser.functionDecl();
-        assertNotNull(func.functionParam().dataType(0).INT());
+        assertNotNull(func.functionParam().get(0).dataType().INT());
     }
 
     @Test
@@ -97,7 +97,7 @@ public class parserTest {
         OurParser parser = createParser(tokens);
         OurParser.FunctionCallContext fcall = parser.functionCall();
         assertEquals(fname, fcall.functionName().getText());
-        assertEquals(2, fcall.functionArgs().arithExpr().size());
+        assertEquals(2, fcall.functionArg().size());
     }
 
     @Test
@@ -110,7 +110,7 @@ public class parserTest {
         );
         OurParser parser = createParser(tokens);
         OurParser.FunctionCallContext fcall = parser.functionCall();
-        assertNull(fcall.functionArgs());
+        assertEquals(0, fcall.functionArg().size());
     }
 
     @Test
