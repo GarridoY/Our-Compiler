@@ -45,9 +45,11 @@ public class FunctionDeclarationNode implements ASTNode {
         sb.append(" ");
         sb.append(functionName);
         sb.append(" (");
+        String prefix = "";
         for (FunctionParameterNode functionParameterNode : functionParameterNodes) {
+            sb.append(prefix);
             sb.append(functionParameterNode.prettyPrint(indentation));
-            sb.append(", "); //TODO: don't put comma after last parameter
+            prefix = ", ";
         }
         sb.append(") ");
         sb.append(blockNode.prettyPrint(indentation));

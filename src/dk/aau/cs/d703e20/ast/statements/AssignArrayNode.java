@@ -28,9 +28,11 @@ public class AssignArrayNode extends StatementNode {
 
         sb.append(variableName);
         sb.append(" = {");
+        String prefix = "";
         for (ArrayParamNode param : paramNodes) {
+            sb.append(prefix);
             sb.append(param.prettyPrint(indentation));
-            sb.append(", "); //TODO: don't put comma after last parameter
+            prefix = ", ";
         }
         sb.append("};");
 
