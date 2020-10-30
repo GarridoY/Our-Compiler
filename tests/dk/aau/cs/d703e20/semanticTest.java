@@ -5,6 +5,7 @@ import dk.aau.cs.d703e20.ast.errorhandling.*;
 import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
+import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
@@ -111,6 +112,20 @@ public class semanticTest {
         SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(UndeclaredFunctionException.class,
                 ()-> semanticChecker.visitFunctionCall(functionCallNode)
+        );
+    }
+
+    @Test
+    void testIncorrectReturnType() {
+        OurParser parser = createParserFromText("string textFunc(){int number = 1; return number;}");
+        OurParser.FunctionDeclContext functionDecl = parser.functionDecl();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) astBuilder.visitFunctionDecl(functionDecl);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(IncorrectReturnTypeException.class,
+                ()-> semanticChecker.visitFunctionDeclaration(functionDeclarationNode)
         );
     }
 }

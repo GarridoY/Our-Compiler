@@ -78,25 +78,26 @@ public class SemanticChecker {
     }
 
     public void visitStatement(StatementNode statementNode) {
-        if (statementNode instanceof VariableDeclarationNode) {
+        if (statementNode instanceof VariableDeclarationNode)
             visitVariableDeclaration((VariableDeclarationNode) statementNode);
-        } else if (statementNode instanceof AssignmentNode) {
+        else if (statementNode instanceof AssignmentNode)
             visitAssignment((AssignmentNode) statementNode);
-        } else if (statementNode instanceof PinDeclarationNode) {
+        else if (statementNode instanceof PinDeclarationNode)
             visitPinDeclaration((PinDeclarationNode) statementNode);
-        } else if (statementNode instanceof FunctionCallNode) {
+        else if (statementNode instanceof FunctionCallNode)
             visitFunctionCall((FunctionCallNode) statementNode);
-        } else if (statementNode instanceof IfElseStatementNode) {
+        else if (statementNode instanceof IfElseStatementNode)
             visitIfElseStatement((IfElseStatementNode) statementNode);
-        } else if (statementNode instanceof ForStatementNode) {
+        else if (statementNode instanceof ForStatementNode)
             visitForStatement((ForStatementNode) statementNode);
-        } else if (statementNode instanceof WhileStatementNode) {
+        else if (statementNode instanceof WhileStatementNode)
             visitWhileStatement((WhileStatementNode) statementNode);
-        } else if (statementNode instanceof AtStatementNode) {
+        else if (statementNode instanceof AtStatementNode)
             visitAtStatement((AtStatementNode) statementNode);
-        } else if (statementNode instanceof BoundStatementNode) {
+        else if (statementNode instanceof BoundStatementNode)
             visitBoundStatement((BoundStatementNode) statementNode);
-        }
+        else
+            throw new CompilerException("Unknown statement");
     }
 
     /*         STATEMENTS         */
@@ -125,6 +126,7 @@ public class SemanticChecker {
                 else
                     enterSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName(), variableDeclarationNode);
             }
+            // Variable name rule
             else {
                 enterSymbol(variableDeclarationNode.getVariableName(), variableDeclarationNode);
             }
@@ -136,10 +138,12 @@ public class SemanticChecker {
     public Enums.DataType visitAssignment(AssignmentNode assignmentNode) {
         Enums.DataType dataType;
 
+        // Arith expression
         if (assignmentNode.getArithExpressionNode() != null) {
             dataType = visitArithmeticExpression(assignmentNode.getArithExpressionNode());
             return dataType;
         }
+        // Literal
         else {
             dataType = getDataTypeFromLiteral(assignmentNode.getLiteralValue());
             return dataType;
@@ -147,6 +151,7 @@ public class SemanticChecker {
     }
 
     public Enums.DataType visitArithmeticExpression(ArithExpressionNode arithExpressionNode) {
+        // Variable name rule
         if (arithExpressionNode.getVariableName() != null) {
             ASTNode declaration = retrieveSymbol(arithExpressionNode.getVariableName());
             if (declaration != null)
@@ -154,8 +159,12 @@ public class SemanticChecker {
             else
                 throw new UndeclaredVariableException(arithExpressionNode.getVariableName(), arithExpressionNode.getCodePosition());
         }
-        else if (arithExpressionNode.getNumber() != null)
+        // Num literal rule
+        else if (arithExpressionNode.getNumber() != null) {
+            // TODO: detect datatype
             return Enums.DataType.INT;
+        }
+        // Function call rule
         else if (arithExpressionNode.getFunctionCallNode() != null) {
             ASTNode declaration = retrieveSymbol(arithExpressionNode.getFunctionCallNode().getFunctionName());
             if (declaration != null)
@@ -163,6 +172,7 @@ public class SemanticChecker {
             else
                 throw new UndeclaredFunctionException(arithExpressionNode.getFunctionCallNode().getFunctionName(), arithExpressionNode.getCodePosition());
         }
+        // Expression Operand Expression rule
         else if (arithExpressionNode.getArithExpressionNode2() != null) {
             Enums.DataType dataType1 = visitArithmeticExpression(arithExpressionNode.getArithExpressionNode1());
             Enums.DataType dataType2 = visitArithmeticExpression(arithExpressionNode.getArithExpressionNode2());
@@ -269,7 +279,7 @@ public class SemanticChecker {
         List<FunctionParameterNode> functionParameters = function.getFunctionParameterNodes();
         Enums.DataType returnType = function.getDataType();
 
-        if (retrieveSymbol(functionName) != null) {
+        if (retrieveSymbol(functionName) == null) {
             enterSymbol(functionName, function);
             visitFunctionBlock(function.getBlockNode(), returnType, functionParameters);
         }
@@ -321,7 +331,7 @@ public class SemanticChecker {
     public void visitFunctionBlock(BlockNode blockNode, Enums.DataType returnType, List<FunctionParameterNode> functionParameters) {
         openScope();
 
-        boolean pureFunction = returnType != null;
+        boolean returned = false;
 
         if (functionParameters != null) {
             for (FunctionParameterNode functionParameter : functionParameters) {
@@ -332,12 +342,24 @@ public class SemanticChecker {
                 }
             }
         }
+
+        for (StatementNode statement : blockNode.getStatementNodes()) {
+            if (statement instanceof ReturnStatementNode) {
+                returned = true;
+                visitReturnStatement((ReturnStatementNode)statement, returnType);
+            }
+            else
+                visitStatement(statement);
+        }
+
+        if (returnType != Enums.DataType.VOID && !returned) {
+            throw new IncorrectReturnTypeException(returnType, Enums.DataType.VOID, blockNode.getCodePosition());
+        }
         closeScope();
     }
 
-    public void visitReturnStatement(ReturnStatementNode returnStatementNode, FunctionDeclarationNode functionDeclarationNode) {
+    public void visitReturnStatement(ReturnStatementNode returnStatementNode, Enums.DataType returnType) {
         String returnName = returnStatementNode.getVariableName();
-        Enums.DataType returnType =  functionDeclarationNode.getDataType();
 
         VariableDeclarationNode variableDeclaration = (VariableDeclarationNode) retrieveSymbol(returnName);
 
