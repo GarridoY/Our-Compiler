@@ -25,8 +25,11 @@ public class WhileStatementNode extends StatementNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        // TODO: implement pretty print
-        return "WHILE STATEMENT";
+
+        return "while (" +
+                boolExpressionNode.prettyPrint(indentation) +
+                ") " +
+                blockNode.prettyPrint(indentation);
     }
 
     @Override

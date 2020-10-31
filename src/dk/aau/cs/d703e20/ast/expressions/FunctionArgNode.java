@@ -27,8 +27,16 @@ public class FunctionArgNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        // TODO: implement pretty print
-        return "FUNCTION ARG";
+        StringBuilder sb = new StringBuilder();
+
+        if (arithExpressionNode != null) {
+            sb.append(arithExpressionNode.prettyPrint(indentation));
+        }
+        else if (boolExpressionNode != null) {
+            sb.append(boolExpressionNode.prettyPrint(indentation));
+        }
+
+        return sb.toString();
     }
 
     @Override
