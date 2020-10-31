@@ -125,12 +125,18 @@ public class SemanticChecker {
             }
             // Array assignment rule
             else if (variableDeclarationNode.getAssignArrayNode() != null) {
-                Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode(), variableDeclarationNode.getAllocatedSize());
+                Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode());
+                //Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode(), variableDeclarationNode.getAllocatedSize());
 
                 if (arrayDataType != Enums.dataTypeFromDatatype(dataType))
                     throw new InconsistentTypeException(variableDeclarationNode.getVariableName(), variableDeclarationNode.getCodePosition());
                 else
                     enterSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName(), variableDeclarationNode);
+
+                List<ArrayParamNode> arrayParamNodes = variableDeclarationNode.getAssignArrayNode().getParamNodes();
+                if (variableDeclarationNode.getAllocatedSize() < arrayParamNodes.size())
+                    throw new InvalidArrayException(variableName, variableDeclarationNode.getAllocatedSize(), arrayParamNodes.size(), variableDeclarationNode.getCodePosition());
+
             }
             // Variable name rule
             else {
@@ -189,7 +195,7 @@ public class SemanticChecker {
         return null;
     }
 
-    public Enums.DataType visitAssignArray(AssignArrayNode assignArrayNode, int allocatedSize) {
+    public Enums.DataType visitAssignArray(AssignArrayNode assignArrayNode) {
         String variableName = assignArrayNode.getVariableName();
         Enums.DataType assignedDataType = null;
 

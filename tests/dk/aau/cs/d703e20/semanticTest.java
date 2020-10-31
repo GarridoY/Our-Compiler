@@ -61,6 +61,34 @@ public class semanticTest {
     }
 
     @Test
+    void testArraySizeExceeded() {
+        OurParser parser = createParserFromText("int[3] a = {1, 2, 3, 4};");
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(InvalidArrayException.class,
+                ()->  semanticChecker.visitVariableDeclaration(variableDeclarationNode));
+    }
+
+    /*
+    @Test
+    void testArrayContentInvalid() {
+        OurParser parser = createParserFromText("double[5] a = {1.1, 2.1}");
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertDoesNotThrow(//InconsistentTypeException.class,
+                ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode));
+    }
+    * */
+
+    @Test
     void testAlreadyDeclaredVariable() {
         OurParser parser = createParserFromText("{int a = 0; int a = 1;}");
         OurParser.BlockContext block = parser.block();

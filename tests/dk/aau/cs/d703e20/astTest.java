@@ -2,14 +2,12 @@ package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.ASTBuilder;
 import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.errorhandling.ArraySizeException;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.resources.FailTestErrorListener;
-import dk.aau.cs.d703e20.semantics.SemanticChecker;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.junit.jupiter.api.Test;
@@ -339,21 +337,6 @@ public class astTest {
                 () -> assertEquals(23, conditionalExpressionNode.getSubscriptNode().getIndex())
         );
     }
-
-    /*
-    @Test
-    void testArraySize() {
-        OurParser parser = createParserFromText("int[3] a = {1, 2, 3, 4};");
-        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
-
-        ASTBuilder astBuilder = new ASTBuilder();
-        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
-        assertThrows(ArraySizeException.class,
-                ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode));
-    }
-     */
 
     @Test
     void testBoolExprLiteral() {

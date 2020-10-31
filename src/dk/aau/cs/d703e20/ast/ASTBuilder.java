@@ -1,6 +1,6 @@
 package dk.aau.cs.d703e20.ast;
 
-import dk.aau.cs.d703e20.ast.errorhandling.ArraySizeException;
+import dk.aau.cs.d703e20.ast.errorhandling.InvalidArrayException;
 import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
@@ -313,7 +313,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             case BOOL_ARRAY:
                 allocatedArraySize = getSizeFromArrayDataType(ctx.dataType());
                 if (allocatedArraySize != null && allocatedArraySize <= 0)
-                    throw new ArraySizeException(ctx.variableName().getText(), allocatedArraySize, getCodePosition(ctx));
+                    throw new InvalidArrayException(ctx.variableName().getText(), allocatedArraySize, getCodePosition(ctx));
                 break;
         }
 
@@ -321,11 +321,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignmentNode) visitAssignment(ctx.assignment()));
         } else if (ctx.assignArray() != null) {
             if (allocatedArraySize != null && allocatedArraySize > 0) {
-                List<ArrayParamNode> arrayParamNodes = visitList(ArrayParamNode.class, ctx.assignArray().arrayParam(), this::visitArrayParam);
-                if (allocatedArraySize < arrayParamNodes.size())
-                    throw new ArraySizeException(ctx.variableName().getText(), getCodePosition(ctx));
-                else
-                    variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), allocatedArraySize, (AssignArrayNode) visitAssignArray(ctx.assignArray()));
+                variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), allocatedArraySize, (AssignArrayNode) visitAssignArray(ctx.assignArray()));
             }
             else
                 variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignArrayNode) visitAssignArray(ctx.assignArray()));
