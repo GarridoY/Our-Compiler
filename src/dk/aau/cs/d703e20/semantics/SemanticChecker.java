@@ -194,9 +194,6 @@ public class SemanticChecker {
         Enums.DataType assignedDataType = null;
 
         if (variableName != null) {
-            if (allocatedSize < assignArrayNode.getParamNodes().size())
-                throw new ArraySizeExceedsException(variableName, assignArrayNode.getCodePosition());
-
             for (ArrayParamNode arrayParam : assignArrayNode.getParamNodes()){
                 if (assignedDataType == null) {
                     assignedDataType = visitArrayParameters(arrayParam);

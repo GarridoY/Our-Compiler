@@ -1,5 +1,6 @@
 package dk.aau.cs.d703e20.ast;
 
+import dk.aau.cs.d703e20.ast.errorhandling.ArraySizeException;
 import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
@@ -312,15 +313,20 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             case BOOL_ARRAY:
                 allocatedArraySize = getSizeFromArrayDataType(ctx.dataType());
                 if (allocatedArraySize != null && allocatedArraySize <= 0)
-                    throw new CompilerException("Invalid array size: " + allocatedArraySize, getCodePosition(ctx));
+                    throw new ArraySizeException(ctx.variableName().getText(), allocatedArraySize, getCodePosition(ctx));
                 break;
         }
 
         if (ctx.assignment() != null) {
             variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignmentNode) visitAssignment(ctx.assignment()));
         } else if (ctx.assignArray() != null) {
-            if (allocatedArraySize != null && allocatedArraySize > 0)
-                variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), allocatedArraySize, (AssignArrayNode) visitAssignArray(ctx.assignArray()));
+            if (allocatedArraySize != null && allocatedArraySize > 0) {
+                List<ArrayParamNode> arrayParamNodes = visitList(ArrayParamNode.class, ctx.assignArray().arrayParam(), this::visitArrayParam);
+                if (allocatedArraySize < arrayParamNodes.size())
+                    throw new ArraySizeException(ctx.variableName().getText(), getCodePosition(ctx));
+                else
+                    variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), allocatedArraySize, (AssignArrayNode) visitAssignArray(ctx.assignArray()));
+            }
             else
                 variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignArrayNode) visitAssignArray(ctx.assignArray()));
         } else if (ctx.variableName() != null) {
@@ -340,6 +346,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         List<ArrayParamNode> arrayParamNodes = visitList(ArrayParamNode.class, ctx.arrayParam(), this::visitArrayParam);
         AssignArrayNode assignArrayNode = new AssignArrayNode(ctx.variableName().getText(), arrayParamNodes);
         setCodePos(assignArrayNode, ctx);
+
         return assignArrayNode;
     }
 

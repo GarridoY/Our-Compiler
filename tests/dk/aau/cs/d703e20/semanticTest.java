@@ -61,26 +61,6 @@ public class semanticTest {
     }
 
     @Test
-    void testInvalidDeclarationType03() {
-        OurParser parser = createParserFromText("int[6] a = {1, 2, 3, 4, 5, 6, 7};");
-        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
-
-        ASTBuilder astBuilder = new ASTBuilder();
-        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
-        assertThrows(ArraySizeExceedsException.class,
-                ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode));
-    }
-
-    /*
-    @Test
-    void testInvalidDeclarationType03() {
-
-    }
-     */
-
-    @Test
     void testAlreadyDeclaredVariable() {
         OurParser parser = createParserFromText("{int a = 0; int a = 1;}");
         OurParser.BlockContext block = parser.block();
