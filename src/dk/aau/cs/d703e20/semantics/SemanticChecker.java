@@ -23,7 +23,9 @@ public class SemanticChecker {
                 Enums.DataType.VOID,
                 "delay",
                 new BlockNode(new ArrayList<StatementNode>()),
-                new ArrayList<FunctionParameterNode>()
+                new ArrayList<>(Arrays.asList(
+                    new FunctionParameterNode(Enums.DataType.INT, "ms")
+                ))
         ));
     }
 
