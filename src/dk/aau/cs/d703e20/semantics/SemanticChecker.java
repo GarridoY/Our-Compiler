@@ -17,10 +17,13 @@ public class SemanticChecker {
         HashMap<String, ASTNode> newSymbolTable = new HashMap<>();
         this.hashMapStack.push(newSymbolTable);
 
-        enterSymbol("delay", new FunctionDeclarationNode(Enums.DataType.VOID,
-                                                   "delay",
-                                                                new BlockNode(new ArrayList<>()),
-                                                                new ArrayList<>()
+        // Add standard functions to symbol table
+        enterFunction(
+            new FunctionDeclarationNode(
+                Enums.DataType.VOID,
+                "delay",
+                new BlockNode(new ArrayList<StatementNode>()),
+                new ArrayList<FunctionParameterNode>()
         ));
     }
 
@@ -33,6 +36,10 @@ public class SemanticChecker {
 
     private void enterSymbol(String name, ASTNode object) {
         this.hashMapStack.peek().put(name, object);
+    }
+
+    private void enterFunction(FunctionDeclarationNode functionDeclarationNode) {
+        enterSymbol(functionDeclarationNode.getFunctionName(), functionDeclarationNode);
     }
 
     private ASTNode retrieveSymbol(String name) {
