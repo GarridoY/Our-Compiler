@@ -2,6 +2,7 @@ package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.ASTBuilder;
 import dk.aau.cs.d703e20.ast.errorhandling.*;
+import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
@@ -168,6 +169,21 @@ public class semanticTest {
         SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(IncorrectReturnTypeException.class,
                 ()-> semanticChecker.visitFunctionDeclaration(functionDeclarationNode)
+        );
+    }
+
+
+    @Test
+    void testIllegalOperandInBoolExpr() {
+        OurParser parser = createParserFromText("true && 1337");
+        OurParser.BoolExprContext boolExpr = parser.boolExpr();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(IllegalOperandException.class,
+                ()-> semanticChecker.visitBooleanExpression(boolExpressionNode)
         );
     }
 }

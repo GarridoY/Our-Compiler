@@ -283,8 +283,6 @@ public class SemanticChecker {
     public void visitBooleanExpression(BoolExpressionNode boolExpressionNode) {
         // TODO: typecheck operator for expr (only pure bools can AND, OR)
     }
-    
-
 
     public void visitFunctions(List<FunctionDeclarationNode> functionDeclarationNodes) {
         for (FunctionDeclarationNode functionDeclaration : functionDeclarationNodes) {
