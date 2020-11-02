@@ -17,7 +17,7 @@ void runBody() {
 		</location>
 		<location id="id1" x="-297" y="-306">
 			<name x="-331" y="-357">CheckTime</name>
-			<label kind="invariant" x="-323" y="-340">x &lt;= 20</label>
+			<label kind="invariant" x="-307" y="-289">x &lt;= 21</label>
 		</location>
 		<location id="id2" x="-127" y="-306">
 			<name x="-137" y="-340">StartBody</name>
@@ -41,8 +41,9 @@ void runBody() {
 			<source ref="id1"/>
 			<target ref="id2"/>
 			<label kind="guard" x="-238" y="-331">x &gt; 20</label>
-			<label kind="comments" x="-323" y="-459">Guard is at expression.
-Consider a lock so At is run all at once</label>
+			<label kind="comments" x="-408" y="-450">Guard is at expression.
+Consider a lock so At is run all at once.
+Parameters if multiple are scheduled.</label>
 		</transition>
 		<transition>
 			<source ref="id0"/>
@@ -79,8 +80,8 @@ Consider a lock so At is run all at once</label>
 system Controller, AtTemp;</system>
 	<queries>
 		<query>
-			<formula></formula>
-			<comment></comment>
+			<formula>E&lt;&gt; AtTemp.DoneBody</formula>
+			<comment>Is scheduling reachable</comment>
 		</query>
 	</queries>
 </nta>
