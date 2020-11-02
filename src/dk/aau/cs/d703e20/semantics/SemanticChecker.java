@@ -186,11 +186,7 @@ public class SemanticChecker {
         }
         // Num literal rule
         else if (arithExpressionNode.getNumber() != null) {
-            // TODO: detect datatype
-            if (arithExpressionNode.getNumber().toString().contains("."))
-                return Enums.DataType.DOUBLE;
-            else
-                return Enums.DataType.INT;
+            return getDataTypeFromLiteral(arithExpressionNode.getNumber());
         }
         // Function call rule
         else if (arithExpressionNode.getFunctionCallNode() != null) {
@@ -359,7 +355,7 @@ public class SemanticChecker {
             return Enums.DataType.STRING;
         else if (literal.contains("."))
             return Enums.DataType.DOUBLE;
-        else return Enums.DataType.INT ;
-        //return Enums.DataType.VOID;
+        else
+            return Enums.DataType.INT ;
     }
 }
