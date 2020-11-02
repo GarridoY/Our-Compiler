@@ -281,7 +281,48 @@ public class SemanticChecker {
     }
 
     public void visitBooleanExpression(BoolExpressionNode boolExpressionNode) {
-        // TODO: typecheck operator for expr (only pure bools can AND, OR)
+        for (int i = 0; i < boolExpressionNode.getBoolExpressionOperators().size(); i++) {
+            Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(i);
+            ArithExpressionNode leftArith = boolExpressionNode.getBoolExprOperandNodes().get(i).getArithExpressionNode();
+            ArithExpressionNode rightArith = boolExpressionNode.getBoolExprOperandNodes().get(i+1).getArithExpressionNode();
+
+            // Typechecking operators (Only bools can &&, ||. Bools cannot <, >)
+            switch (operator) {
+                case OR:
+                case AND:
+                    if (leftArith != null) {
+                        if (visitArithmeticExpression(leftArith) != Enums.DataType.BOOL)
+                            throw new IllegalOperandException(leftArith.prettyPrint(0), boolExpressionNode.getCodePosition());
+                    }
+                    if (rightArith != null) {
+                        if (visitArithmeticExpression(rightArith) != Enums.DataType.BOOL)
+                            throw new IllegalOperandException(rightArith.prettyPrint(0), boolExpressionNode.getCodePosition());
+                    }
+                    break;
+                    
+                case GREATER_THAN:
+                case GREATER_OR_EQUAL:
+                case LESS_THAN:
+                case LESS_OR_EQUAL:
+                    String leftBool = boolExpressionNode.getBoolExprOperandNodes().get(i).getBoolLiteral();
+                    String rightBool = boolExpressionNode.getBoolExprOperandNodes().get(i+1).getBoolLiteral();
+
+                    if (leftBool != null)
+                        throw new IllegalOperandException(leftBool, boolExpressionNode.getCodePosition());
+                    else if (leftArith != null) {
+                        if (visitArithmeticExpression(leftArith) == Enums.DataType.BOOL)
+                            throw new IllegalOperandException(leftArith.prettyPrint(0), boolExpressionNode.getCodePosition());
+                    }
+
+                    if (rightBool != null)
+                        throw new IllegalOperandException(rightBool, boolExpressionNode.getCodePosition());
+                    else if (rightArith != null) {
+                        if (visitArithmeticExpression(rightArith) == Enums.DataType.BOOL)
+                            throw new IllegalOperandException(rightArith.prettyPrint(0), boolExpressionNode.getCodePosition());
+                    }
+                    break;
+            }
+        }
     }
 
     public void visitFunctions(List<FunctionDeclarationNode> functionDeclarationNodes) {

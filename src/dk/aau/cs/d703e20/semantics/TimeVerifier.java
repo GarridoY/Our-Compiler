@@ -30,6 +30,8 @@ public class TimeVerifier {
                 System.out.println(line);
             }
 
+            // TODO: throw exception if UPPAAL fails
+
             System.out.println("\n");
 
         } catch (Exception ex) {
