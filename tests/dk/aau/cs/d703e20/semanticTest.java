@@ -2,6 +2,7 @@ package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.ASTBuilder;
 import dk.aau.cs.d703e20.ast.errorhandling.*;
+import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
@@ -15,6 +16,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class semanticTest {
@@ -58,6 +60,47 @@ public class semanticTest {
                 ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode)
         );
     }
+
+    @Test
+    void testArraySizeExceeded() {
+        OurParser parser = createParserFromText("int[3] a = {1, 2, 3, 4};");
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(InvalidArrayException.class,
+                ()->  semanticChecker.visitVariableDeclaration(variableDeclarationNode));
+    }
+
+    @Test
+    void testInconsistentArray() {
+        OurParser parser = createParserFromText("int[5] a = {1.1, 1.2, 1.3};");
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(InconsistentTypeException.class,
+                ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode));
+    }
+
+    /*
+    @Test
+    void testBooleanArray() {
+        OurParser parser = createParserFromText("bool[5] a = {true, false, true};");
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertDoesNotThrow(//InconsistentTypeException.class,
+                ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode));
+    }
+    * */
 
     @Test
     void testAlreadyDeclaredVariable() {
@@ -126,6 +169,21 @@ public class semanticTest {
         SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(IncorrectReturnTypeException.class,
                 ()-> semanticChecker.visitFunctionDeclaration(functionDeclarationNode)
+        );
+    }
+
+
+    @Test
+    void testIllegalOperandInBoolExpr() {
+        OurParser parser = createParserFromText("true && 1337");
+        OurParser.BoolExprContext boolExpr = parser.boolExpr();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(IllegalOperandException.class,
+                ()-> semanticChecker.visitBooleanExpression(boolExpressionNode)
         );
     }
 }

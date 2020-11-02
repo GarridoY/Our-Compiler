@@ -25,5 +25,5 @@ int TestFunction () {
 }
 
 void FuncTwo () {
-    delay();
+    delay(1);
 }

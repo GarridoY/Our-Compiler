@@ -1,5 +1,6 @@
 package dk.aau.cs.d703e20.ast;
 
+import dk.aau.cs.d703e20.ast.errorhandling.InvalidArrayException;
 import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
@@ -246,9 +247,9 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             FunctionCallNode funcNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
             arithExpressionNode = new ArithExpressionNode(funcNode);
         } else if (ctx.numLiteral() != null) {
-            arithExpressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
+            arithExpressionNode = new ArithExpressionNode(ctx.numLiteral().getText(), true);
         } else if (ctx.variableName() != null) {
-            arithExpressionNode = new ArithExpressionNode(ctx.variableName().getText());
+            arithExpressionNode = new ArithExpressionNode(ctx.variableName().getText(), false);
         } else if (ctx.SUBSCRIPT() != null) {
             arithExpressionNode = new ArithExpressionNode(new SubscriptNode(ctx.SUBSCRIPT().getText()));
         } else {
@@ -312,15 +313,16 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             case BOOL_ARRAY:
                 allocatedArraySize = getSizeFromArrayDataType(ctx.dataType());
                 if (allocatedArraySize != null && allocatedArraySize <= 0)
-                    throw new CompilerException("Invalid array size: " + allocatedArraySize, getCodePosition(ctx));
+                    throw new InvalidArrayException(ctx.variableName().getText(), allocatedArraySize, getCodePosition(ctx));
                 break;
         }
 
         if (ctx.assignment() != null) {
             variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignmentNode) visitAssignment(ctx.assignment()));
         } else if (ctx.assignArray() != null) {
-            if (allocatedArraySize != null && allocatedArraySize > 0)
+            if (allocatedArraySize != null && allocatedArraySize > 0) {
                 variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), allocatedArraySize, (AssignArrayNode) visitAssignArray(ctx.assignArray()));
+            }
             else
                 variableDeclarationNode = new VariableDeclarationNode(getDataType(ctx.dataType()), (AssignArrayNode) visitAssignArray(ctx.assignArray()));
         } else if (ctx.variableName() != null) {
@@ -340,6 +342,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
         List<ArrayParamNode> arrayParamNodes = visitList(ArrayParamNode.class, ctx.arrayParam(), this::visitArrayParam);
         AssignArrayNode assignArrayNode = new AssignArrayNode(ctx.variableName().getText(), arrayParamNodes);
         setCodePos(assignArrayNode, ctx);
+
         return assignArrayNode;
     }
 

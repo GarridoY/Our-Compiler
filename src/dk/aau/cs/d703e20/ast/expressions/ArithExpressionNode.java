@@ -18,7 +18,7 @@ public class ArithExpressionNode implements ASTNode {
     private Enums.BoolOperator optionalNot;
 
     // numLiteral
-    private Double number;
+    private String number;
 
     private String variableName;
 
@@ -34,16 +34,15 @@ public class ArithExpressionNode implements ASTNode {
     }
 
     // numLiteral
-    public ArithExpressionNode(Double number) {
-        this.number = number;
+    public ArithExpressionNode(String variableNameOrNumber, boolean isNumber) {
+        if (isNumber)
+            this.number = variableNameOrNumber;
+        else
+            this.variableName = variableNameOrNumber;
     }
 
     public ArithExpressionNode(ArithExpressionNode arithExpressionNode1) {
         this.arithExpressionNode1 = arithExpressionNode1;
-    }
-
-    public ArithExpressionNode(String variableName) {
-        this.variableName = variableName;
     }
 
     // functionCall
@@ -73,7 +72,7 @@ public class ArithExpressionNode implements ASTNode {
         return arithExpressionOperator;
     }
 
-    public Double getNumber() {
+    public String getNumber() {
         return number;
     }
 
@@ -109,7 +108,7 @@ public class ArithExpressionNode implements ASTNode {
             sb.append(arithExpressionNode1.prettyPrint(indentation));
         }
         else if (number != null) {
-            sb.append(Format.formatNumber(number));
+            sb.append(number);
         }
         else if (variableName != null) {
             sb.append(variableName);

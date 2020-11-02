@@ -84,8 +84,28 @@ public class BoundStatementNode extends StatementNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        // TODO: implement pretty print
-        return "BOUND STATEMENT";
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("bound (");
+        sb.append(atParamsNode.prettyPrint(indentation));
+        if (boolLiteral != null) {
+            sb.append(", ");
+            sb.append(boolLiteral);
+        }
+        sb.append(") ");
+        sb.append(body.prettyPrint(indentation));
+
+        if (catchBlock != null) {
+            sb.append("catch ");
+            sb.append(catchBlock.prettyPrint(indentation));
+        }
+
+        if (finalBlock != null) {
+            sb.append("final ");
+            sb.append(finalBlock.prettyPrint(indentation));
+        }
+
+        return sb.toString();
     }
 
     @Override

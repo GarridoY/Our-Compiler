@@ -97,7 +97,6 @@ arithExpr
     | functionCall
     | SUBSCRIPT;
 
-// TODO: typecheck operator for expr (only pure bools can AND, OR)
 boolExpr
     : BOOL_LITERAL
     | boolExprOperand (boolOp boolExprOperand)+

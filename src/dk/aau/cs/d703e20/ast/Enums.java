@@ -38,6 +38,16 @@ public class Enums {
         NOT
     }
 
+    public static Enums.DataType dataTypeFromDatatype (Enums.DataType dataType) {
+        return switch (dataType) {
+            case INT_ARRAY -> DataType.INT;
+            case DOUBLE_ARRAY -> DataType.DOUBLE;
+            case BOOL_ARRAY -> DataType.BOOL;
+            default -> DataType.VOID;
+        };
+
+    }
+
     public static String stringFromDataType (DataType dataType) {
         return switch (dataType) {
             case INT -> "int";

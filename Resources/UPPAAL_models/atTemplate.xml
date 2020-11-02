@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+chan sched;</declaration>
+	<template>
+		<name x="5" y="5">AtTemp</name>
+		<declaration>// Place local declarations here.
+clock x;
+
+void runBody() {
+    // Code from our language
+    // Might not be necessary, but is good for timing
+}</declaration>
+		<location id="id0" x="-433" y="-306">
+			<name x="-467" y="-348">schedStart</name>
+		</location>
+		<location id="id1" x="-297" y="-306">
+			<name x="-331" y="-357">CheckTime</name>
+			<label kind="invariant" x="-323" y="-340">x &lt;= 20</label>
+		</location>
+		<location id="id2" x="-127" y="-306">
+			<name x="-137" y="-340">StartBody</name>
+		</location>
+		<location id="id3" x="8" y="-306">
+			<name x="-2" y="-340">DoneBody</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="assignment" x="-109" y="-306">runBody()</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<nail x="8" y="-204"/>
+			<nail x="-433" y="-204"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-238" y="-331">x &gt; 20</label>
+			<label kind="comments" x="-323" y="-459">Guard is at expression.
+Consider a lock so At is run all at once</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-408" y="-331">sched?</label>
+		</transition>
+	</template>
+	<template>
+		<name>Controller</name>
+		<location id="id4" x="-127" y="-59">
+			<name x="-144" y="-93">loop</name>
+			<label kind="comments" x="-136" y="-127">Code is run sequentially.</label>
+		</location>
+		<location id="id5" x="34" y="-59">
+			<name x="24" y="-93">Scheduled</name>
+		</location>
+		<location id="id6" x="212" y="-59">
+			<name x="202" y="-93">Statements</name>
+		</location>
+		<init ref="id4"/>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-85" y="-76">sched!</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+// Process = Template();
+// List one or more processes to be composed into a system.
+system Controller, AtTemp;</system>
+	<queries>
+		<query>
+			<formula></formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>

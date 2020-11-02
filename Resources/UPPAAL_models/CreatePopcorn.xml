@@ -79,7 +79,7 @@ system Popcorn;
     </system>
 	<queries>
 		<query>
-			<formula></formula>
+			<formula>E&lt;&gt; Popcorn.Done</formula>
 			<comment></comment>
 		</query>
 	</queries>
