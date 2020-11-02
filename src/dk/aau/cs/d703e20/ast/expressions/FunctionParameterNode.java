@@ -25,8 +25,13 @@ public class FunctionParameterNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        // TODO: implement pretty print
-        return "FUNCTION PARAMETER";
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(Enums.stringFromDataType(dataType));
+        sb.append(" ");
+        sb.append(variableName);
+
+        return sb.toString();
     }
 
     @Override
