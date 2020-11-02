@@ -247,9 +247,9 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             FunctionCallNode funcNode = (FunctionCallNode) visitFunctionCall(ctx.functionCall());
             arithExpressionNode = new ArithExpressionNode(funcNode);
         } else if (ctx.numLiteral() != null) {
-            arithExpressionNode = new ArithExpressionNode(getNumLiteralValue(ctx.numLiteral()));
+            arithExpressionNode = new ArithExpressionNode(ctx.numLiteral().getText(), true);
         } else if (ctx.variableName() != null) {
-            arithExpressionNode = new ArithExpressionNode(ctx.variableName().getText());
+            arithExpressionNode = new ArithExpressionNode(ctx.variableName().getText(), false);
         } else if (ctx.SUBSCRIPT() != null) {
             arithExpressionNode = new ArithExpressionNode(new SubscriptNode(ctx.SUBSCRIPT().getText()));
         } else {

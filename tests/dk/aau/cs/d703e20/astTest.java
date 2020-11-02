@@ -42,7 +42,7 @@ public class astTest {
 
         assertAll(
                 () -> assertEquals("four", assignmentNode.getVariableName()),
-                () -> assertEquals(4, assignmentNode.getArithExpressionNode().getNumber())
+                () -> assertEquals("4", assignmentNode.getArithExpressionNode().getNumber())
         );
     }
 
@@ -186,7 +186,7 @@ public class astTest {
         assertAll(
                 () -> assertEquals("y", boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(0).getArithExpressionNode().getVariableName()),
                 () -> assertEquals(Enums.BoolOperator.LESS_THAN, boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExpressionOperators().get(0)),
-                () -> assertEquals(12, boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(1).getArithExpressionNode().getNumber()),
+                () -> assertEquals("12", boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(1).getArithExpressionNode().getNumber()),
                 () -> assertEquals("true", boundNode.getBoolLiteral()),
                 () -> assertNotNull(boundNode.getBody()),
                 () -> assertNotNull(boundNode.getFinalBlock())
@@ -206,7 +206,7 @@ public class astTest {
         assertAll(
                 () -> assertEquals("y", boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(0).getArithExpressionNode().getVariableName()),
                 () -> assertEquals(Enums.BoolOperator.EQUAL, boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExpressionOperators().get(0)),
-                () -> assertEquals(22, boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(1).getArithExpressionNode().getNumber()),
+                () -> assertEquals("22", boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(1).getArithExpressionNode().getNumber()),
                 () -> assertNotNull(boundNode.getBody())
         );
     }
@@ -224,7 +224,7 @@ public class astTest {
         assertAll(
                 () -> assertEquals("y", boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(0).getArithExpressionNode().getVariableName()),
                 () -> assertEquals(Enums.BoolOperator.LESS_OR_EQUAL, boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExpressionOperators().get(0)),
-                () -> assertEquals(0, boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(1).getArithExpressionNode().getNumber()),
+                () -> assertEquals("0", boundNode.getAtParamsNode().getBoolExpressionNode().getBoolExprOperandNodes().get(1).getArithExpressionNode().getNumber()),
                 () -> assertEquals("false", boundNode.getBoolLiteral()),
                 () -> assertNotNull(boundNode.getBody()),
                 () -> assertNotNull(boundNode.getCatchBlock()),
@@ -320,7 +320,7 @@ public class astTest {
         Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(0);
         assertAll(
                 () -> assertEquals("test", expressionNode1.getVariableName()),
-                () -> assertEquals(5, expressionNode2.getNumber()),
+                () -> assertEquals("5", expressionNode2.getNumber()),
                 () -> assertEquals(Enums.BoolOperator.GREATER_OR_EQUAL, operator)
         );
     }
@@ -380,12 +380,12 @@ public class astTest {
 
         String varName = arithExpressionNode.getArithExpressionNode1().getVariableName();
         Enums.ArithOperator operator = arithExpressionNode.getArithExpressionOperator();
-        double literal = arithExpressionNode.getArithExpressionNode2().getNumber();
+        String literal = arithExpressionNode.getArithExpressionNode2().getNumber();
 
         assertAll(
                 () -> assertEquals("var", varName),
                 () -> assertEquals(Enums.ArithOperator.ADD, operator),
-                () -> assertEquals(2, literal)
+                () -> assertEquals("2", literal)
         );
     }
 
@@ -454,7 +454,7 @@ public class astTest {
 
         assertAll(
                 () -> assertEquals("var", forStatementNode.getArithExpressionNode1().getVariableName()),
-                () -> assertEquals(5, forStatementNode.getArithExpressionNode2().getNumber())
+                () -> assertEquals("5", forStatementNode.getArithExpressionNode2().getNumber())
         );
     }
 
@@ -471,7 +471,7 @@ public class astTest {
 
         assertAll(
                 () -> assertEquals("function", functionCallNode.getFunctionName()),
-                () -> assertEquals(2, functionCallNode.getFunctionArgNodes().get(0).getArithExpressionNode().getNumber()),
+                () -> assertEquals("2", functionCallNode.getFunctionArgNodes().get(0).getArithExpressionNode().getNumber()),
                 () -> assertEquals("varName", functionCallNode.getFunctionArgNodes().get(1).getArithExpressionNode().getVariableName())
         );
     }
@@ -567,8 +567,8 @@ public class astTest {
 
         assertAll(
                 () -> assertEquals("arr", assignArrayNode.getVariableName()),
-                () -> assertEquals(1.2, assignArrayNode.getParamNodes().get(0).getArithExpressionNode().getNumber()),
-                () -> assertEquals(3.3, assignArrayNode.getParamNodes().get(1).getArithExpressionNode().getNumber())
+                () -> assertEquals("1.2", assignArrayNode.getParamNodes().get(0).getArithExpressionNode().getNumber()),
+                () -> assertEquals("3.3", assignArrayNode.getParamNodes().get(1).getArithExpressionNode().getNumber())
         );
     }
 
@@ -595,6 +595,6 @@ public class astTest {
         ASTBuilder astBuilder = new ASTBuilder();
         VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDeclContext);
 
-        assertEquals(35, variableDeclarationNode.getAssignArrayNode().getParamNodes().get(2).getArithExpressionNode().getNumber());
+        assertEquals("35", variableDeclarationNode.getAssignArrayNode().getParamNodes().get(2).getArithExpressionNode().getNumber());
     }
 }
