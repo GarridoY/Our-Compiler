@@ -137,8 +137,12 @@ public class SemanticChecker {
                 Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode());
                 //Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode(), variableDeclarationNode.getAllocatedSize());
 
-                if (arrayDataType != Enums.dataTypeFromDatatype(dataType))
+                System.out.println("arrayDataType: " + arrayDataType);
+                System.out.println("Enums.dataTypeFromDatatype(dataType): " + Enums.dataTypeFromDatatype(dataType));
+
+                if (arrayDataType != Enums.dataTypeFromDatatype(dataType)) {
                     throw new InconsistentTypeException(variableDeclarationNode.getVariableName(), variableDeclarationNode.getCodePosition());
+                }
                 else
                     enterSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName(), variableDeclarationNode);
 
@@ -183,7 +187,10 @@ public class SemanticChecker {
         // Num literal rule
         else if (arithExpressionNode.getNumber() != null) {
             // TODO: detect datatype
-            return Enums.DataType.INT;
+            if (arithExpressionNode.getNumber().toString().contains("."))
+                return Enums.DataType.DOUBLE;
+            else
+                return Enums.DataType.INT;
         }
         // Function call rule
         else if (arithExpressionNode.getFunctionCallNode() != null) {
@@ -204,16 +211,21 @@ public class SemanticChecker {
         return null;
     }
 
+    // TODO: Contains Errors
     public Enums.DataType visitAssignArray(AssignArrayNode assignArrayNode) {
         String variableName = assignArrayNode.getVariableName();
         Enums.DataType assignedDataType = null;
 
         if (variableName != null) {
             for (ArrayParamNode arrayParam : assignArrayNode.getParamNodes()){
+
                 if (assignedDataType == null) {
                     assignedDataType = visitArrayParameters(arrayParam);
-                } else if (visitArrayParameters(arrayParam) != assignedDataType)
+                } else if (visitArrayParameters(arrayParam) != assignedDataType){
+                    //System.out.println("visitArrayParameters(arrayParam):" + visitArrayParameters(arrayParam));
+                    //System.out.println("assignedDataType: " + assignedDataType);
                     throw new InconsistentTypeException(assignArrayNode.getVariableName(), assignArrayNode.getCodePosition());
+                }
             }
         }
         return assignedDataType;

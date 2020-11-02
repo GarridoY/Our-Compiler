@@ -73,10 +73,23 @@ public class semanticTest {
                 ()->  semanticChecker.visitVariableDeclaration(variableDeclarationNode));
     }
 
+    @Test
+    void testInconsistentArray() {
+        OurParser parser = createParserFromText("int[5] a = {1.1, 1.2, 1.3};");
+        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
+        assertThrows(InconsistentTypeException.class,
+                ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode));
+    }
+
     /*
     @Test
-    void testArrayContentInvalid() {
-        OurParser parser = createParserFromText("double[5] a = {1.1, 2.1}");
+    void testBooleanArray() {
+        OurParser parser = createParserFromText("bool[5] a = {true, false, true};");
         OurParser.VariableDeclContext variableDecl = parser.variableDecl();
 
         ASTBuilder astBuilder = new ASTBuilder();
