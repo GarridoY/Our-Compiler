@@ -281,7 +281,7 @@ public class SemanticChecker {
     }
 
     public void visitBooleanExpression(BoolExpressionNode boolExpressionNode) {
-
+        // TODO: typecheck operator for expr (only pure bools can AND, OR)
     }
     
 
@@ -348,7 +348,6 @@ public class SemanticChecker {
     }
 
     private Enums.DataType getDataTypeFromLiteral(String literal) {
-        //TODO: do fancy regex to check type
         if (literal.equals("true") || literal.equals("false"))
             return Enums.DataType.BOOL;
         else if (literal.contains("\""))
