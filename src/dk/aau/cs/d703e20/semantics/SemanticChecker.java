@@ -128,7 +128,7 @@ public class SemanticChecker {
                 Enums.DataType assignmentDataType = visitAssignment(variableDeclarationNode.getAssignmentNode());
 
                 if (assignmentDataType != dataType)
-                    throw new InconsistentTypeException(variableDeclarationNode.getVariableName(), variableDeclarationNode.getCodePosition());
+                    throw new InconsistentTypeException(variableDeclarationNode.getVariableName(), variableDeclarationNode.getCodePosition(), dataType, assignmentDataType);
                 else
                     enterSymbol(variableDeclarationNode.getAssignmentNode().getVariableName(), variableDeclarationNode);
             }
