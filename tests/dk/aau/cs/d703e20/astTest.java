@@ -586,9 +586,22 @@ public class astTest {
     }
 
     @Test
+    void testBooleanVariableDeclArray() {
+        // String -> Tokens -> Parsing
+        OurParser parser = createParserFromText("bool[] arr = {true, false};");
+        // Get parsed context
+        OurParser.VariableDeclContext variableDeclContext = parser.variableDecl();
+        // Context -> ASTNode
+        ASTBuilder astBuilder = new ASTBuilder();
+        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDeclContext);
+
+        assertEquals("false", variableDeclarationNode.getAssignArrayNode().getParamNodes().get(1).getLiteral());
+    }
+
+    @Test
     void testVariableDeclArrayIndex() {
         // String -> Tokens -> Parsing
-        OurParser parser = createParserFromText("int[] arr = {q, 4, 35};");
+        OurParser parser = createParserFromText("int[] arr = {1, 4, 35};");
         // Get parsed context
         OurParser.VariableDeclContext variableDeclContext = parser.variableDecl();
         // Context -> ASTNode

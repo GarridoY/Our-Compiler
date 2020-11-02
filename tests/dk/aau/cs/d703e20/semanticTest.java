@@ -87,20 +87,18 @@ public class semanticTest {
                 ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode));
     }
 
-    /*
     @Test
     void testBooleanArray() {
-        OurParser parser = createParserFromText("bool[5] a = {true, false, true};");
+        OurParser parser = createParserFromText("bool[3] a = {1, 2, 3};");
         OurParser.VariableDeclContext variableDecl = parser.variableDecl();
 
         ASTBuilder astBuilder = new ASTBuilder();
         VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
 
         SemanticChecker semanticChecker = new SemanticChecker();
-        assertDoesNotThrow(//InconsistentTypeException.class,
+        assertThrows(InconsistentTypeException.class,
                 ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode));
     }
-    * */
 
     @Test
     void testAlreadyDeclaredVariable() {

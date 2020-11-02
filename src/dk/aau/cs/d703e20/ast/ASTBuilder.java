@@ -350,12 +350,14 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitArrayParam(OurParser.ArrayParamContext ctx) {
         ArrayParamNode arrayParamNode;
 
-        if (!ctx.arithExpr().isEmpty())
+        if (ctx.arithExpr() != null && !ctx.arithExpr().isEmpty()) {
             arrayParamNode = new ArrayParamNode((ArithExpressionNode) visitArithExpr(ctx.arithExpr()));
-        else if (!ctx.literal().isEmpty())
+        } else if (!ctx.literal().isEmpty()) {
             arrayParamNode = new ArrayParamNode(ctx.literal().getText());
-        else
-            throw new CompilerException("Invalid array assignment", getCodePosition(ctx));
+        }
+        else {
+            throw new InvalidArrayException(getCodePosition(ctx));
+        }
 
         setCodePos(arrayParamNode, ctx);
         return arrayParamNode;
