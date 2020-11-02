@@ -1,0 +1,10 @@
+setup {
+	clock x = 0;
+}
+
+loop {
+	at (x > 20) {
+			// Body
+	}
+	// Statements
+}
