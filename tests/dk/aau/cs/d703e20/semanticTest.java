@@ -149,13 +149,12 @@ public class semanticTest {
 
     @Test
     void testAlreadyDeclaredPinVariable() {
-        OurParser parser = createParserFromText("{ipin a A10; opin a A11;}");
-        OurParser.BlockContext block = parser.block();
+        BlockNode blockNode = getNodeFromText(
+                "{ipin a A10; opin a A11;}",
+                "block",
+                BlockNode.class,
+                OurParser.BlockContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        BlockNode blockNode = (BlockNode) astBuilder.visitBlock(block);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(VariableAlreadyDeclaredException.class,
                 ()-> semanticChecker.visitBlock(blockNode)
         );
