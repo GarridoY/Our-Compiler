@@ -17,17 +17,17 @@ public interface OurParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitProgram(OurParser.ProgramContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link OurParser#loop}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitLoop(OurParser.LoopContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link OurParser#setup}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitSetup(OurParser.SetupContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link OurParser#loop}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLoop(OurParser.LoopContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link OurParser#block}.
 	 * @param ctx the parse tree

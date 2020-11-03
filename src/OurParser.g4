@@ -1,24 +1,26 @@
 parser grammar OurParser;
 options { tokenVocab=OurLexer; }
 
-// Program rule, has to consist of a main rule, can be followed by function declarations.
+// Program rule, has to consist of Setup and Loop, can be followed by function declarations.
 // variableName is used to catch outside of the program
 program
     : setup loop (functionDecl | variableName)*;
 
-// main start keyword followed by a block
-loop
-    : LOOP block;
-
+// REQUIRED FUNCTIONS
+// Setup runs once at the start
 setup
     : SETUP block;
+
+// Loop repeats indefinitely after Setup
+loop
+    : LOOP block;
 
 // Encapsulation of code by brackets
 block
     : LEFT_BRACKET (statement)* RIGHT_BRACKET;
 
 // FUNCTIONS
-// Function declaration, optional argument followed by more optional arguments prefixed by comma
+// Function declaration, optional parameter followed by more optional parameters prefixed by commas
 functionDecl
     : dataType functionName LEFT_PAREN (functionParam (COMMA functionParam)*)? RIGHT_PAREN block;
 
@@ -26,7 +28,7 @@ functionDecl
 functionParam
     : dataType variableName;
 
-// Call function given optional arguments (expr)
+// Call function given optional arguments (expressions)
 functionCall
     : functionName LEFT_PAREN (functionArg (COMMA functionArg)*)? RIGHT_PAREN;
 
@@ -35,13 +37,13 @@ functionArg
     : arithExpr
     | boolExpr;
 
-// Statements available in main
+// Statements available in a block
 statement
     : variableDecl SEMICOLON
     | assignment SEMICOLON
     | pinDecl SEMICOLON
     | functionCall SEMICOLON
-    | ifElseStatement //conditionalStatement
+    | ifElseStatement
     | iterativeStatement
     | atStatement
     | boundStatement
@@ -50,8 +52,8 @@ statement
 returnStatement
     : RETURN variableName;
 
-// CONDITIONAL
-// any IF statement require blocks
+// CONDITIONAL STATEMENTS
+// An if statement followed by optional else ifs and one optional else
 ifElseStatement
     : ifStatement elseIfStatement* elseStatement?;
 
@@ -59,23 +61,26 @@ ifStatement: IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseIfStatement: ELSE_IF LEFT_PAREN conditionalExpression RIGHT_PAREN block;
 elseStatement: ELSE block;
 
+// Conditional expressions to be used in if and if else statements
 conditionalExpression
     : boolExpr
     | NOT? variableName
     | functionCall
     | SUBSCRIPT;
 
-// at statement for clock and timing purposes
+// At statement for clock and timing purposes
 atStatement
     : AT LEFT_PAREN atParams RIGHT_PAREN block;
 
+// Parameters to use in an at statement
 atParams
     : boolExpr;
 
+// bound (y, z) z optional
 boundStatement
-    : BOUND LEFT_PAREN atParams (COMMA BOOL_LITERAL)? RIGHT_PAREN block (CATCH block)? (FINAL block)?; // bound (y, z) z optional
+    : BOUND LEFT_PAREN atParams (COMMA BOOL_LITERAL)? RIGHT_PAREN block (CATCH block)? (FINAL block)?;
 
-// ITERATIVE
+// ITERATIVE STATEMENTS
 iterativeStatement
     : forStatement
     | whileStatement;
@@ -84,6 +89,7 @@ iterativeStatement
 forStatement
     : FOR LEFT_PAREN arithExpr TO arithExpr RIGHT_PAREN block;
 
+// while (boolExpr) {}
 whileStatement
     : WHILE LEFT_PAREN boolExpr RIGHT_PAREN block;
 
@@ -106,10 +112,11 @@ boolExprOperand
     : BOOL_LITERAL
     | arithExpr;
 
+// DECLARATIONS AND ASSIGNMENTS
 pinDecl
     : pinType variableName (DIGIT | ANALOGPIN);
 
-// Declaration of variable, all variables must be initialized
+// Declaration of variable
 variableDecl
     : dataType variableName
     | dataType assignment

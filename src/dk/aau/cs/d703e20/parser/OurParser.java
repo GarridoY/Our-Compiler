@@ -18,7 +18,7 @@ public class OurParser extends Parser {
 		new PredictionContextCache();
 	public static final int
 		INT=1, INT_ARRAY=2, BOOLEAN=3, BOOLEAN_ARRAY=4, DOUBLE=5, DOUBLE_ARRAY=6, 
-		CLOCK=7, STRING=8, SUBSCRIPT=9, IPIN=10, OPIN=11, ANALOGPIN=12, VOID=13, 
+		CLOCK=7, STRING=8, VOID=9, IPIN=10, OPIN=11, ANALOGPIN=12, SUBSCRIPT=13, 
 		LOOP=14, SETUP=15, RETURN=16, IF=17, ELSE_IF=18, ELSE=19, TO=20, FOR=21, 
 		WHILE=22, AT=23, BOUND=24, FINAL=25, CATCH=26, DIGIT=27, DIGIT_NEGATIVE=28, 
 		DOUBLE_DIGIT=29, DOUBLE_DIGIT_NEGATIVE=30, BOOL_LITERAL=31, STRING_LITERAL=32, 
@@ -29,7 +29,7 @@ public class OurParser extends Parser {
 		LESS_THAN=57, LESS_OR_EQUAL=58, ID=59, COMMENT_STRING=60, COMMENT_BLOCK=61, 
 		WS=62;
 	public static final int
-		RULE_program = 0, RULE_loop = 1, RULE_setup = 2, RULE_block = 3, RULE_functionDecl = 4, 
+		RULE_program = 0, RULE_setup = 1, RULE_loop = 2, RULE_block = 3, RULE_functionDecl = 4, 
 		RULE_functionParam = 5, RULE_functionCall = 6, RULE_functionArg = 7, RULE_statement = 8, 
 		RULE_returnStatement = 9, RULE_ifElseStatement = 10, RULE_ifStatement = 11, 
 		RULE_elseIfStatement = 12, RULE_elseStatement = 13, RULE_conditionalExpression = 14, 
@@ -41,7 +41,7 @@ public class OurParser extends Parser {
 		RULE_numLiteral = 34, RULE_arithOp = 35, RULE_boolOp = 36;
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"program", "loop", "setup", "block", "functionDecl", "functionParam", 
+			"program", "setup", "loop", "block", "functionDecl", "functionParam", 
 			"functionCall", "functionArg", "statement", "returnStatement", "ifElseStatement", 
 			"ifStatement", "elseIfStatement", "elseStatement", "conditionalExpression", 
 			"atStatement", "atParams", "boundStatement", "iterativeStatement", "forStatement", 
@@ -56,7 +56,7 @@ public class OurParser extends Parser {
 	private static String[] makeLiteralNames() {
 		return new String[] {
 			null, "'int'", null, "'bool'", null, "'double'", null, "'clock'", "'string'", 
-			null, "'ipin'", "'opin'", null, "'void'", "'Loop'", "'Setup'", "'return'", 
+			"'void'", "'ipin'", "'opin'", null, null, "'Loop'", "'Setup'", "'return'", 
 			"'if'", "'else if'", "'else'", "'to'", "'for'", "'while'", "'at'", "'bound'", 
 			"'final'", "'catch'", null, null, null, null, null, null, "'['", "']'", 
 			"'{'", "'}'", "'('", "')'", "'.'", "','", "';'", "'?'", "':'", "'='", 
@@ -68,7 +68,7 @@ public class OurParser extends Parser {
 	private static String[] makeSymbolicNames() {
 		return new String[] {
 			null, "INT", "INT_ARRAY", "BOOLEAN", "BOOLEAN_ARRAY", "DOUBLE", "DOUBLE_ARRAY", 
-			"CLOCK", "STRING", "SUBSCRIPT", "IPIN", "OPIN", "ANALOGPIN", "VOID", 
+			"CLOCK", "STRING", "VOID", "IPIN", "OPIN", "ANALOGPIN", "SUBSCRIPT", 
 			"LOOP", "SETUP", "RETURN", "IF", "ELSE_IF", "ELSE", "TO", "FOR", "WHILE", 
 			"AT", "BOUND", "FINAL", "CATCH", "DIGIT", "DIGIT_NEGATIVE", "DOUBLE_DIGIT", 
 			"DOUBLE_DIGIT_NEGATIVE", "BOOL_LITERAL", "STRING_LITERAL", "LEFT_SQBRACKET", 
@@ -228,53 +228,6 @@ public class OurParser extends Parser {
 		return _localctx;
 	}
 
-	public static class LoopContext extends ParserRuleContext {
-		public TerminalNode LOOP() { return getToken(OurParser.LOOP, 0); }
-		public BlockContext block() {
-			return getRuleContext(BlockContext.class,0);
-		}
-		public LoopContext(ParserRuleContext parent, int invokingState) {
-			super(parent, invokingState);
-		}
-		@Override public int getRuleIndex() { return RULE_loop; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof OurParserListener ) ((OurParserListener)listener).enterLoop(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof OurParserListener ) ((OurParserListener)listener).exitLoop(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof OurParserVisitor ) return ((OurParserVisitor<? extends T>)visitor).visitLoop(this);
-			else return visitor.visitChildren(this);
-		}
-	}
-
-	public final LoopContext loop() throws RecognitionException {
-		LoopContext _localctx = new LoopContext(_ctx, getState());
-		enterRule(_localctx, 2, RULE_loop);
-		try {
-			enterOuterAlt(_localctx, 1);
-			{
-			setState(83);
-			match(LOOP);
-			setState(84);
-			block();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
-		finally {
-			exitRule();
-		}
-		return _localctx;
-	}
-
 	public static class SetupContext extends ParserRuleContext {
 		public TerminalNode SETUP() { return getToken(OurParser.SETUP, 0); }
 		public BlockContext block() {
@@ -301,12 +254,59 @@ public class OurParser extends Parser {
 
 	public final SetupContext setup() throws RecognitionException {
 		SetupContext _localctx = new SetupContext(_ctx, getState());
-		enterRule(_localctx, 4, RULE_setup);
+		enterRule(_localctx, 2, RULE_setup);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(83);
+			match(SETUP);
+			setState(84);
+			block();
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class LoopContext extends ParserRuleContext {
+		public TerminalNode LOOP() { return getToken(OurParser.LOOP, 0); }
+		public BlockContext block() {
+			return getRuleContext(BlockContext.class,0);
+		}
+		public LoopContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_loop; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof OurParserListener ) ((OurParserListener)listener).enterLoop(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof OurParserListener ) ((OurParserListener)listener).exitLoop(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof OurParserVisitor ) return ((OurParserVisitor<? extends T>)visitor).visitLoop(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final LoopContext loop() throws RecognitionException {
+		LoopContext _localctx = new LoopContext(_ctx, getState());
+		enterRule(_localctx, 4, RULE_loop);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(86);
-			match(SETUP);
+			match(LOOP);
 			setState(87);
 			block();
 			}
@@ -362,7 +362,7 @@ public class OurParser extends Parser {
 			setState(93);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << INT_ARRAY) | (1L << BOOLEAN) | (1L << BOOLEAN_ARRAY) | (1L << DOUBLE) | (1L << DOUBLE_ARRAY) | (1L << CLOCK) | (1L << STRING) | (1L << IPIN) | (1L << OPIN) | (1L << VOID) | (1L << RETURN) | (1L << IF) | (1L << FOR) | (1L << WHILE) | (1L << AT) | (1L << BOUND) | (1L << ID))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INT) | (1L << INT_ARRAY) | (1L << BOOLEAN) | (1L << BOOLEAN_ARRAY) | (1L << DOUBLE) | (1L << DOUBLE_ARRAY) | (1L << CLOCK) | (1L << STRING) | (1L << VOID) | (1L << IPIN) | (1L << OPIN) | (1L << RETURN) | (1L << IF) | (1L << FOR) | (1L << WHILE) | (1L << AT) | (1L << BOUND) | (1L << ID))) != 0)) {
 				{
 				{
 				setState(90);
@@ -2740,18 +2740,18 @@ public class OurParser extends Parser {
 		"\34\u0134\13\34\3\34\3\34\3\35\3\35\5\35\u013a\n\35\3\36\3\36\3\36\3\36"+
 		"\5\36\u0140\n\36\3\37\3\37\3 \3 \3!\3!\3\"\3\"\3#\3#\3$\3$\3%\3%\3&\3"+
 		"&\3&\2\3,\'\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\66"+
-		"8:<>@BDFHJ\2\t\4\2\16\16\35\35\3\2\f\r\4\2\3\n\17\17\3\2!\"\3\2\35 \3"+
-		"\2/\63\4\2\64\679<\2\u0156\2L\3\2\2\2\4U\3\2\2\2\6X\3\2\2\2\b[\3\2\2\2"+
-		"\nd\3\2\2\2\ft\3\2\2\2\16w\3\2\2\2\20\u0087\3\2\2\2\22\u009c\3\2\2\2\24"+
-		"\u009e\3\2\2\2\26\u00a1\3\2\2\2\30\u00ab\3\2\2\2\32\u00b1\3\2\2\2\34\u00b7"+
-		"\3\2\2\2\36\u00c1\3\2\2\2 \u00c3\3\2\2\2\"\u00c9\3\2\2\2$\u00cb\3\2\2"+
-		"\2&\u00de\3\2\2\2(\u00e0\3\2\2\2*\u00e8\3\2\2\2,\u00fa\3\2\2\2.\u0115"+
-		"\3\2\2\2\60\u0119\3\2\2\2\62\u011b\3\2\2\2\64\u0128\3\2\2\2\66\u012a\3"+
-		"\2\2\28\u0139\3\2\2\2:\u013b\3\2\2\2<\u0141\3\2\2\2>\u0143\3\2\2\2@\u0145"+
+		"8:<>@BDFHJ\2\t\4\2\16\16\35\35\3\2\f\r\3\2\3\13\3\2!\"\3\2\35 \3\2/\63"+
+		"\4\2\64\679<\2\u0156\2L\3\2\2\2\4U\3\2\2\2\6X\3\2\2\2\b[\3\2\2\2\nd\3"+
+		"\2\2\2\ft\3\2\2\2\16w\3\2\2\2\20\u0087\3\2\2\2\22\u009c\3\2\2\2\24\u009e"+
+		"\3\2\2\2\26\u00a1\3\2\2\2\30\u00ab\3\2\2\2\32\u00b1\3\2\2\2\34\u00b7\3"+
+		"\2\2\2\36\u00c1\3\2\2\2 \u00c3\3\2\2\2\"\u00c9\3\2\2\2$\u00cb\3\2\2\2"+
+		"&\u00de\3\2\2\2(\u00e0\3\2\2\2*\u00e8\3\2\2\2,\u00fa\3\2\2\2.\u0115\3"+
+		"\2\2\2\60\u0119\3\2\2\2\62\u011b\3\2\2\2\64\u0128\3\2\2\2\66\u012a\3\2"+
+		"\2\28\u0139\3\2\2\2:\u013b\3\2\2\2<\u0141\3\2\2\2>\u0143\3\2\2\2@\u0145"+
 		"\3\2\2\2B\u0147\3\2\2\2D\u0149\3\2\2\2F\u014b\3\2\2\2H\u014d\3\2\2\2J"+
-		"\u014f\3\2\2\2LM\5\6\4\2MR\5\4\3\2NQ\5\n\6\2OQ\5<\37\2PN\3\2\2\2PO\3\2"+
-		"\2\2QT\3\2\2\2RP\3\2\2\2RS\3\2\2\2S\3\3\2\2\2TR\3\2\2\2UV\7\20\2\2VW\5"+
-		"\b\5\2W\5\3\2\2\2XY\7\21\2\2YZ\5\b\5\2Z\7\3\2\2\2[_\7%\2\2\\^\5\22\n\2"+
+		"\u014f\3\2\2\2LM\5\4\3\2MR\5\6\4\2NQ\5\n\6\2OQ\5<\37\2PN\3\2\2\2PO\3\2"+
+		"\2\2QT\3\2\2\2RP\3\2\2\2RS\3\2\2\2S\3\3\2\2\2TR\3\2\2\2UV\7\21\2\2VW\5"+
+		"\b\5\2W\5\3\2\2\2XY\7\20\2\2YZ\5\b\5\2Z\7\3\2\2\2[_\7%\2\2\\^\5\22\n\2"+
 		"]\\\3\2\2\2^a\3\2\2\2_]\3\2\2\2_`\3\2\2\2`b\3\2\2\2a_\3\2\2\2bc\7&\2\2"+
 		"c\t\3\2\2\2de\5B\"\2ef\5> \2fo\7\'\2\2gl\5\f\7\2hi\7*\2\2ik\5\f\7\2jh"+
 		"\3\2\2\2kn\3\2\2\2lj\3\2\2\2lm\3\2\2\2mp\3\2\2\2nl\3\2\2\2og\3\2\2\2o"+
@@ -2779,7 +2779,7 @@ public class OurParser extends Parser {
 		"\7(\2\2\u00b5\u00b6\5\b\5\2\u00b6\33\3\2\2\2\u00b7\u00b8\7\25\2\2\u00b8"+
 		"\u00b9\5\b\5\2\u00b9\35\3\2\2\2\u00ba\u00c2\5.\30\2\u00bb\u00bd\78\2\2"+
 		"\u00bc\u00bb\3\2\2\2\u00bc\u00bd\3\2\2\2\u00bd\u00be\3\2\2\2\u00be\u00c2"+
-		"\5<\37\2\u00bf\u00c2\5\16\b\2\u00c0\u00c2\7\13\2\2\u00c1\u00ba\3\2\2\2"+
+		"\5<\37\2\u00bf\u00c2\5\16\b\2\u00c0\u00c2\7\17\2\2\u00c1\u00ba\3\2\2\2"+
 		"\u00c1\u00bc\3\2\2\2\u00c1\u00bf\3\2\2\2\u00c1\u00c0\3\2\2\2\u00c2\37"+
 		"\3\2\2\2\u00c3\u00c4\7\31\2\2\u00c4\u00c5\7\'\2\2\u00c5\u00c6\5\"\22\2"+
 		"\u00c6\u00c7\7(\2\2\u00c7\u00c8\5\b\5\2\u00c8!\3\2\2\2\u00c9\u00ca\5."+
@@ -2797,7 +2797,7 @@ public class OurParser extends Parser {
 		"\u00f0\b\27\1\2\u00ef\u00f1\78\2\2\u00f0\u00ef\3\2\2\2\u00f0\u00f1\3\2"+
 		"\2\2\u00f1\u00f2\3\2\2\2\u00f2\u00f3\7\'\2\2\u00f3\u00f4\5,\27\2\u00f4"+
 		"\u00f5\7(\2\2\u00f5\u00fb\3\2\2\2\u00f6\u00fb\5F$\2\u00f7\u00fb\5<\37"+
-		"\2\u00f8\u00fb\5\16\b\2\u00f9\u00fb\7\13\2\2\u00fa\u00ee\3\2\2\2\u00fa"+
+		"\2\u00f8\u00fb\5\16\b\2\u00f9\u00fb\7\17\2\2\u00fa\u00ee\3\2\2\2\u00fa"+
 		"\u00f6\3\2\2\2\u00fa\u00f7\3\2\2\2\u00fa\u00f8\3\2\2\2\u00fa\u00f9\3\2"+
 		"\2\2\u00fb\u0102\3\2\2\2\u00fc\u00fd\f\b\2\2\u00fd\u00fe\5H%\2\u00fe\u00ff"+
 		"\5,\27\t\u00ff\u0101\3\2\2\2\u0100\u00fc\3\2\2\2\u0101\u0104\3\2\2\2\u0102"+
