@@ -117,44 +117,52 @@ public class SemanticChecker {
     }
 
     /*         STATEMENTS         */
-    public void visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
-        Enums.DataType dataType = variableDeclarationNode.getDataType();
-        String variableName = variableDeclarationNode.getVariableName();
+    public void visitVariableDeclaration(VariableDeclarationNode varDeclNode) {
+        Enums.DataType dataType = varDeclNode.getDataType();
+        String variableName = varDeclNode.getVariableName();
 
         // Check if variable is already in symbol table
         if (retrieveSymbol(variableName) == null)
         {
             // Variable assignment rule
-            if (variableDeclarationNode.getAssignmentNode() != null) {
-                Enums.DataType assignmentDataType = visitAssignment(variableDeclarationNode.getAssignmentNode());
+            if (varDeclNode.getAssignmentNode() != null) {
+                Enums.DataType assignmentDataType = visitAssignment(varDeclNode.getAssignmentNode());
 
                 if (assignmentDataType != dataType)
-                    throw new InconsistentTypeException(variableDeclarationNode.getVariableName(), variableDeclarationNode.getCodePosition(), dataType, assignmentDataType);
+                    throw new InconsistentTypeException(
+                            varDeclNode.getVariableName(),
+                            varDeclNode.getCodePosition(),
+                            dataType, assignmentDataType);
                 else
-                    enterSymbol(variableDeclarationNode.getAssignmentNode().getVariableName(), variableDeclarationNode);
+                    enterSymbol(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode);
             }
             // Array assignment rule
-            else if (variableDeclarationNode.getAssignArrayNode() != null) {
-                Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode());
+            else if (varDeclNode.getAssignArrayNode() != null) {
+                Enums.DataType arrayDataType = visitAssignArray(varDeclNode.getAssignArrayNode());
 
                 if (arrayDataType != Enums.singleDataTypeFromArrayDatatype(dataType)) {
-                    throw new InconsistentTypeException(variableDeclarationNode.getVariableName(), variableDeclarationNode.getCodePosition());
+                    throw new InconsistentTypeException(
+                            varDeclNode.getVariableName(),
+                            varDeclNode.getCodePosition());
                 }
                 else
-                    enterSymbol(variableDeclarationNode.getAssignArrayNode().getVariableName(), variableDeclarationNode);
+                    enterSymbol(varDeclNode.getAssignArrayNode().getVariableName(), varDeclNode);
 
-                List<ArrayParamNode> arrayParamNodes = variableDeclarationNode.getAssignArrayNode().getParamNodes();
-                if (variableDeclarationNode.getAllocatedSize() < arrayParamNodes.size())
-                    throw new InvalidArrayException(variableName, variableDeclarationNode.getAllocatedSize(), arrayParamNodes.size(), variableDeclarationNode.getCodePosition());
+                List<ArrayParamNode> arrayParamNodes = varDeclNode.getAssignArrayNode().getParamNodes();
+                if (varDeclNode.getAllocatedSize() < arrayParamNodes.size())
+                    throw new InvalidArrayException(variableName,
+                            varDeclNode.getAllocatedSize(),
+                            arrayParamNodes.size(),
+                            varDeclNode.getCodePosition());
 
             }
             // Variable name rule
             else {
-                enterSymbol(variableDeclarationNode.getVariableName(), variableDeclarationNode);
+                enterSymbol(varDeclNode.getVariableName(), varDeclNode);
             }
         }
         else
-            throw new VariableAlreadyDeclaredException(variableName, variableDeclarationNode.getCodePosition());
+            throw new VariableAlreadyDeclaredException(variableName, varDeclNode.getCodePosition());
     }
 
     private Enums.DataType visitAssignment(AssignmentNode assignmentNode) {
@@ -179,7 +187,9 @@ public class SemanticChecker {
             if (declaration != null)
                 return ((VariableDeclarationNode) declaration).getDataType();
             else
-                throw new UndeclaredVariableException(arithExpressionNode.getVariableName(), arithExpressionNode.getCodePosition());
+                throw new UndeclaredVariableException(
+                        arithExpressionNode.getVariableName(),
+                        arithExpressionNode.getCodePosition());
         }
         // Num literal rule
         else if (arithExpressionNode.getNumber() != null) {
@@ -191,15 +201,20 @@ public class SemanticChecker {
             if (declaration != null)
                 return ((FunctionDeclarationNode) declaration).getDataType();
             else
-                throw new UndeclaredFunctionException(arithExpressionNode.getFunctionCallNode().getFunctionName(), arithExpressionNode.getCodePosition());
+                throw new UndeclaredFunctionException(
+                        arithExpressionNode.getFunctionCallNode().getFunctionName(),
+                        arithExpressionNode.getCodePosition());
         }
         // Expression Operand Expression rule
         else if (arithExpressionNode.getArithExpressionNode2() != null) {
             Enums.DataType dataType1 = visitArithmeticExpression(arithExpressionNode.getArithExpressionNode1());
             Enums.DataType dataType2 = visitArithmeticExpression(arithExpressionNode.getArithExpressionNode2());
             if ((dataType1 != null && dataType2 != null) && dataType1 != dataType2)
-                throw new InconsistentTypeException(arithExpressionNode.getVariableName(), arithExpressionNode.getCodePosition(), dataType1, dataType2);
-            else return dataType1;
+                throw new InconsistentTypeException(arithExpressionNode.getVariableName(),
+                        arithExpressionNode.getCodePosition(),
+                        dataType1, dataType2);
+            else
+                return dataType1;
         }
         return null;
     }
@@ -214,7 +229,9 @@ public class SemanticChecker {
                 if (assignedDataType == null) {
                     assignedDataType = visitArrayParameters(arrayParam);
                 } else if (visitArrayParameters(arrayParam) != assignedDataType){
-                    throw new InconsistentTypeException(assignArrayNode.getVariableName(), assignArrayNode.getCodePosition());
+                    throw new InconsistentTypeException(
+                            assignArrayNode.getVariableName(),
+                            assignArrayNode.getCodePosition());
                 }
             }
         }
@@ -250,7 +267,9 @@ public class SemanticChecker {
             return functionDeclarationNode.getDataType();
         }
         else {
-            throw new UndeclaredFunctionException(functionCallNode.getFunctionName(), functionCallNode.getCodePosition());
+            throw new UndeclaredFunctionException(
+                    functionCallNode.getFunctionName(),
+                    functionCallNode.getCodePosition());
         }
     }
 
@@ -278,8 +297,11 @@ public class SemanticChecker {
         for (int i = 0; i < boolExpressionNode.getBoolExpressionOperators().size(); i++) {
             Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(i);
 
-            ArithExpressionNode leftArith = boolExpressionNode.getBoolExprOperandNodes().get(i).getArithExpressionNode();
-            ArithExpressionNode rightArith = boolExpressionNode.getBoolExprOperandNodes().get(i+1).getArithExpressionNode();
+            ArithExpressionNode leftArith =
+                    boolExpressionNode.getBoolExprOperandNodes().get(i).getArithExpressionNode();
+
+            ArithExpressionNode rightArith =
+                    boolExpressionNode.getBoolExprOperandNodes().get(i+1).getArithExpressionNode();
 
             String leftBool = boolExpressionNode.getBoolExprOperandNodes().get(i).getBoolLiteral();
             String rightBool = boolExpressionNode.getBoolExprOperandNodes().get(i+1).getBoolLiteral();
@@ -341,16 +363,16 @@ public class SemanticChecker {
     }
 
     // TODO: FINISH IT
-    private void visitFunctionBlock(BlockNode blockNode, Enums.DataType returnType, List<FunctionParameterNode> functionParameters) {
+    private void visitFunctionBlock(BlockNode blockNode, Enums.DataType returnType, List<FunctionParameterNode> funcParams) {
         openScope();
 
         boolean returned = false;
 
-        if (functionParameters != null) {
-            for (FunctionParameterNode functionParameter : functionParameters) {
-                if (functionParameter.getDataType() != null) {
+        if (funcParams != null) {
+            for (FunctionParameterNode funcParam : funcParams) {
+                if (funcParam.getDataType() != null) {
                     // TODO: FINISH IT
-                    //AssignmentNode assignmentNode = new AssignmentNode(functionParameter.getVariableName(), null);
+                    //AssignmentNode assignmentNode = new AssignmentNode(funcParam.getVariableName(), null);
 
                 }
             }
@@ -377,7 +399,10 @@ public class SemanticChecker {
         VariableDeclarationNode variableDeclaration = (VariableDeclarationNode) retrieveSymbol(returnName);
 
         if (variableDeclaration.getDataType() != returnType)
-            throw new IncorrectReturnTypeException(returnType, variableDeclaration.getDataType(), returnStatementNode.getCodePosition());
+            throw new IncorrectReturnTypeException(
+                    returnType,
+                    variableDeclaration.getDataType(),
+                    returnStatementNode.getCodePosition());
     }
 
     private Enums.DataType getDataTypeFromLiteral(String literal) {
