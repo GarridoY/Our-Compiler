@@ -252,12 +252,7 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             else {
                 // NOT? (arithExpr)
                 ArithExpressionNode node = (ArithExpressionNode) visitArithExpr(ctx.arithExpr(0));
-                if (ctx.NOT() != null) {
-                    arithExpressionNode = new ArithExpressionNode(node, Enums.BoolOperator.NOT);
-                }
-                else {
-                    arithExpressionNode = new ArithExpressionNode(node);
-                }
+                arithExpressionNode = new ArithExpressionNode(node, ctx.NOT() != null);
             }
         }
         else if (ctx.functionCall() != null) {
