@@ -4,8 +4,6 @@ import dk.aau.cs.d703e20.ast.ASTBuilder;
 import dk.aau.cs.d703e20.ast.errorhandling.*;
 import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
-import dk.aau.cs.d703e20.ast.statements.PinDeclarationNode;
-import dk.aau.cs.d703e20.ast.statements.StatementNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
@@ -22,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class semanticTest {
