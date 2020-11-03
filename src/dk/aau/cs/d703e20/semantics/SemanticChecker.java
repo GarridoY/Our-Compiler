@@ -1,6 +1,7 @@
 package dk.aau.cs.d703e20.semantics;
 
 import dk.aau.cs.d703e20.ast.ASTNode;
+import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.errorhandling.*;
 import dk.aau.cs.d703e20.ast.expressions.*;
@@ -276,45 +277,45 @@ public class SemanticChecker {
     public void visitBooleanExpression(BoolExpressionNode boolExpressionNode) {
         for (int i = 0; i < boolExpressionNode.getBoolExpressionOperators().size(); i++) {
             Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(i);
+
             ArithExpressionNode leftArith = boolExpressionNode.getBoolExprOperandNodes().get(i).getArithExpressionNode();
             ArithExpressionNode rightArith = boolExpressionNode.getBoolExprOperandNodes().get(i+1).getArithExpressionNode();
+
+            String leftBool = boolExpressionNode.getBoolExprOperandNodes().get(i).getBoolLiteral();
+            String rightBool = boolExpressionNode.getBoolExprOperandNodes().get(i+1).getBoolLiteral();
 
             // Typechecking operators (Only bools can &&, ||. Bools cannot <, >)
             switch (operator) {
                 case OR:
                 case AND:
-                    if (leftArith != null) {
-                        if (visitArithmeticExpression(leftArith) != Enums.DataType.BOOL)
-                            throw new IllegalOperandException(leftArith.prettyPrint(0), boolExpressionNode.getCodePosition());
-                    }
-                    if (rightArith != null) {
-                        if (visitArithmeticExpression(rightArith) != Enums.DataType.BOOL)
-                            throw new IllegalOperandException(rightArith.prettyPrint(0), boolExpressionNode.getCodePosition());
-                    }
+                    throwIfNotBool(leftArith, boolExpressionNode.getCodePosition());
+                    throwIfNotBool(rightArith, boolExpressionNode.getCodePosition());
                     break;
                     
                 case GREATER_THAN:
                 case GREATER_OR_EQUAL:
                 case LESS_THAN:
                 case LESS_OR_EQUAL:
-                    String leftBool = boolExpressionNode.getBoolExprOperandNodes().get(i).getBoolLiteral();
-                    String rightBool = boolExpressionNode.getBoolExprOperandNodes().get(i+1).getBoolLiteral();
-
-                    if (leftBool != null)
-                        throw new IllegalOperandException(leftBool, boolExpressionNode.getCodePosition());
-                    else if (leftArith != null) {
-                        if (visitArithmeticExpression(leftArith) == Enums.DataType.BOOL)
-                            throw new IllegalOperandException(leftArith.prettyPrint(0), boolExpressionNode.getCodePosition());
-                    }
-
-                    if (rightBool != null)
-                        throw new IllegalOperandException(rightBool, boolExpressionNode.getCodePosition());
-                    else if (rightArith != null) {
-                        if (visitArithmeticExpression(rightArith) == Enums.DataType.BOOL)
-                            throw new IllegalOperandException(rightArith.prettyPrint(0), boolExpressionNode.getCodePosition());
-                    }
+                    throwIfBool(leftArith, leftBool, boolExpressionNode.getCodePosition());
+                    throwIfBool(rightArith, rightBool, boolExpressionNode.getCodePosition());
                     break;
             }
+        }
+    }
+
+    private void throwIfNotBool(ArithExpressionNode arithExp, CodePosition codePosition) {
+        if (arithExp != null) {
+            if (visitArithmeticExpression(arithExp) != Enums.DataType.BOOL)
+                throw new IllegalOperandException(arithExp.prettyPrint(0), codePosition);
+        }
+    }
+
+    private void throwIfBool(ArithExpressionNode arithExp, String boolExp, CodePosition codePosition) {
+        if (boolExp != null)
+            throw new IllegalOperandException(boolExp, codePosition);
+        else if (arithExp != null) {
+            if (visitArithmeticExpression(arithExp) == Enums.DataType.BOOL)
+                throw new IllegalOperandException(arithExp.prettyPrint(0), codePosition);
         }
     }
 
