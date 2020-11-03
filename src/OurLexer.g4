@@ -9,9 +9,7 @@ DOUBLE: 'double';
 DOUBLE_ARRAY: 'double' '[' DIGIT? ']';
 CLOCK: 'clock';
 STRING: 'string';
-
-// Access arrays
-SUBSCRIPT: ID '[' DIGIT ']';
+VOID: 'void';
 
 // Pin Types
 IPIN: 'ipin';
@@ -20,8 +18,8 @@ OPIN: 'opin';
 // Analog pin
 ANALOGPIN: 'A' DIGIT;
 
-// Return/Function type
-VOID: 'void';
+// Access arrays
+SUBSCRIPT: ID '[' DIGIT ']';
 
 // Keywords
 LOOP: 'Loop';
@@ -37,7 +35,7 @@ AT: 'at';
 BOUND: 'bound';
 FINAL: 'final';
 CATCH: 'catch';
-// Possible other: delay, wait, sleep, loop, pause
+// Possible other: delay, wait, sleep, pause
 
 //Numbers and booleans
 DIGIT: DIGIT_RULE;

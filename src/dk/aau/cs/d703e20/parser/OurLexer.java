@@ -18,7 +18,7 @@ public class OurLexer extends Lexer {
 		new PredictionContextCache();
 	public static final int
 		INT=1, INT_ARRAY=2, BOOLEAN=3, BOOLEAN_ARRAY=4, DOUBLE=5, DOUBLE_ARRAY=6, 
-		CLOCK=7, STRING=8, SUBSCRIPT=9, IPIN=10, OPIN=11, ANALOGPIN=12, VOID=13, 
+		CLOCK=7, STRING=8, VOID=9, IPIN=10, OPIN=11, ANALOGPIN=12, SUBSCRIPT=13, 
 		LOOP=14, SETUP=15, RETURN=16, IF=17, ELSE_IF=18, ELSE=19, TO=20, FOR=21, 
 		WHILE=22, AT=23, BOUND=24, FINAL=25, CATCH=26, DIGIT=27, DIGIT_NEGATIVE=28, 
 		DOUBLE_DIGIT=29, DOUBLE_DIGIT_NEGATIVE=30, BOOL_LITERAL=31, STRING_LITERAL=32, 
@@ -39,7 +39,7 @@ public class OurLexer extends Lexer {
 	private static String[] makeRuleNames() {
 		return new String[] {
 			"INT", "INT_ARRAY", "BOOLEAN", "BOOLEAN_ARRAY", "DOUBLE", "DOUBLE_ARRAY", 
-			"CLOCK", "STRING", "SUBSCRIPT", "IPIN", "OPIN", "ANALOGPIN", "VOID", 
+			"CLOCK", "STRING", "VOID", "IPIN", "OPIN", "ANALOGPIN", "SUBSCRIPT", 
 			"LOOP", "SETUP", "RETURN", "IF", "ELSE_IF", "ELSE", "TO", "FOR", "WHILE", 
 			"AT", "BOUND", "FINAL", "CATCH", "DIGIT", "DIGIT_NEGATIVE", "DOUBLE_DIGIT", 
 			"DOUBLE_DIGIT_NEGATIVE", "BOOL_LITERAL", "STRING_LITERAL", "LEFT_SQBRACKET", 
@@ -55,7 +55,7 @@ public class OurLexer extends Lexer {
 	private static String[] makeLiteralNames() {
 		return new String[] {
 			null, "'int'", null, "'bool'", null, "'double'", null, "'clock'", "'string'", 
-			null, "'ipin'", "'opin'", null, "'void'", "'Loop'", "'Setup'", "'return'", 
+			"'void'", "'ipin'", "'opin'", null, null, "'Loop'", "'Setup'", "'return'", 
 			"'if'", "'else if'", "'else'", "'to'", "'for'", "'while'", "'at'", "'bound'", 
 			"'final'", "'catch'", null, null, null, null, null, null, "'['", "']'", 
 			"'{'", "'}'", "'('", "')'", "'.'", "','", "';'", "'?'", "':'", "'='", 
@@ -67,7 +67,7 @@ public class OurLexer extends Lexer {
 	private static String[] makeSymbolicNames() {
 		return new String[] {
 			null, "INT", "INT_ARRAY", "BOOLEAN", "BOOLEAN_ARRAY", "DOUBLE", "DOUBLE_ARRAY", 
-			"CLOCK", "STRING", "SUBSCRIPT", "IPIN", "OPIN", "ANALOGPIN", "VOID", 
+			"CLOCK", "STRING", "VOID", "IPIN", "OPIN", "ANALOGPIN", "SUBSCRIPT", 
 			"LOOP", "SETUP", "RETURN", "IF", "ELSE_IF", "ELSE", "TO", "FOR", "WHILE", 
 			"AT", "BOUND", "FINAL", "CATCH", "DIGIT", "DIGIT_NEGATIVE", "DOUBLE_DIGIT", 
 			"DOUBLE_DIGIT_NEGATIVE", "BOOL_LITERAL", "STRING_LITERAL", "LEFT_SQBRACKET", 
@@ -213,41 +213,41 @@ public class OurLexer extends Lexer {
 		"e\2\2\u00b8\u00b9\7n\2\2\u00b9\u00ba\7q\2\2\u00ba\u00bb\7e\2\2\u00bb\u00bc"+
 		"\7m\2\2\u00bc\20\3\2\2\2\u00bd\u00be\7u\2\2\u00be\u00bf\7v\2\2\u00bf\u00c0"+
 		"\7t\2\2\u00c0\u00c1\7k\2\2\u00c1\u00c2\7p\2\2\u00c2\u00c3\7i\2\2\u00c3"+
-		"\22\3\2\2\2\u00c4\u00c5\5w<\2\u00c5\u00c6\7]\2\2\u00c6\u00c7\5\67\34\2"+
-		"\u00c7\u00c8\7_\2\2\u00c8\24\3\2\2\2\u00c9\u00ca\7k\2\2\u00ca\u00cb\7"+
-		"r\2\2\u00cb\u00cc\7k\2\2\u00cc\u00cd\7p\2\2\u00cd\26\3\2\2\2\u00ce\u00cf"+
-		"\7q\2\2\u00cf\u00d0\7r\2\2\u00d0\u00d1\7k\2\2\u00d1\u00d2\7p\2\2\u00d2"+
-		"\30\3\2\2\2\u00d3\u00d4\7C\2\2\u00d4\u00d5\5\67\34\2\u00d5\32\3\2\2\2"+
-		"\u00d6\u00d7\7x\2\2\u00d7\u00d8\7q\2\2\u00d8\u00d9\7k\2\2\u00d9\u00da"+
-		"\7f\2\2\u00da\34\3\2\2\2\u00db\u00dc\7N\2\2\u00dc\u00dd\7q\2\2\u00dd\u00de"+
-		"\7q\2\2\u00de\u00df\7r\2\2\u00df\36\3\2\2\2\u00e0\u00e1\7U\2\2\u00e1\u00e2"+
-		"\7g\2\2\u00e2\u00e3\7v\2\2\u00e3\u00e4\7w\2\2\u00e4\u00e5\7r\2\2\u00e5"+
-		" \3\2\2\2\u00e6\u00e7\7t\2\2\u00e7\u00e8\7g\2\2\u00e8\u00e9\7v\2\2\u00e9"+
-		"\u00ea\7w\2\2\u00ea\u00eb\7t\2\2\u00eb\u00ec\7p\2\2\u00ec\"\3\2\2\2\u00ed"+
-		"\u00ee\7k\2\2\u00ee\u00ef\7h\2\2\u00ef$\3\2\2\2\u00f0\u00f1\7g\2\2\u00f1"+
-		"\u00f2\7n\2\2\u00f2\u00f3\7u\2\2\u00f3\u00f4\7g\2\2\u00f4\u00f5\7\"\2"+
-		"\2\u00f5\u00f6\7k\2\2\u00f6\u00f7\7h\2\2\u00f7&\3\2\2\2\u00f8\u00f9\7"+
-		"g\2\2\u00f9\u00fa\7n\2\2\u00fa\u00fb\7u\2\2\u00fb\u00fc\7g\2\2\u00fc("+
-		"\3\2\2\2\u00fd\u00fe\7v\2\2\u00fe\u00ff\7q\2\2\u00ff*\3\2\2\2\u0100\u0101"+
-		"\7h\2\2\u0101\u0102\7q\2\2\u0102\u0103\7t\2\2\u0103,\3\2\2\2\u0104\u0105"+
-		"\7y\2\2\u0105\u0106\7j\2\2\u0106\u0107\7k\2\2\u0107\u0108\7n\2\2\u0108"+
-		"\u0109\7g\2\2\u0109.\3\2\2\2\u010a\u010b\7c\2\2\u010b\u010c\7v\2\2\u010c"+
-		"\60\3\2\2\2\u010d\u010e\7d\2\2\u010e\u010f\7q\2\2\u010f\u0110\7w\2\2\u0110"+
-		"\u0111\7p\2\2\u0111\u0112\7f\2\2\u0112\62\3\2\2\2\u0113\u0114\7h\2\2\u0114"+
-		"\u0115\7k\2\2\u0115\u0116\7p\2\2\u0116\u0117\7c\2\2\u0117\u0118\7n\2\2"+
-		"\u0118\64\3\2\2\2\u0119\u011a\7e\2\2\u011a\u011b\7c\2\2\u011b\u011c\7"+
-		"v\2\2\u011c\u011d\7e\2\2\u011d\u011e\7j\2\2\u011e\66\3\2\2\2\u011f\u0120"+
-		"\5{>\2\u01208\3\2\2\2\u0121\u0122\5}?\2\u0122:\3\2\2\2\u0123\u0124\5\67"+
-		"\34\2\u0124\u0126\7\60\2\2\u0125\u0127\5\67\34\2\u0126\u0125\3\2\2\2\u0127"+
-		"\u0128\3\2\2\2\u0128\u0126\3\2\2\2\u0128\u0129\3\2\2\2\u0129<\3\2\2\2"+
-		"\u012a\u012b\7*\2\2\u012b\u012c\7/\2\2\u012c\u012d\3\2\2\2\u012d\u012e"+
-		"\5\67\34\2\u012e\u0130\7\60\2\2\u012f\u0131\5\67\34\2\u0130\u012f\3\2"+
-		"\2\2\u0131\u0132\3\2\2\2\u0132\u0130\3\2\2\2\u0132\u0133\3\2\2\2\u0133"+
-		"\u0134\3\2\2\2\u0134\u0135\7+\2\2\u0135>\3\2\2\2\u0136\u0137\7v\2\2\u0137"+
-		"\u0138\7t\2\2\u0138\u0139\7w\2\2\u0139\u0140\7g\2\2\u013a\u013b\7h\2\2"+
-		"\u013b\u013c\7c\2\2\u013c\u013d\7n\2\2\u013d\u013e\7u\2\2\u013e\u0140"+
-		"\7g\2\2\u013f\u0136\3\2\2\2\u013f\u013a\3\2\2\2\u0140@\3\2\2\2\u0141\u0145"+
-		"\7$\2\2\u0142\u0144\n\2\2\2\u0143\u0142\3\2\2\2\u0144\u0147\3\2\2\2\u0145"+
+		"\22\3\2\2\2\u00c4\u00c5\7x\2\2\u00c5\u00c6\7q\2\2\u00c6\u00c7\7k\2\2\u00c7"+
+		"\u00c8\7f\2\2\u00c8\24\3\2\2\2\u00c9\u00ca\7k\2\2\u00ca\u00cb\7r\2\2\u00cb"+
+		"\u00cc\7k\2\2\u00cc\u00cd\7p\2\2\u00cd\26\3\2\2\2\u00ce\u00cf\7q\2\2\u00cf"+
+		"\u00d0\7r\2\2\u00d0\u00d1\7k\2\2\u00d1\u00d2\7p\2\2\u00d2\30\3\2\2\2\u00d3"+
+		"\u00d4\7C\2\2\u00d4\u00d5\5\67\34\2\u00d5\32\3\2\2\2\u00d6\u00d7\5w<\2"+
+		"\u00d7\u00d8\7]\2\2\u00d8\u00d9\5\67\34\2\u00d9\u00da\7_\2\2\u00da\34"+
+		"\3\2\2\2\u00db\u00dc\7N\2\2\u00dc\u00dd\7q\2\2\u00dd\u00de\7q\2\2\u00de"+
+		"\u00df\7r\2\2\u00df\36\3\2\2\2\u00e0\u00e1\7U\2\2\u00e1\u00e2\7g\2\2\u00e2"+
+		"\u00e3\7v\2\2\u00e3\u00e4\7w\2\2\u00e4\u00e5\7r\2\2\u00e5 \3\2\2\2\u00e6"+
+		"\u00e7\7t\2\2\u00e7\u00e8\7g\2\2\u00e8\u00e9\7v\2\2\u00e9\u00ea\7w\2\2"+
+		"\u00ea\u00eb\7t\2\2\u00eb\u00ec\7p\2\2\u00ec\"\3\2\2\2\u00ed\u00ee\7k"+
+		"\2\2\u00ee\u00ef\7h\2\2\u00ef$\3\2\2\2\u00f0\u00f1\7g\2\2\u00f1\u00f2"+
+		"\7n\2\2\u00f2\u00f3\7u\2\2\u00f3\u00f4\7g\2\2\u00f4\u00f5\7\"\2\2\u00f5"+
+		"\u00f6\7k\2\2\u00f6\u00f7\7h\2\2\u00f7&\3\2\2\2\u00f8\u00f9\7g\2\2\u00f9"+
+		"\u00fa\7n\2\2\u00fa\u00fb\7u\2\2\u00fb\u00fc\7g\2\2\u00fc(\3\2\2\2\u00fd"+
+		"\u00fe\7v\2\2\u00fe\u00ff\7q\2\2\u00ff*\3\2\2\2\u0100\u0101\7h\2\2\u0101"+
+		"\u0102\7q\2\2\u0102\u0103\7t\2\2\u0103,\3\2\2\2\u0104\u0105\7y\2\2\u0105"+
+		"\u0106\7j\2\2\u0106\u0107\7k\2\2\u0107\u0108\7n\2\2\u0108\u0109\7g\2\2"+
+		"\u0109.\3\2\2\2\u010a\u010b\7c\2\2\u010b\u010c\7v\2\2\u010c\60\3\2\2\2"+
+		"\u010d\u010e\7d\2\2\u010e\u010f\7q\2\2\u010f\u0110\7w\2\2\u0110\u0111"+
+		"\7p\2\2\u0111\u0112\7f\2\2\u0112\62\3\2\2\2\u0113\u0114\7h\2\2\u0114\u0115"+
+		"\7k\2\2\u0115\u0116\7p\2\2\u0116\u0117\7c\2\2\u0117\u0118\7n\2\2\u0118"+
+		"\64\3\2\2\2\u0119\u011a\7e\2\2\u011a\u011b\7c\2\2\u011b\u011c\7v\2\2\u011c"+
+		"\u011d\7e\2\2\u011d\u011e\7j\2\2\u011e\66\3\2\2\2\u011f\u0120\5{>\2\u0120"+
+		"8\3\2\2\2\u0121\u0122\5}?\2\u0122:\3\2\2\2\u0123\u0124\5\67\34\2\u0124"+
+		"\u0126\7\60\2\2\u0125\u0127\5\67\34\2\u0126\u0125\3\2\2\2\u0127\u0128"+
+		"\3\2\2\2\u0128\u0126\3\2\2\2\u0128\u0129\3\2\2\2\u0129<\3\2\2\2\u012a"+
+		"\u012b\7*\2\2\u012b\u012c\7/\2\2\u012c\u012d\3\2\2\2\u012d\u012e\5\67"+
+		"\34\2\u012e\u0130\7\60\2\2\u012f\u0131\5\67\34\2\u0130\u012f\3\2\2\2\u0131"+
+		"\u0132\3\2\2\2\u0132\u0130\3\2\2\2\u0132\u0133\3\2\2\2\u0133\u0134\3\2"+
+		"\2\2\u0134\u0135\7+\2\2\u0135>\3\2\2\2\u0136\u0137\7v\2\2\u0137\u0138"+
+		"\7t\2\2\u0138\u0139\7w\2\2\u0139\u0140\7g\2\2\u013a\u013b\7h\2\2\u013b"+
+		"\u013c\7c\2\2\u013c\u013d\7n\2\2\u013d\u013e\7u\2\2\u013e\u0140\7g\2\2"+
+		"\u013f\u0136\3\2\2\2\u013f\u013a\3\2\2\2\u0140@\3\2\2\2\u0141\u0145\7"+
+		"$\2\2\u0142\u0144\n\2\2\2\u0143\u0142\3\2\2\2\u0144\u0147\3\2\2\2\u0145"+
 		"\u0143\3\2\2\2\u0145\u0146\3\2\2\2\u0146\u0148\3\2\2\2\u0147\u0145\3\2"+
 		"\2\2\u0148\u0149\7$\2\2\u0149B\3\2\2\2\u014a\u014b\7]\2\2\u014bD\3\2\2"+
 		"\2\u014c\u014d\7_\2\2\u014dF\3\2\2\2\u014e\u014f\7}\2\2\u014fH\3\2\2\2"+
