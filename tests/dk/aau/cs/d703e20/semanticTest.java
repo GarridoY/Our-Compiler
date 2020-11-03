@@ -4,6 +4,8 @@ import dk.aau.cs.d703e20.ast.ASTBuilder;
 import dk.aau.cs.d703e20.ast.errorhandling.*;
 import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
+import dk.aau.cs.d703e20.ast.statements.PinDeclarationNode;
+import dk.aau.cs.d703e20.ast.statements.StatementNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
@@ -140,6 +142,20 @@ public class semanticTest {
                 BlockNode.class,
                 OurParser.BlockContext.class);
 
+        assertThrows(VariableAlreadyDeclaredException.class,
+                ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
+
+    @Test
+    void testAlreadyDeclaredPinVariable() {
+        OurParser parser = createParserFromText("{ipin a A10; opin a A11;}");
+        OurParser.BlockContext block = parser.block();
+
+        ASTBuilder astBuilder = new ASTBuilder();
+        BlockNode blockNode = (BlockNode) astBuilder.visitBlock(block);
+
+        SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(VariableAlreadyDeclaredException.class,
                 ()-> semanticChecker.visitBlock(blockNode)
         );
