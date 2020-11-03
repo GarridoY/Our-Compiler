@@ -1,10 +1,21 @@
 setup {
 	clock x = 0;
+	opin out 1;
 }
 
 loop {
+	int index = 0;
+
+	// Example 1, simple
 	at (x > 20) {
-			// Body
+		// Body
 	}
+	
+	// Example 2, with body
+	at (x == 3) {
+		out = true;
+		index = index + 1;
+	}
+
 	// Statements
 }
