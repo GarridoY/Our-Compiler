@@ -403,7 +403,7 @@ public class astTest {
 
         assertAll(
                 () -> assertEquals("FuncName", arithExpressionNode.getArithExpressionNode1().getFunctionCallNode().getFunctionName()),
-                () -> assertEquals(Enums.BoolOperator.NOT, arithExpressionNode.getOptionalNot())
+                () -> assertEquals(true, arithExpressionNode.getOptionalNot())
         );
     }
 

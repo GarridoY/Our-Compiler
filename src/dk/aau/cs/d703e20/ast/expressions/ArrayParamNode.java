@@ -4,8 +4,8 @@ import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 
 public class ArrayParamNode implements ASTNode {
-    ArithExpressionNode arithExpressionNode;
-    String literal;
+    private ArithExpressionNode arithExpressionNode;
+    private String literal;
 
     private CodePosition codePosition;
 

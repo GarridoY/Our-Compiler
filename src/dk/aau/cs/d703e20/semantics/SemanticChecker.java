@@ -137,7 +137,7 @@ public class SemanticChecker {
             else if (variableDeclarationNode.getAssignArrayNode() != null) {
                 Enums.DataType arrayDataType = visitAssignArray(variableDeclarationNode.getAssignArrayNode());
 
-                if (arrayDataType != Enums.dataTypeFromDatatype(dataType)) {
+                if (arrayDataType != Enums.singleDataTypeFromArrayDatatype(dataType)) {
                     throw new InconsistentTypeException(variableDeclarationNode.getVariableName(), variableDeclarationNode.getCodePosition());
                 }
                 else

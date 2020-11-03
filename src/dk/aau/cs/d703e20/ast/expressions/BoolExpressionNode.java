@@ -42,11 +42,7 @@ public class BoolExpressionNode implements ASTNode {
         return boolExpressionNode;
     }
 
-    public Boolean getOptionalNot() {
-        return optionalNot;
-    }
-
-    public boolean isOptionalNot() {
+    public boolean getOptionalNot() {
         return optionalNot;
     }
 
