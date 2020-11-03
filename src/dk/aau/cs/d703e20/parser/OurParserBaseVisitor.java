@@ -24,14 +24,14 @@ public class OurParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> impleme
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLoop(OurParser.LoopContext ctx) { return visitChildren(ctx); }
+	@Override public T visitSetup(OurParser.SetupContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSetup(OurParser.SetupContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLoop(OurParser.LoopContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
