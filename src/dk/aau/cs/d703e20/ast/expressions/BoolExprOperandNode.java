@@ -4,8 +4,8 @@ import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 
 public class BoolExprOperandNode implements ASTNode {
-    String boolLiteral;
-    ArithExpressionNode arithExpressionNode;
+    private String boolLiteral;
+    private ArithExpressionNode arithExpressionNode;
 
     private CodePosition codePosition;
 

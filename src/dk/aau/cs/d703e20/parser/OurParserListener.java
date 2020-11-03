@@ -18,16 +18,6 @@ public interface OurParserListener extends ParseTreeListener {
 	 */
 	void exitProgram(OurParser.ProgramContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link OurParser#loop}.
-	 * @param ctx the parse tree
-	 */
-	void enterLoop(OurParser.LoopContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link OurParser#loop}.
-	 * @param ctx the parse tree
-	 */
-	void exitLoop(OurParser.LoopContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link OurParser#setup}.
 	 * @param ctx the parse tree
 	 */
@@ -37,6 +27,16 @@ public interface OurParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSetup(OurParser.SetupContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link OurParser#loop}.
+	 * @param ctx the parse tree
+	 */
+	void enterLoop(OurParser.LoopContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link OurParser#loop}.
+	 * @param ctx the parse tree
+	 */
+	void exitLoop(OurParser.LoopContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link OurParser#block}.
 	 * @param ctx the parse tree
