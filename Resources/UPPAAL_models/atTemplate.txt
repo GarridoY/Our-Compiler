@@ -5,6 +5,7 @@ setup {
 
 loop {
 	int index = 0;
+	bool ready = true;
 
 	// Example 1, simple
 	at (x > 20) {
@@ -17,5 +18,24 @@ loop {
 		index = index + 1;
 	}
 
+	// Example 3, with IF (if is guard)
+	at (x < 50) {
+		if (ready) {
+			out = true;
+		} else {
+			ready = true;
+		}
+	}
+
 	// Statements
 }
+
+
+Invariant calculating:
+Invariant needed at times to make sure at's are followed through
+At operator : Invariant
+== x : <= x  / Need to do it when ready else might never do it
+< x  : < x-1 / Has to atleast be done by the last moment
+> x  : <=    / No invariant needed, guard does all
+>= x : <=    / No invariant needed, guard does all
+<= x : < x   / Has to atleast be done by the last moment
