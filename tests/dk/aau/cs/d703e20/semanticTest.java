@@ -14,12 +14,17 @@ import dk.aau.cs.d703e20.resources.FailTestErrorListener;
 import dk.aau.cs.d703e20.semantics.SemanticChecker;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class semanticTest {
+    private SemanticChecker semanticChecker;
+
     private OurParser createParserFromText(String txt) {
         // Instantiate lexer from input text
         OurLexer lexer = new OurLexer(CharStreams.fromString(txt));
@@ -33,15 +38,45 @@ public class semanticTest {
         return parser;
     }
 
+    private <T, S> T getNodeFromText(String text, String parseRuleName, Class<T> nodeClass, Class<S> contextClass) {
+        // Parse text
+        OurParser parser = createParserFromText(text);
+
+        T node = null;
+        try {
+            // parser.parseRuleName()
+            Method contextMethod = OurParser.class.getMethod(parseRuleName);
+
+            // ASTBuilder.visitParseRuleName(contextClass)
+            Method visitorMethod = ASTBuilder.class.getMethod(
+                    "visit" + parseRuleName.toUpperCase().substring(0,1) + parseRuleName.substring(1),
+                    contextClass);
+
+            // Get OurParser.parseRuleNameContext from parser
+            S context = (S) contextMethod.invoke(parser);
+
+            // Get Node from visitorMethod in ASTBuilder using context
+            node = nodeClass.cast(visitorMethod.invoke(new ASTBuilder(), context));
+        }
+        catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        return node;
+    }
+
+    @BeforeEach
+    void initSemanticChecker() {
+        semanticChecker = new SemanticChecker();
+    }
+
     @Test
     void testInvalidDeclarationType01() {
-        OurParser parser = createParserFromText("string four = 4;");
-        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+        VariableDeclarationNode variableDeclarationNode = getNodeFromText(
+                "string four = 4;",
+                "variableDecl",
+                VariableDeclarationNode.class,
+                OurParser.VariableDeclContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(InconsistentTypeException.class,
                 ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode)
         );
@@ -49,13 +84,12 @@ public class semanticTest {
 
     @Test
     void testInvalidDeclarationType02() {
-        OurParser parser = createParserFromText("int boolit = false;");
-        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+        VariableDeclarationNode variableDeclarationNode = getNodeFromText(
+                "int boolit = false;",
+                "variableDecl",
+                VariableDeclarationNode.class,
+                OurParser.VariableDeclContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(InconsistentTypeException.class,
                 ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode)
         );
@@ -63,54 +97,61 @@ public class semanticTest {
 
     @Test
     void testArraySizeExceeded() {
-        OurParser parser = createParserFromText("int[3] a = {1, 2, 3, 4};");
-        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+        VariableDeclarationNode variableDeclarationNode = getNodeFromText(
+                "int[3] a = {1, 2, 3, 4};",
+                "variableDecl",
+                VariableDeclarationNode.class,
+                OurParser.VariableDeclContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(InvalidArrayException.class,
                 ()->  semanticChecker.visitVariableDeclaration(variableDeclarationNode));
     }
 
     @Test
     void testInconsistentArray() {
-        OurParser parser = createParserFromText("int[5] a = {1.1, 1.2, 1.3};");
-        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+        VariableDeclarationNode variableDeclarationNode = getNodeFromText(
+                "int[5] a = {1.1, 1.2, 1.3};",
+                "variableDecl",
+                VariableDeclarationNode.class,
+                OurParser.VariableDeclContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(InconsistentTypeException.class,
                 ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode));
     }
 
-    /*
     @Test
     void testBooleanArray() {
-        OurParser parser = createParserFromText("bool[5] a = {true, false, true};");
-        OurParser.VariableDeclContext variableDecl = parser.variableDecl();
+        VariableDeclarationNode variableDeclarationNode = getNodeFromText(
+                "bool[3] a = {1, 2, 3};",
+                "variableDecl",
+                VariableDeclarationNode.class,
+                OurParser.VariableDeclContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        VariableDeclarationNode variableDeclarationNode = (VariableDeclarationNode) astBuilder.visitVariableDecl(variableDecl);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
-        assertDoesNotThrow(//InconsistentTypeException.class,
+        assertThrows(InconsistentTypeException.class,
                 ()-> semanticChecker.visitVariableDeclaration(variableDeclarationNode));
     }
-    * */
 
     @Test
     void testAlreadyDeclaredVariable() {
-        OurParser parser = createParserFromText("{int a = 0; int a = 1;}");
-        OurParser.BlockContext block = parser.block();
+        BlockNode blockNode = getNodeFromText(
+                "{int a = 0; int a = 1;}",
+                "block",
+                BlockNode.class,
+                OurParser.BlockContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        BlockNode blockNode = (BlockNode) astBuilder.visitBlock(block);
+        assertThrows(VariableAlreadyDeclaredException.class,
+                ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
 
-        SemanticChecker semanticChecker = new SemanticChecker();
+    @Test
+    void testAlreadyDeclaredPinVariable() {
+        BlockNode blockNode = getNodeFromText(
+                "{ipin a A10; opin a A11;}",
+                "block",
+                BlockNode.class,
+                OurParser.BlockContext.class);
+
         assertThrows(VariableAlreadyDeclaredException.class,
                 ()-> semanticChecker.visitBlock(blockNode)
         );
@@ -118,13 +159,12 @@ public class semanticTest {
 
     @Test
     void testUndeclaredVariable() {
-        OurParser parser = createParserFromText("{int a = b;}");
-        OurParser.BlockContext block = parser.block();
+        BlockNode blockNode = getNodeFromText(
+                "{int a = b;}",
+                "block",
+                BlockNode.class,
+                OurParser.BlockContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        BlockNode blockNode = (BlockNode) astBuilder.visitBlock(block);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(UndeclaredVariableException.class,
                 ()-> semanticChecker.visitBlock(blockNode)
         );
@@ -132,13 +172,12 @@ public class semanticTest {
 
     @Test
     void testAlreadyDeclaredFunction() {
-        OurParser parser = createParserFromText("Setup{} Loop{} void UniqueFunctionName(){} double UniqueFunctionName(){}");
-        OurParser.ProgramContext program = parser.program();
+        ProgramNode programNode = getNodeFromText(
+                "Setup{} Loop{} void UniqueFunctionName(){} double UniqueFunctionName(){}",
+                "program",
+                ProgramNode.class,
+                OurParser.ProgramContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        ProgramNode programNode = (ProgramNode) astBuilder.visitProgram(program);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(FunctionAlreadyDeclaredException.class,
                 ()-> semanticChecker.visitProgram(programNode)
         );
@@ -146,13 +185,12 @@ public class semanticTest {
 
     @Test
     void testUndeclaredFunction() {
-        OurParser parser = createParserFromText("undeclaredFunc()");
-        OurParser.FunctionCallContext functionCall = parser.functionCall();
+        FunctionCallNode functionCallNode = getNodeFromText(
+                "undeclaredFunc()",
+                "functionCall",
+                FunctionCallNode.class,
+                OurParser.FunctionCallContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        FunctionCallNode functionCallNode = (FunctionCallNode) astBuilder.visitFunctionCall(functionCall);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(UndeclaredFunctionException.class,
                 ()-> semanticChecker.visitFunctionCall(functionCallNode)
         );
@@ -160,13 +198,12 @@ public class semanticTest {
 
     @Test
     void testIncorrectReturnType() {
-        OurParser parser = createParserFromText("string textFunc(){int number = 1; return number;}");
-        OurParser.FunctionDeclContext functionDecl = parser.functionDecl();
+        FunctionDeclarationNode functionDeclarationNode = getNodeFromText(
+                "string textFunc(){int number = 1; return number;}",
+                "functionDecl",
+                FunctionDeclarationNode.class,
+                OurParser.FunctionDeclContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) astBuilder.visitFunctionDecl(functionDecl);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(IncorrectReturnTypeException.class,
                 ()-> semanticChecker.visitFunctionDeclaration(functionDeclarationNode)
         );
@@ -175,13 +212,12 @@ public class semanticTest {
 
     @Test
     void testIllegalOperandInBoolExpr() {
-        OurParser parser = createParserFromText("true && 1337");
-        OurParser.BoolExprContext boolExpr = parser.boolExpr();
+        BoolExpressionNode boolExpressionNode = getNodeFromText(
+                "true && 1337",
+                "boolExpr",
+                BoolExpressionNode.class,
+                OurParser.BoolExprContext.class);
 
-        ASTBuilder astBuilder = new ASTBuilder();
-        BoolExpressionNode boolExpressionNode = (BoolExpressionNode) astBuilder.visitBoolExpr(boolExpr);
-
-        SemanticChecker semanticChecker = new SemanticChecker();
         assertThrows(IllegalOperandException.class,
                 ()-> semanticChecker.visitBooleanExpression(boolExpressionNode)
         );
