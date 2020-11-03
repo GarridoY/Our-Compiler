@@ -3,7 +3,6 @@ package dk.aau.cs.d703e20.ast.expressions;
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.Format;
 import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 
 public class ArithExpressionNode implements ASTNode {
@@ -15,7 +14,7 @@ public class ArithExpressionNode implements ASTNode {
     // functionCall
     private FunctionCallNode functionCallNode;
     // NOT? (arithExpr)
-    private Enums.BoolOperator optionalNot;
+    private boolean optionalNot;
 
     // numLiteral
     private String number;
@@ -41,17 +40,13 @@ public class ArithExpressionNode implements ASTNode {
             this.variableName = variableNameOrNumber;
     }
 
-    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1) {
-        this.arithExpressionNode1 = arithExpressionNode1;
-    }
-
     // functionCall
     public ArithExpressionNode(FunctionCallNode functionCallNode) {
         this.functionCallNode = functionCallNode;
     }
 
     // NOT? (arithExpr)
-    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1, Enums.BoolOperator optionalNot) {
+    public ArithExpressionNode(ArithExpressionNode arithExpressionNode1, boolean optionalNot) {
         this.arithExpressionNode1 = arithExpressionNode1;
         this.optionalNot = optionalNot;
     }
@@ -84,7 +79,7 @@ public class ArithExpressionNode implements ASTNode {
         return functionCallNode;
     }
 
-    public Enums.BoolOperator getOptionalNot() {
+    public boolean getOptionalNot() {
         return optionalNot;
     }
 

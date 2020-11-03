@@ -2,7 +2,10 @@
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
 <nta>
 	<declaration>// Place global declarations here.
-chan sched;</declaration>
+chan sched1;
+chan sched2;
+chan sched3;
+chan out;</declaration>
 	<template>
 		<name x="5" y="5">AtTemp</name>
 		<declaration>// Place local declarations here.
@@ -11,58 +14,100 @@ clock x;
 void runBody() {
     // Code from our language
     // Might not be necessary, but is good for timing
-}</declaration>
-		<location id="id0" x="-433" y="-306">
-			<name x="-467" y="-348">schedStart</name>
+}
+</declaration>
+		<location id="id0" x="-476" y="-467">
+			<name x="-510" y="-509">schedStart</name>
 		</location>
-		<location id="id1" x="-297" y="-306">
-			<name x="-331" y="-357">CheckTime</name>
-			<label kind="invariant" x="-323" y="-340">x &lt;= 20</label>
+		<location id="id1" x="-323" y="-467">
+			<name x="-357" y="-518">CheckTime</name>
+			<label kind="comments" x="-416" y="-416">Invariant is based off time condition.
+Need to find operator and x += 1</label>
 		</location>
-		<location id="id2" x="-127" y="-306">
-			<name x="-137" y="-340">StartBody</name>
+		<location id="id2" x="-153" y="-467">
+			<name x="-163" y="-501">StartBody</name>
 		</location>
-		<location id="id3" x="8" y="-306">
-			<name x="-2" y="-340">DoneBody</name>
+		<location id="id3" x="-9" y="-467">
+			<name x="-19" y="-501">DoneBody</name>
 		</location>
 		<init ref="id0"/>
 		<transition>
 			<source ref="id2"/>
 			<target ref="id3"/>
-			<label kind="assignment" x="-109" y="-306">runBody()</label>
+			<label kind="assignment" x="-135" y="-467">runBody()</label>
 		</transition>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id0"/>
-			<nail x="8" y="-204"/>
-			<nail x="-433" y="-204"/>
+			<nail x="-9" y="-365"/>
+			<nail x="-476" y="-365"/>
 		</transition>
 		<transition>
 			<source ref="id1"/>
 			<target ref="id2"/>
-			<label kind="guard" x="-238" y="-331">x &gt; 20</label>
-			<label kind="comments" x="-323" y="-459">Guard is at expression.
-Consider a lock so At is run all at once</label>
+			<label kind="guard" x="-264" y="-492">x &gt; 20</label>
+			<label kind="comments" x="-434" y="-611">Guard is at expression.
+Consider a lock so At is run all at once.
+Parameters if multiple are scheduled.</label>
 		</transition>
 		<transition>
 			<source ref="id0"/>
 			<target ref="id1"/>
-			<label kind="synchronisation" x="-408" y="-331">sched?</label>
+			<label kind="synchronisation" x="-434" y="-492">sched1?</label>
 		</transition>
 	</template>
 	<template>
-		<name>Controller</name>
-		<location id="id4" x="-127" y="-59">
-			<name x="-144" y="-93">loop</name>
-			<label kind="comments" x="-136" y="-127">Code is run sequentially.</label>
+		<name>AtIf</name>
+		<declaration>bool ready = true;</declaration>
+		<location id="id4" x="-1640" y="-110">
+			<name x="-1650" y="-144">Start</name>
 		</location>
-		<location id="id5" x="34" y="-59">
-			<name x="24" y="-93">Scheduled</name>
+		<location id="id5" x="-1513" y="-110">
+			<name x="-1547" y="-144">CheckTime</name>
 		</location>
-		<location id="id6" x="212" y="-59">
-			<name x="202" y="-93">Statements</name>
+		<location id="id6" x="-1394" y="-110">
+			<name x="-1428" y="-144">StartIf</name>
+			<label kind="comments" x="-1606" y="-178">Skipping startBody seems good</label>
 		</location>
+		<location id="id7" x="-1224" y="-187">
+		</location>
+		<location id="id8" x="-1224" y="-51">
+		</location>
+		<location id="id9" x="-1190" y="-119">
+		</location>
+		<location id="id10" x="-986" y="-127">
+			<name x="-996" y="-161">BodyDone</name>
+		</location>
+		<branchpoint id="id11" x="-1292" y="-119">
+		</branchpoint>
 		<init ref="id4"/>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id4"/>
+			<nail x="-986" y="51"/>
+			<nail x="-1640" y="51"/>
+		</transition>
+		<transition controllable="false">
+			<source ref="id6"/>
+			<target ref="id11"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id9"/>
+			<label kind="comments" x="-1181" y="-93">Use branch for else if</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-1360" y="-85">!(ready)</label>
+			<label kind="comments" x="-1462" y="-42">else = negated other expressions</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-1343" y="-170">ready</label>
+			<label kind="comments" x="-1360" y="-195">If expression</label>
+		</transition>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id6"/>
@@ -70,17 +115,137 @@ Consider a lock so At is run all at once</label>
 		<transition>
 			<source ref="id4"/>
 			<target ref="id5"/>
-			<label kind="synchronisation" x="-85" y="-76">sched!</label>
+			<label kind="synchronisation" x="-1615" y="-136">sched3?</label>
+		</transition>
+	</template>
+	<template>
+		<name>AtTempBody</name>
+		<declaration>// Place local declarations here.
+clock x;
+int index = 0;
+
+void stmt_1() {
+    index = index + 1;
+}</declaration>
+		<location id="id12" x="246" y="-76">
+			<name x="236" y="-110">Done_Body</name>
+		</location>
+		<location id="id13" x="-434" y="-76">
+			<name x="-451" y="-110">Start</name>
+			<label kind="comments" x="-570" y="-127">Variant with body</label>
+		</location>
+		<location id="id14" x="119" y="-76">
+			<name x="109" y="-110">Stmt_2</name>
+		</location>
+		<location id="id15" x="-17" y="-76">
+			<name x="-27" y="-110">Stmt_1</name>
+		</location>
+		<location id="id16" x="-153" y="-76">
+			<name x="-163" y="-110">Start_Body</name>
+			<label kind="comments" x="-247" y="-144">Could just go straight to Stmt_1</label>
+		</location>
+		<location id="id17" x="-297" y="-76">
+			<name x="-340" y="-110">Check_Time</name>
+			<label kind="invariant" x="-307" y="-59">x &lt;= 3</label>
+		</location>
+		<init ref="id13"/>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id13"/>
+			<nail x="246" y="69"/>
+			<nail x="-434" y="69"/>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id12"/>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id14"/>
+			<label kind="synchronisation" x="34" y="-101">out!</label>
+			<label kind="comments" x="-9" y="-8">Execute second statement,
+pins (chan) will always be sync</label>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id15"/>
+			<label kind="assignment" x="-136" y="-67">index = index + 1,
+stmt_1()</label>
+			<label kind="comments" x="-264" y="-8">Execute first statement of body,
+either as update or internal function</label>
+		</transition>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id16"/>
+			<label kind="guard" x="-247" y="-101">x == 3</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id17"/>
+			<label kind="synchronisation" x="-399" y="-101">sched2?</label>
+		</transition>
+	</template>
+	<template>
+		<name>Output</name>
+		<location id="id18" x="0" y="0">
+			<name x="-34" y="-34">Output_rec</name>
+		</location>
+		<init ref="id18"/>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id18"/>
+			<label kind="synchronisation" x="51" y="-25">out?</label>
+			<nail x="93" y="0"/>
+			<nail x="93" y="42"/>
+		</transition>
+	</template>
+	<template>
+		<name>Controller</name>
+		<location id="id19" x="-127" y="-59">
+			<name x="-144" y="-93">loop</name>
+			<label kind="comments" x="-136" y="-127">Code is run sequentially.</label>
+		</location>
+		<location id="id20" x="8" y="-59">
+			<name x="-2" y="-93">Scheduled1</name>
+		</location>
+		<location id="id21" x="289" y="-59">
+			<name x="279" y="-93">Statements</name>
+		</location>
+		<location id="id22" x="144" y="-59">
+			<name x="134" y="-93">Scheduled2</name>
+		</location>
+		<init ref="id19"/>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id21"/>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id22"/>
+			<label kind="synchronisation" x="51" y="-76">sched2!</label>
+		</transition>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id20"/>
+			<label kind="synchronisation" x="-85" y="-76">sched1!</label>
 		</transition>
 	</template>
 	<system>// Place template instantiations here.
 // Process = Template();
 // List one or more processes to be composed into a system.
-system Controller, AtTemp;</system>
+system Controller, AtTemp, AtTempBody, Output;</system>
 	<queries>
 		<query>
-			<formula></formula>
-			<comment></comment>
+			<formula>E&lt;&gt; AtTemp.DoneBody and AtTempBody.Done_Body and Controller.Statements</formula>
+			<comment>Reach all code</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; AtTempBody.Done_Body</formula>
+			<comment>Is scheduled code reachable?</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; AtTemp.DoneBody</formula>
+			<comment>Is scheduling reachable</comment>
 		</query>
 	</queries>
 </nta>

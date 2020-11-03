@@ -14,4 +14,8 @@ public class InvalidArrayException extends CompilerException {
     public InvalidArrayException(String vairableName, CodePosition codePosition) {
         super("ERROR: Invalid Array content of array variable " + vairableName + ".", codePosition);
     }
+
+    public InvalidArrayException(CodePosition codePosition) {
+        super("ERROR: Invalid Array declaration.", codePosition);
+    }
 }
