@@ -1,10 +1,8 @@
 package dk.aau.cs.d703e20.codegen;
 
-import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
-import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
+import dk.aau.cs.d703e20.errorhandling.CompilerException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,25 +51,45 @@ public class ArduinoGenerator {
         return new ProgramNode(setupNode, loopNode, functionDeclarationNodes);
     }
 
-    //TODO visitBlock
     private SetupNode visitSetup(SetupNode setupNode) {
         return new SetupNode(visitBlock(setupNode.getBlockNode()));
     }
 
-    //TODO visitBlock
     private LoopNode visitLoop(LoopNode loopNode) {
         return new LoopNode(visitBlock(loopNode.getBlockNode()));
+    }
+
+    private BlockNode visitBlock(BlockNode blockNode) {
+        ArrayList<StatementNode> statementNodes = new ArrayList<>();
+
+        for (StatementNode statement : blockNode.getStatementNodes())
+            statementNodes.addAll(visitStatement(statement));
+
+        return new BlockNode(statementNodes);
+    }
+
+    //TODO
+    private ArrayList<StatementNode> visitStatement(StatementNode statementNode) {
+        ArrayList<StatementNode> statementNodes = new ArrayList<>();
+
+        if (statementNode instanceof AssignmentNode)
+            statementNodes.add(visitAssignment((AssignmentNode)statementNode, true));
+        else if (statementNode instanceof VariableDeclarationNode)
+            statementNodes.add(visitVariableDeclaration((VariableDeclarationNode)statementNode));
+        else if (statementNode instanceof IfStatementNode)
+            statementNodes.add(visitIfStatement((IfStatementNode)statementNode));
+        else if (statementNode)
     }
 
     private FunctionDeclarationNode visitFunctionDeclaration(FunctionDeclarationNode functionDeclarationNode) {
         if (functionDeclarationNode.getDataType() != null) {
             Functions.add(functionDeclarationNode);
         }
-        else {
-            // Should have been inserted into main. Do nothing here TODO
-        }
+        else
+            throw new CompilerException("Function without data type.", functionDeclarationNode.getCodePosition());
         return functionDeclarationNode;
     }
+
 
 
 
