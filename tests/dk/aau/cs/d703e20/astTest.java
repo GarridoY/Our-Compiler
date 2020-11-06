@@ -1,72 +1,28 @@
 package dk.aau.cs.d703e20;
 
-import dk.aau.cs.d703e20.ast.ASTBuilder;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
-import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
-import dk.aau.cs.d703e20.resources.FailTestErrorListener;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 
+import static dk.aau.cs.d703e20.resources.Utilities.getNodeFromText;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class astTest {
-
-    private OurParser createParserFromText(String txt) {
-        // Instantiate lexer from input text
-        OurLexer lexer = new OurLexer(CharStreams.fromString(txt));
-        // Add ANTLR errorListener to throw syntaxError exceptions, reports offending symbol and line
-        lexer.addErrorListener(new FailTestErrorListener());
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-
-        // Instantiate parser from lexer tokens
-        OurParser parser = new OurParser(tokenStream);
-        parser.addErrorListener(new FailTestErrorListener()); // Not expecting any syntax error, fails test if any
-        return parser;
-    }
-
-    private <T, S> T getNodeFromText(String text, String parseRuleName, Class<T> nodeClass, Class<S> contextClass) {
-        // Parse text
-        OurParser parser = createParserFromText(text);
-
-        T node = null;
-        try {
-            // parser.parseRuleName()
-            Method contextMethod = OurParser.class.getMethod(parseRuleName);
-
-            // ASTBuilder.visitParseRuleName(contextClass)
-            Method visitorMethod = ASTBuilder.class.getMethod(
-                    "visit" + parseRuleName.toUpperCase().substring(0,1) + parseRuleName.substring(1),
-                    contextClass);
-
-            // Get OurParser.parseRuleNameContext from parser
-            S context = (S) contextMethod.invoke(parser);
-
-            // Get Node from visitorMethod in ASTBuilder using context
-            node = nodeClass.cast(visitorMethod.invoke(new ASTBuilder(), context));
-        }
-        catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        return node;
-    }
 
     // Test AST for AssignmentNode
     @Test
     void testASSIGN() {
         AssignmentNode assignmentNode = getNodeFromText(
                 "four = 4;",
-                "assignment",
                 AssignmentNode.class,
-                OurParser.AssignmentContext.class);
+                OurParser.AssignmentContext.class,
+                "assignment"
+        );
 
         assertAll(
                 () -> assertEquals("four", assignmentNode.getVariableName()),
@@ -78,9 +34,10 @@ public class astTest {
     void testVarDeclString() {
         VariableDeclarationNode variableDeclarationNode = getNodeFromText(
                 "string varName = \"Super123\";",
-                "variableDecl",
                 VariableDeclarationNode.class,
-                OurParser.VariableDeclContext.class);
+                OurParser.VariableDeclContext.class,
+                "variableDecl"
+        );
 
         assertAll(
                 () -> assertEquals(Enums.DataType.STRING, variableDeclarationNode.getDataType()),
@@ -93,9 +50,10 @@ public class astTest {
     void testVarDeclEmpty() {
         VariableDeclarationNode variableDeclarationNode = getNodeFromText(
                 "double[] arr",
-                "variableDecl",
                 VariableDeclarationNode.class,
-                OurParser.VariableDeclContext.class);
+                OurParser.VariableDeclContext.class,
+                "variableDecl"
+        );
 
         assertAll(
                 () -> assertEquals(Enums.DataType.DOUBLE_ARRAY, variableDeclarationNode.getDataType()),
@@ -108,9 +66,10 @@ public class astTest {
     void testVarDeclBool() {
         VariableDeclarationNode variableDeclarationNode = getNodeFromText(
                 "bool varName = true;",
-                "variableDecl",
                 VariableDeclarationNode.class,
-                OurParser.VariableDeclContext.class);
+                OurParser.VariableDeclContext.class,
+                "variableDecl"
+        );
 
         assertAll(
                 () -> assertEquals(Enums.DataType.BOOL, variableDeclarationNode.getDataType()),
@@ -123,9 +82,10 @@ public class astTest {
     void testPinDeclDigital() {
         PinDeclarationNode pinDeclarationNode = getNodeFromText(
                 "ipin digiPin 12;",
-                "pinDecl",
                 PinDeclarationNode.class,
-                OurParser.PinDeclContext.class);
+                OurParser.PinDeclContext.class,
+                "pinDecl"
+        );
 
         assertAll(
                 () -> assertEquals(Enums.PinType.IPIN, pinDeclarationNode.getPinType()),
@@ -138,9 +98,10 @@ public class astTest {
     void testPinDeclAnalog() {
         PinDeclarationNode pinDeclarationNode = getNodeFromText(
                 "opin anaPin A5;",
-                "pinDecl",
                 PinDeclarationNode.class,
-                OurParser.PinDeclContext.class);
+                OurParser.PinDeclContext.class,
+                "pinDecl"
+        );
 
         assertAll(
                 () -> assertEquals(Enums.PinType.OPIN, pinDeclarationNode.getPinType()),
@@ -153,9 +114,10 @@ public class astTest {
     void testVarDeclFunctionCall() {
         VariableDeclarationNode variableDeclarationNode = getNodeFromText(
                 "int varName = getInt();",
-                "variableDecl",
                 VariableDeclarationNode.class,
-                OurParser.VariableDeclContext.class);
+                OurParser.VariableDeclContext.class,
+                "variableDecl"
+        );
 
         assertAll(
                 () -> assertEquals(Enums.DataType.INT, variableDeclarationNode.getDataType()),
@@ -175,9 +137,10 @@ public class astTest {
     void testATStatement() {
         AtStatementNode atStatementNode = getNodeFromText(
                 "at (x == 1) {}",
-                "atStatement",
                 AtStatementNode.class,
-                OurParser.AtStatementContext.class);
+                OurParser.AtStatementContext.class,
+                "atStatement"
+        );
 
         assertEquals(
                 "x",
@@ -194,9 +157,10 @@ public class astTest {
     void testATStatementWithAND() {
         AtStatementNode atStatementNode = getNodeFromText(
                 "at (x == 1 && y == true) {}",
-                "atStatement",
                 AtStatementNode.class,
-                OurParser.AtStatementContext.class);
+                OurParser.AtStatementContext.class,
+                "atStatement"
+        );
 
         assertEquals(
                 "y",
@@ -218,9 +182,10 @@ public class astTest {
     void testBoundStatement() {
         BoundStatementNode boundNode = getNodeFromText(
                 "bound (y < 12, true) {} final {}",
-                "boundStatement",
                 BoundStatementNode.class,
-                OurParser.BoundStatementContext.class);
+                OurParser.BoundStatementContext.class,
+                "boundStatement"
+        );
 
         assertAll(
                 () -> assertEquals(
@@ -258,9 +223,10 @@ public class astTest {
     void testBoundStatementArgBlock() {
         BoundStatementNode boundNode = getNodeFromText(
                 "bound (y == 22) {}",
-                "boundStatement",
                 BoundStatementNode.class,
-                OurParser.BoundStatementContext.class);
+                OurParser.BoundStatementContext.class,
+                "boundStatement"
+        );
 
         assertAll(
                 () -> assertEquals(
@@ -296,9 +262,10 @@ public class astTest {
     void testBoundStatementAllArgs() {
         BoundStatementNode boundNode = getNodeFromText(
                 "bound (y <= 0, false) {} catch {} final {}",
-                "boundStatement",
                 BoundStatementNode.class,
-                OurParser.BoundStatementContext.class);
+                OurParser.BoundStatementContext.class,
+                "boundStatement"
+        );
 
         assertAll(
                 () -> assertEquals(
@@ -338,9 +305,10 @@ public class astTest {
     void testIF() {
         IfStatementNode ifStatementNode = getNodeFromText(
                 "if (hej == true) {}",
-                "ifStatement",
                 IfStatementNode.class,
-                OurParser.IfStatementContext.class);
+                OurParser.IfStatementContext.class,
+                "ifStatement"
+        );
 
         ConditionalExpressionNode conditionalExpressionNode = ifStatementNode.getConditionalExpressionNode();
         BoolExpressionNode boolExpressionNode = conditionalExpressionNode.getBoolExpressionNode();
@@ -359,9 +327,10 @@ public class astTest {
     void testIFELSEIF() {
         IfElseStatementNode ifElseStatementNode = getNodeFromText(
                 "if (hej == true) {} else if (test) {} else {}",
-                "ifElseStatement",
                 IfElseStatementNode.class,
-                OurParser.IfElseStatementContext.class);
+                OurParser.IfElseStatementContext.class,
+                "ifElseStatement"
+        );
 
         IfStatementNode ifStatementNode = ifElseStatementNode.getIfStatementNode();
         List<ElseIfStatementNode> elseIfStatementNodes = ifElseStatementNode.getElseIfStatementNodes();
@@ -380,9 +349,10 @@ public class astTest {
     void testBOOLEXPR() {
         BoolExpressionNode boolExpressionNode = getNodeFromText(
                 "test1 == test2",
-                "boolExpr",
                 BoolExpressionNode.class,
-                OurParser.BoolExprContext.class);
+                OurParser.BoolExprContext.class,
+                "boolExpr"
+        );
 
         ArithExpressionNode expressionNode1 =
                 boolExpressionNode.getBoolExprOperandNodes().get(0).getArithExpressionNode();
@@ -403,9 +373,10 @@ public class astTest {
     void TestBOOLEXPR1() {
         BoolExpressionNode boolExpressionNode = getNodeFromText(
                 "test != false",
-                "boolExpr",
                 BoolExpressionNode.class,
-                OurParser.BoolExprContext.class);
+                OurParser.BoolExprContext.class,
+                "boolExpr"
+        );
 
         ArithExpressionNode expressionNode =
                 boolExpressionNode.getBoolExprOperandNodes().get(0).getArithExpressionNode();
@@ -429,9 +400,10 @@ public class astTest {
     void TestBOOLEXPR2() {
         BoolExpressionNode boolExpressionNode = getNodeFromText(
                 "test >= 5",
-                "boolExpr",
                 BoolExpressionNode.class,
-                OurParser.BoolExprContext.class);
+                OurParser.BoolExprContext.class,
+                "boolExpr"
+        );
 
         ArithExpressionNode expressionNode1 =
                 boolExpressionNode.getBoolExprOperandNodes().get(0).getArithExpressionNode();
@@ -451,9 +423,10 @@ public class astTest {
     void TestSUBSCRIPT() {
         ConditionalExpressionNode conditionalExpressionNode = getNodeFromText(
                 "array[23]",
-                "conditionalExpression",
                 ConditionalExpressionNode.class,
-                OurParser.ConditionalExpressionContext.class);
+                OurParser.ConditionalExpressionContext.class,
+                "conditionalExpression"
+        );
 
         assertAll(
                 () -> assertEquals("array", conditionalExpressionNode.getSubscriptNode().getVariableName()),
@@ -465,9 +438,10 @@ public class astTest {
     void testBoolExprLiteral() {
         BoolExpressionNode boolExpressionNode = getNodeFromText(
                 "true",
-                "boolExpr",
                 BoolExpressionNode.class,
-                OurParser.BoolExprContext.class);
+                OurParser.BoolExprContext.class,
+                "boolExpr"
+        );
 
         assertEquals("true", boolExpressionNode.getBoolLiteral());
     }
@@ -476,9 +450,10 @@ public class astTest {
     void testBoolExprNotLiteral() {
         BoolExpressionNode boolExpressionNode = getNodeFromText(
                 "!(true)",
-                "boolExpr",
                 BoolExpressionNode.class,
-                OurParser.BoolExprContext.class);
+                OurParser.BoolExprContext.class,
+                "boolExpr"
+        );
 
         assertAll(
                 () -> assertEquals("true", boolExpressionNode.getBoolExpressionNode().getBoolLiteral()),
@@ -491,9 +466,10 @@ public class astTest {
     void testArithExpr1() {
         ArithExpressionNode arithExpressionNode = getNodeFromText(
                 "var + 2",
-                "arithExpr",
                 ArithExpressionNode.class,
-                OurParser.ArithExprContext.class);
+                OurParser.ArithExprContext.class,
+                "arithExpr"
+        );
 
         String varName = arithExpressionNode.getArithExpressionNode1().getVariableName();
         Enums.ArithOperator operator = arithExpressionNode.getArithExpressionOperator();
@@ -511,9 +487,10 @@ public class astTest {
     void testArithExprNotFunc() {
         ArithExpressionNode arithExpressionNode = getNodeFromText(
                 "!(FuncName())",
-                "arithExpr",
                 ArithExpressionNode.class,
-                OurParser.ArithExprContext.class);
+                OurParser.ArithExprContext.class,
+                "arithExpr"
+        );
 
         assertAll(
                 () -> assertEquals(
@@ -532,9 +509,10 @@ public class astTest {
     void testArithExprSUBSCRIPT() {
         ArithExpressionNode arithExpressionNode = getNodeFromText(
                 "arr[2]",
-                "arithExpr",
                 ArithExpressionNode.class,
-                OurParser.ArithExprContext.class);
+                OurParser.ArithExprContext.class,
+                "arithExpr"
+        );
 
         assertAll(
                 () -> assertEquals("arr", arithExpressionNode.getSubscriptNode().getVariableName()),
@@ -547,9 +525,10 @@ public class astTest {
     void testVisitProgram() {
         ProgramNode programNode = getNodeFromText(
                 "Setup{} Loop{}",
-                "program",
                 ProgramNode.class,
-                OurParser.ProgramContext.class);
+                OurParser.ProgramContext.class,
+                "program"
+        );
 
         assertAll(
                 () -> assertNotNull(programNode.getSetupNode()),
@@ -561,9 +540,10 @@ public class astTest {
     void testForLoop() {
         ForStatementNode forStatementNode = getNodeFromText(
                 "for (var to 5) {}",
-                "forStatement",
                 ForStatementNode.class,
-                OurParser.ForStatementContext.class);
+                OurParser.ForStatementContext.class,
+                "forStatement"
+        );
 
         assertAll(
                 () -> assertEquals("var", forStatementNode.getArithExpressionNode1().getVariableName()),
@@ -575,9 +555,10 @@ public class astTest {
     void testFunctionCallArgs() {
         ArithExpressionNode arithExpressionNode = getNodeFromText(
                 "function(2, varName)",
-                "arithExpr",
                 ArithExpressionNode.class,
-                OurParser.ArithExprContext.class);
+                OurParser.ArithExprContext.class,
+                "arithExpr"
+        );
 
         FunctionCallNode functionCallNode = arithExpressionNode.getFunctionCallNode();
 
@@ -608,9 +589,10 @@ public class astTest {
     void testFunctionDecl() {
         FunctionDeclarationNode functionDeclarationNode = getNodeFromText(
                 "void test(int ID2, string varName){}",
-                "functionDecl",
                 FunctionDeclarationNode.class,
-                OurParser.FunctionDeclContext.class);
+                OurParser.FunctionDeclContext.class,
+                "functionDecl"
+        );
 
         assertAll(
                 () -> assertNotNull(functionDeclarationNode.getBlockNode()),
@@ -624,9 +606,10 @@ public class astTest {
     void testFunctionDeclDatatype() {
         FunctionDeclarationNode functionDeclarationNode = getNodeFromText(
                 "bool test(int ID2, string varName){}",
-                "functionDecl",
                 FunctionDeclarationNode.class,
-                OurParser.FunctionDeclContext.class);
+                OurParser.FunctionDeclContext.class,
+                "functionDecl"
+        );
 
         assertEquals(Enums.DataType.BOOL, functionDeclarationNode.getDataType());
     }
@@ -635,9 +618,10 @@ public class astTest {
     void testVisitReturnStatement() {
         ReturnStatementNode returnStatementNode = getNodeFromText(
                 "return varName;",
-                "statement",
                 ReturnStatementNode.class,
-                OurParser.StatementContext.class);
+                OurParser.StatementContext.class,
+                "statement"
+        );
 
         assertEquals("varName", returnStatementNode.getVariableName());
     }
@@ -646,9 +630,10 @@ public class astTest {
     void testVisitFunctionParam() {
         FunctionDeclarationNode functionDeclarationNode = getNodeFromText(
                 "bool test(int ID2, string varName){}",
-                "functionDecl",
                 FunctionDeclarationNode.class,
-                OurParser.FunctionDeclContext.class);
+                OurParser.FunctionDeclContext.class,
+                "functionDecl"
+        );
 
         List<FunctionParameterNode> functionParameterNodes = functionDeclarationNode.getFunctionParameterNodes();
 
@@ -664,9 +649,10 @@ public class astTest {
     void testWhileStatement() {
         WhileStatementNode whileStatementNode = getNodeFromText(
                 "while (true) {}",
-                "whileStatement",
                 WhileStatementNode.class,
-                OurParser.WhileStatementContext.class);
+                OurParser.WhileStatementContext.class,
+                "whileStatement"
+        );
 
         assertEquals("true", whileStatementNode.getBoolExpressionNode().getBoolLiteral());
     }
@@ -675,9 +661,10 @@ public class astTest {
     void testAssignArray() {
         AssignArrayNode assignArrayNode = getNodeFromText(
                 "arr = {1.2, 3.3}",
-                "assignArray",
                 AssignArrayNode.class,
-                OurParser.AssignArrayContext.class);
+                OurParser.AssignArrayContext.class,
+                "assignArray"
+        );
 
         assertAll(
                 () -> assertEquals("arr", assignArrayNode.getVariableName()),
@@ -702,9 +689,10 @@ public class astTest {
     void testVariableDeclArrayDatatype() {
         VariableDeclarationNode variableDeclarationNode = getNodeFromText(
                 "int[5] arr;",
-                "variableDecl",
                 VariableDeclarationNode.class,
-                OurParser.VariableDeclContext.class);
+                OurParser.VariableDeclContext.class,
+                "variableDecl"
+        );
 
         assertEquals(Enums.DataType.INT_ARRAY, variableDeclarationNode.getDataType());
     }
@@ -713,9 +701,10 @@ public class astTest {
     void testBooleanVariableDeclArray() {
         VariableDeclarationNode variableDeclarationNode = getNodeFromText(
                 "bool[] arr = {true, false};",
-                "variableDecl",
                 VariableDeclarationNode.class,
-                OurParser.VariableDeclContext.class);
+                OurParser.VariableDeclContext.class,
+                "variableDecl"
+        );
 
         assertEquals(
                 "false",
@@ -729,9 +718,10 @@ public class astTest {
     void testVariableDeclArrayIndex() {
         VariableDeclarationNode variableDeclarationNode = getNodeFromText(
                 "int[] arr = {1, 4, 35};",
-                "variableDecl",
                 VariableDeclarationNode.class,
-                OurParser.VariableDeclContext.class);
+                OurParser.VariableDeclContext.class,
+                "variableDecl"
+        );
 
         assertEquals(
                 "35",
