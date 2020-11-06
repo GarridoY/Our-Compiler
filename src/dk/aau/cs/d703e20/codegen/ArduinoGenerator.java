@@ -65,45 +65,10 @@ public class ArduinoGenerator {
     private BlockNode visitBlock(BlockNode blockNode) {
         ArrayList<StatementNode> statementNodes = new ArrayList<>();
 
-        for (StatementNode statement : blockNode.getStatementNodes())
-            statementNodes.addAll(visitStatement(statement));
+        //for (StatementNode statement : blockNode.getStatementNodes())
+        //    statementNodes.addAll(visitStatement(statement));
 
         return new BlockNode(statementNodes);
-    }
-
-    private ArrayList<StatementNode> visitStatement(StatementNode statementNode) {
-        ArrayList<StatementNode> statementNodes = new ArrayList<>();
-
-        if (statementNode instanceof AssignmentNode)
-            statementNodes.add(visitAssignment((AssignmentNode)statementNode));
-        else if (statementNode instanceof VariableDeclarationNode)
-            statementNodes.add(visitVariableDeclaration((VariableDeclarationNode)statementNode));
-        else if (statementNode instanceof IfElseStatementNode)
-            statementNodes.add(visitIfElseStatement((IfElseStatementNode)statementNode));
-        else if (statementNode instanceof ReturnStatementNode)
-            statementNodes.add(visitReturnStatemnent((ReturnStatementNode)statementNode));
-        else if (statementNode instanceof FunctionCallNode)
-            statementNodes.add(visitFunctionCall((FunctionCallNode)statementNode));
-        else if (statementNode instanceof ForStatementNode)
-            statementNodes.add(visitForStatement((ForStatementNode)statementNode));
-        else if (statementNode instanceof WhileStatementNode)
-            statementNodes.add(visitWhileStatement((WhileStatementNode)statementNode));
-        else if (statementNode instanceof AtStatementNode)
-            statementNodes.add(visitAtStatement((AtStatementNode)statementNode));
-        else if (statementNode instanceof BoundStatementNode)
-            statementNodes.add(visitBoundStatement((BoundStatementNode)statementNode));
-        else if (statementNode instanceof AssignArrayNode)
-            statementNodes.add(visitAssignArray((AssignArrayNode)statementNode));
-        else if (statementNode instanceof PinDeclarationNode)
-            statementNodes.add(visitPinDeclaration((PinDeclarationNode)statementNode));
-        else {
-            throw new RuntimeException("Statement is of unknown type: " + statementNode.prettyPrint(0));
-        }
-        return statementNodes;
-    }
-
-    private AssignmentNode visitAssignment(AssignmentNode assignmentNode) {
-        return new AssignmentNode(visitArithExpression(assignmentNode.getArithExpressionNode()));
     }
 
     private FunctionDeclarationNode visitFunctionDeclaration(FunctionDeclarationNode functionDeclarationNode) {
