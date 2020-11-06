@@ -77,25 +77,25 @@ Parameters if multiple are scheduled.</label>
 		<location id="id8" x="-1122" y="-858">
 			<name x="-1132" y="-892">Else1</name>
 		</location>
-		<location id="id9" x="-884" y="-892">
-			<name x="-894" y="-926">BodyDone</name>
+		<location id="id9" x="-960" y="-892">
+			<name x="-970" y="-926">BodyDone</name>
 		</location>
 		<init ref="id4"/>
 		<transition>
 			<source ref="id8"/>
 			<target ref="id9"/>
-			<label kind="assignment" x="-1037" y="-867">ready = true</label>
+			<label kind="assignment" x="-1071" y="-867">ready = true</label>
 		</transition>
 		<transition>
 			<source ref="id7"/>
 			<target ref="id9"/>
-			<label kind="synchronisation" x="-1020" y="-960">out!</label>
+			<label kind="synchronisation" x="-1054" y="-943">out!</label>
 		</transition>
 		<transition>
 			<source ref="id9"/>
 			<target ref="id4"/>
-			<nail x="-884" y="-731"/>
-			<nail x="-1538" y="-731"/>
+			<nail x="-960" y="-756"/>
+			<nail x="-1538" y="-756"/>
 		</transition>
 		<transition>
 			<source ref="id6"/>
@@ -130,24 +130,24 @@ void stmt_1() {
     index = index + 1;
 }</declaration>
 		<location id="id10" x="246" y="-76">
-			<name x="236" y="-110">Done_Body</name>
+			<name x="236" y="-110">DoneBody</name>
 		</location>
 		<location id="id11" x="-434" y="-76">
 			<name x="-451" y="-110">Start</name>
 			<label kind="comments" x="-570" y="-127">Variant with body</label>
 		</location>
 		<location id="id12" x="119" y="-76">
-			<name x="109" y="-110">Stmt_2</name>
+			<name x="109" y="-110">Stmt2</name>
 		</location>
 		<location id="id13" x="-17" y="-76">
-			<name x="-27" y="-110">Stmt_1</name>
+			<name x="-27" y="-110">Stmt1</name>
 		</location>
 		<location id="id14" x="-153" y="-76">
-			<name x="-163" y="-110">Start_Body</name>
+			<name x="-163" y="-110">StartBody</name>
 			<label kind="comments" x="-247" y="-144">Could just go straight to Stmt_1</label>
 		</location>
 		<location id="id15" x="-297" y="-76">
-			<name x="-340" y="-110">Check_Time</name>
+			<name x="-340" y="-110">CheckTime</name>
 			<label kind="invariant" x="-307" y="-59">x &lt;= 3</label>
 		</location>
 		<init ref="id11"/>
@@ -260,16 +260,28 @@ either as update or internal function</label>
 system Controller, AtTemp, AtTempBody, AtIf, Output;</system>
 	<queries>
 		<query>
-			<formula>E&lt;&gt; AtTemp.DoneBody and AtTempBody.Done_Body and Controller.Statements</formula>
+			<formula>E&lt;&gt; AtTemp.DoneBody and AtTempBody.DoneBody and Controller.Statements</formula>
 			<comment>Reach all code</comment>
 		</query>
 		<query>
-			<formula>E&lt;&gt; AtTempBody.Done_Body</formula>
+			<formula>E&lt;&gt; AtTempBody.DoneBody</formula>
 			<comment>Is scheduled code reachable?</comment>
 		</query>
 		<query>
 			<formula>E&lt;&gt; AtIf.If1</formula>
 			<comment>Reach if = true</comment>
+		</query>
+		<query>
+			<formula>AtIf.CheckTime --&gt; AtIf.StartIf1</formula>
+			<comment>If AtIf is scheduled it is eventually executed</comment>
+		</query>
+		<query>
+			<formula>AtTemp.CheckTime --&gt; AtTemp.StartBody</formula>
+			<comment>If AtTemp (No Invariant) is scheduled it is eventually executed</comment>
+		</query>
+		<query>
+			<formula>AtTempBody.CheckTime --&gt; AtTempBody.StartBody</formula>
+			<comment>If AtTempBody is scheduled it is eventually executed</comment>
 		</query>
 		<query>
 			<formula>E&lt;&gt; AtTemp.DoneBody</formula>
