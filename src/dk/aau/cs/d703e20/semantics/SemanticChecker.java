@@ -3,10 +3,10 @@ package dk.aau.cs.d703e20.semantics;
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.errorhandling.*;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
+import dk.aau.cs.d703e20.errorhandling.*;
 
 import java.util.*;
 

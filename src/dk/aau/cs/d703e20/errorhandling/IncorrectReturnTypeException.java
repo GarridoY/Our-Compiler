@@ -1,4 +1,4 @@
-package dk.aau.cs.d703e20.ast.errorhandling;
+package dk.aau.cs.d703e20.errorhandling;
 
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
