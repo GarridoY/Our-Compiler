@@ -1,8 +1,11 @@
 package dk.aau.cs.d703e20.codegen;
 
+import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.ArrayParamNode;
+import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
-import dk.aau.cs.d703e20.errorhandling.CompilerException;
+import dk.aau.cs.d703e20.errorhandling.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,17 +71,39 @@ public class ArduinoGenerator {
         return new BlockNode(statementNodes);
     }
 
-    //TODO
     private ArrayList<StatementNode> visitStatement(StatementNode statementNode) {
         ArrayList<StatementNode> statementNodes = new ArrayList<>();
 
         if (statementNode instanceof AssignmentNode)
-            statementNodes.add(visitAssignment((AssignmentNode)statementNode, true));
+            statementNodes.add(visitAssignment((AssignmentNode)statementNode));
         else if (statementNode instanceof VariableDeclarationNode)
             statementNodes.add(visitVariableDeclaration((VariableDeclarationNode)statementNode));
-        else if (statementNode instanceof IfStatementNode)
-            statementNodes.add(visitIfStatement((IfStatementNode)statementNode));
-        else if (statementNode)
+        else if (statementNode instanceof IfElseStatementNode)
+            statementNodes.add(visitIfElseStatement((IfElseStatementNode)statementNode));
+        else if (statementNode instanceof ReturnStatementNode)
+            statementNodes.add(visitReturnStatemnent((ReturnStatementNode)statementNode));
+        else if (statementNode instanceof FunctionCallNode)
+            statementNodes.add(visitFunctionCall((FunctionCallNode)statementNode));
+        else if (statementNode instanceof ForStatementNode)
+            statementNodes.add(visitForStatement((ForStatementNode)statementNode));
+        else if (statementNode instanceof WhileStatementNode)
+            statementNodes.add(visitWhileStatement((WhileStatementNode)statementNode));
+        else if (statementNode instanceof AtStatementNode)
+            statementNodes.add(visitAtStatement((AtStatementNode)statementNode));
+        else if (statementNode instanceof BoundStatementNode)
+            statementNodes.add(visitBoundStatement((BoundStatementNode)statementNode));
+        else if (statementNode instanceof AssignArrayNode)
+            statementNodes.add(visitAssignArray((AssignArrayNode)statementNode));
+        else if (statementNode instanceof PinDeclarationNode)
+            statementNodes.add(visitPinDeclaration((PinDeclarationNode)statementNode));
+        else {
+            throw new RuntimeException("Statement is of unknown type: " + statementNode.prettyPrint(0));
+        }
+        return statementNodes;
+    }
+
+    private AssignmentNode visitAssignment(AssignmentNode assignmentNode) {
+        return new AssignmentNode(visitArithExpression(assignmentNode.getArithExpressionNode()));
     }
 
     private FunctionDeclarationNode visitFunctionDeclaration(FunctionDeclarationNode functionDeclarationNode) {
@@ -89,8 +114,6 @@ public class ArduinoGenerator {
             throw new CompilerException("Function without data type.", functionDeclarationNode.getCodePosition());
         return functionDeclarationNode;
     }
-
-
 
 
 
