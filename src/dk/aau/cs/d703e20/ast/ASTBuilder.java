@@ -1,7 +1,7 @@
 package dk.aau.cs.d703e20.ast;
 
-import dk.aau.cs.d703e20.ast.errorhandling.InvalidArrayException;
-import dk.aau.cs.d703e20.ast.errorhandling.CompilerException;
+import dk.aau.cs.d703e20.errorhandling.InvalidArrayException;
+import dk.aau.cs.d703e20.errorhandling.CompilerException;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
