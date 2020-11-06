@@ -1,7 +1,7 @@
 package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.ASTBuilder;
-import dk.aau.cs.d703e20.ast.errorhandling.ReasonableErrorStrategy;
+import dk.aau.cs.d703e20.errorhandling.ReasonableErrorStrategy;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
