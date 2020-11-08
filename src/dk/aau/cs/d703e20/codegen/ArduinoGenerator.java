@@ -1,8 +1,10 @@
 package dk.aau.cs.d703e20.codegen;
 
+import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
 import dk.aau.cs.d703e20.ast.expressions.ArrayParamNode;
 import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.ConditionalExpressionNode;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.errorhandling.*;
@@ -103,7 +105,47 @@ public class ArduinoGenerator {
     }
 
     private AssignmentNode visitAssignment(AssignmentNode assignmentNode) {
-        return new AssignmentNode(visitArithExpression(assignmentNode.getArithExpressionNode()));
+        String variableName = assignmentNode.getVariableName();
+        ArithExpressionNode arithExpressionNode = assignmentNode.getArithExpressionNode();
+        return new AssignmentNode(variableName, arithExpressionNode);
+    }
+
+    private VariableDeclarationNode visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
+        Enums.DataType dataType = variableDeclarationNode.getDataType();
+        return new VariableDeclarationNode(dataType, variableDeclarationNode.getAssignmentNode());
+    }
+
+    private IfElseStatementNode visitIfElseStatement(IfElseStatementNode ifElseStatementNode){
+        IfStatementNode ifStatementNode = visitIfStatementNode(ifElseStatementNode.getIfStatementNode());
+        ElseStatementNode elseStatementNode = null;
+        ArrayList<ElseIfStatementNode> elseIfStatementNodes = new ArrayList<>();
+
+        if (ifElseStatementNode.getElseIfStatementNodes() != null) {
+            for (ElseIfStatementNode elseIfStatementNode : ifElseStatementNode.getElseIfStatementNodes()) {
+                elseIfStatementNodes.add(visitElseIfStatementNode(elseIfStatementNode));
+            }
+        }
+
+        if (ifElseStatementNode.getElseStatement() != null) {
+            elseStatementNode = visitElseStatementNode(ifElseStatementNode.getElseStatement());
+        }
+
+        return new IfElseStatementNode(ifStatementNode, elseIfStatementNodes, elseStatementNode);
+    }
+
+    private IfStatementNode visitIfStatementNode(IfStatementNode ifStatementNode) {
+        ConditionalExpressionNode conditionalExpressionNode = null;
+        BlockNode blockNode;
+
+        if (ifStatementNode.getConditionalExpressionNode() != null) {
+            conditionalExpressionNode = visitConditionalExpression(ifStatementNode.getConditionalExpressionNode());
+        }
+
+        if (ifStatementNode.getBlockNode() != null) {
+            blockNode = visitBlock(ifStatementNode.getBlockNode());
+            return new IfStatementNode(conditionalExpressionNode, blockNode);
+        }
+        else throw new CompilerException("Invalid if-statement", ifStatementNode.getCodePosition());
     }
 
     private FunctionDeclarationNode visitFunctionDeclaration(FunctionDeclarationNode functionDeclarationNode) {
@@ -114,6 +156,8 @@ public class ArduinoGenerator {
             throw new CompilerException("Function without data type.", functionDeclarationNode.getCodePosition());
         return functionDeclarationNode;
     }
+
+
 
 
 
