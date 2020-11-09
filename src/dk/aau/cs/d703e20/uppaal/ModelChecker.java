@@ -18,18 +18,21 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ModelChecker {
+    ModelGen modelGen = new ModelGen();
     public ModelChecker() {
 
     }
 
     public void checkProgram(ProgramNode programNode) {
+
         Feedback feedback = new Feedback();
 
         try {
             Document doc = null;
 
             // TODO: generate model to use instead of example
-            doc = ModelDemo.createSampleModel();
+            doc = modelGen.visitProgram(programNode);
+                    //ModelDemo.createSampleModel();
 
             String outputDir = getClass().getResource("/output/do-not-delete.txt").getPath().substring(1);
             outputDir = outputDir.substring(0, outputDir.length() - "do-not-delete.txt".length());
@@ -55,16 +58,16 @@ public class ModelChecker {
             saveXTRFile(trace, outputDir + "/result.xtr");
 
             // simple model-checking:
-            Query query = new Query("E<> Exp1.Final", "can Exp1 finish?");
-            System.out.println("===== Simple check =====");
-            System.out.println("Result: "
-                    + engine.query(sys, options, query, feedback));
-
-            // SMC model-checking:
-            Query smcq = new Query("Pr[<=30](<> Exp1.Final)", "what is the probability of finishing?");
-            System.out.println("===== SMC check =====");
-            System.out.println("Result: "
-                    + engine.query(sys, options, smcq, feedback));
+            //Query query = new Query("E<> Exp1.Final", "can Exp1 finish?");
+            //System.out.println("===== Simple check =====");
+            //System.out.println("Result: "
+            //        + engine.query(sys, options, query, feedback));
+//
+            //// SMC model-checking:
+            //Query smcq = new Query("Pr[<=30](<> Exp1.Final)", "what is the probability of finishing?");
+            //System.out.println("===== SMC check =====");
+            //System.out.println("Result: "
+            //        + engine.query(sys, options, smcq, feedback));
 
             // Model-checking with customized initial state:
             SymbolicState state = engine.getInitialState(sys);
@@ -92,19 +95,19 @@ public class ModelChecker {
             // Notice that all other clocks will be constrained too,
             // because of other (initial) constrains like: x==y, y==z
 
-            System.out.println("===== Custom check ===== ");
-            System.out.println("Result: "
-                    + engine.query(sys, state, options, query, feedback));
-
-            System.out.println("===== Custom SMC ===== ");
-            System.out.println("Result: "
-                    + engine.query(sys, state, options, smcq, feedback));
-
-            Query smcsim = new Query("simulate 1 [<=30] { v, x, y }", "get simulation trajectories");
-            System.out.println("===== Custom Concrete Simulation ===== ");
-            System.out.println("Result: "
-                    + engine.query(sys, state, options, smcsim, feedback));
-            engine.disconnect();
+            //System.out.println("===== Custom check ===== ");
+            //System.out.println("Result: "
+            //        + engine.query(sys, state, options, query, feedback));
+//
+            //System.out.println("===== Custom SMC ===== ");
+            //System.out.println("Result: "
+            //        + engine.query(sys, state, options, smcq, feedback));
+//
+            //Query smcsim = new Query("simulate 1 [<=30] { v, x, y }", "get simulation trajectories");
+            //System.out.println("===== Custom Concrete Simulation ===== ");
+            //System.out.println("Result: "
+            //        + engine.query(sys, state, options, smcsim, feedback));
+            //engine.disconnect();
 
             // TODO: throw exception if UPPAAL fails
             System.out.println("\n");

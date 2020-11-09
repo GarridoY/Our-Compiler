@@ -7,6 +7,7 @@ import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.semantics.SemanticChecker;
 import dk.aau.cs.d703e20.uppaal.ModelChecker;
+import dk.aau.cs.d703e20.uppaal.ModelGen;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import java.io.IOException;

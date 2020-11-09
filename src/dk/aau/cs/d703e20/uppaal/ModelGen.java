@@ -112,14 +112,25 @@ public class ModelGen {
 
     // Visitors
 
-    void visitProgram(ProgramNode programNode) {
+    public Document visitProgram(ProgramNode programNode) {
         visitSetup(programNode.getSetupNode());
         //TODO: visitLoop();
+        Template t = doc.createTemplate();
+        doc.insert(t, null);
+        t.setProperty("name", "Expik");
+        Location l0 = addLocation(t, "L0", "1", 0, 0);
+        l0.setProperty("init", true);
+        // add system declaration:
+        doc.setProperty("system",
+                "Exp1=Expik();\n" +
+                        "system Exp1;");
+        return doc;
     }
 
     void visitSetup(SetupNode setupNode) {
         visitBlock(setupNode.getBlockNode());
         doc.setProperty("declaration", globalDecl.toString());
+        System.out.println(globalDecl.toString());
     }
 
     void visitBlock(BlockNode blockNode) {
@@ -143,6 +154,6 @@ public class ModelGen {
     }
 
     void visitPinDecl(PinDeclarationNode pinDeclNode) {
-        globalDecl.append("chan ").append(Enums.stringFromPinType(pinDeclNode.getPinType())).append(pinDeclNode.getPinNumber()).append(";");
+        globalDecl.append("chan ").append(Enums.stringFromPinType(pinDeclNode.getPinType())).append(pinDeclNode.getPinNumber()).append(";\n");
     }
 }
