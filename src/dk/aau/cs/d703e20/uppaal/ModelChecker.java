@@ -2,7 +2,6 @@ package dk.aau.cs.d703e20.uppaal;
 
 import com.uppaal.engine.*;
 import com.uppaal.model.core2.Document;
-import com.uppaal.model.core2.PrototypeDocument;
 import com.uppaal.model.core2.Query;
 import com.uppaal.model.system.SystemEdge;
 import com.uppaal.model.system.SystemLocation;
@@ -14,7 +13,6 @@ import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +28,7 @@ public class ModelChecker {
         try {
             Document doc = null;
 
+            // TODO: generate model to use instead of example
             doc = ModelDemo.createSampleModel();
 
             String outputDir = getClass().getResource("/output/do-not-delete.txt").getPath().substring(1);
@@ -38,10 +37,10 @@ public class ModelChecker {
             // save the model into a file:
             doc.save(outputDir + "/result.xml");
 
-            //doc = loadModel(args[0]);
+            //String modelPath = getClass().getResource("/UPPAAL_models/atTemplate.xml").getPath().substring(1);
+            //doc = new PrototypeDocument().load(new URL("file", null, modelPath));
 
-            //String filePath = getClass().getResource("/UPPAAL_models/CreatePopcorn.xml").getPath().substring(1);
-            //doc = new PrototypeDocument().load(new URL("file", null, filePath));
+            System.out.println("\nRUNNING UPPAAL:\n");
 
             // connect to the engine server:
             Engine engine = connectToEngine();
@@ -106,6 +105,10 @@ public class ModelChecker {
             System.out.println("Result: "
                     + engine.query(sys, state, options, smcsim, feedback));
             engine.disconnect();
+
+            // TODO: throw exception if UPPAAL fails
+            System.out.println("\n");
+
         } catch (CannotEvaluateException ex) {
             ex.printStackTrace(System.err);
             System.exit(1);
@@ -116,34 +119,6 @@ public class ModelChecker {
             ex.printStackTrace(System.err);
             System.exit(1);
         }
-
-        /*
-        try {
-            System.out.println("\nRUNNING UPPAAL:\n");
-
-            // TODO: generate model to use instead of example
-            String filePath = getClass().getResource("/UPPAAL_models/CreatePopcorn.xml").getPath().substring(1);
-
-            ProcessBuilder builder = new ProcessBuilder(
-                    "cmd.exe", "/c", "verifyta " + filePath);
-            builder.redirectErrorStream(true);
-            Process p = builder.start();
-            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line;
-            while (true) {
-                line = r.readLine();
-                if (line == null) { break; }
-                System.out.println(line);
-            }
-
-            // TODO: throw exception if UPPAAL fails
-
-            System.out.println("\n");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        */
     }
 
     public static Engine connectToEngine() throws EngineException, IOException {
