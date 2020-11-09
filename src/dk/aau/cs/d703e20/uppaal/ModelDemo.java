@@ -1,4 +1,4 @@
-package dk.aau.cs.d703e20.semantics;
+package dk.aau.cs.d703e20.uppaal;
 /**
  * A sample Java code demonstrating the use of lib/model.jar.
  * The source code assumes that ModelDemo.java is inside Uppaal distribution.
