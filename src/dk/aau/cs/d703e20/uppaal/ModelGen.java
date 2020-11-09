@@ -1,13 +1,19 @@
 package dk.aau.cs.d703e20.uppaal;
 
-import com.uppaal.model.core2.Edge;
-import com.uppaal.model.core2.Location;
-import com.uppaal.model.core2.Property;
-import com.uppaal.model.core2.Template;
+import com.uppaal.model.core2.*;
+import dk.aau.cs.d703e20.ast.Enums;
+import dk.aau.cs.d703e20.ast.statements.PinDeclarationNode;
+import dk.aau.cs.d703e20.ast.statements.StatementNode;
+import dk.aau.cs.d703e20.ast.structure.BlockNode;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
+import dk.aau.cs.d703e20.ast.structure.SetupNode;
 
 
 public class ModelGen {
+    // New model with default properties
+    Document doc = new Document(new PrototypeDocument());
+    StringBuilder globalDecl = new StringBuilder();
+
 
 
     /* TODO:
@@ -21,11 +27,12 @@ public class ModelGen {
 
     /**
      * Sets a label on a location.
-     * @param l the location on which the label is going to be attached
-     * @param kind a kind of the label
+     *
+     * @param l     the location on which the label is going to be attached
+     * @param kind  a kind of the label
      * @param value the label value (either boolean or String)
-     * @param x the x coordinate of the label
-     * @param y the y coordinate of the label
+     * @param x     the x coordinate of the label
+     * @param y     the y coordinate of the label
      */
     public static void setLabel(Location l, ModelDemo.LKind kind, Object value, int x, int y) {
         l.setProperty(kind.name(), value);
@@ -36,10 +43,11 @@ public class ModelGen {
 
     /**
      * Adds a location to a template.
-     * @param t the template
+     *
+     * @param t    the template
      * @param name a name for the new location
-     * @param x the x coordinate of the location
-     * @param y the y coordinate of the location
+     * @param x    the x coordinate of the location
+     * @param y    the y coordinate of the location
      * @return the new location instance
      */
     public static Location addLocation(Template t, String name, String exprate,
@@ -57,11 +65,12 @@ public class ModelGen {
 
     /**
      * Sets a label on an edge.
-     * @param e the edge
-     * @param kind the kind of the label
+     *
+     * @param e     the edge
+     * @param kind  the kind of the label
      * @param value the content of the label
-     * @param x the x coordinate of the label
-     * @param y the y coordinate of the label
+     * @param x     the x coordinate of the label
+     * @param y     the y coordinate of the label
      */
     public static void setLabel(Edge e, ModelDemo.EKind kind, String value, int x, int y) {
         e.setProperty(kind.name(), value);
@@ -72,11 +81,12 @@ public class ModelGen {
 
     /**
      * Adds an edge to the template
-     * @param t the template where the edge belongs
+     *
+     * @param t      the template where the edge belongs
      * @param source the source location
      * @param target the target location
-     * @param guard guard expression
-     * @param sync synchronization expression
+     * @param guard  guard expression
+     * @param sync   synchronization expression
      * @param update update expression
      * @return
      */
@@ -103,11 +113,36 @@ public class ModelGen {
     // Visitors
 
     void visitProgram(ProgramNode programNode) {
-        visitSetup();
+        visitSetup(programNode.getSetupNode());
         //TODO: visitLoop();
     }
 
-    void visitSetup() {
+    void visitSetup(SetupNode setupNode) {
+        visitBlock(setupNode.getBlockNode());
+        doc.setProperty("declaration", globalDecl.toString());
+    }
 
+    void visitBlock(BlockNode blockNode) {
+        for (StatementNode node : blockNode.getStatementNodes()) {
+            visitStatement(node);
+        }
+    }
+
+    void visitStatement(StatementNode statementNode) {
+        if (statementNode instanceof PinDeclarationNode)
+            visitPinDecl((PinDeclarationNode) statementNode);
+        /*
+        TODO: visitAssignment (only for clock)
+        TODO: visitFunctionCall
+        TODO: visitIfElseStatement
+        TODO: visitIterativeStatement
+        TODO: visitAtStatement
+        TODO: visitBoundStatement
+        TODO: visitReturnStatement
+         */
+    }
+
+    void visitPinDecl(PinDeclarationNode pinDeclNode) {
+        globalDecl.append("chan ").append(Enums.stringFromPinType(pinDeclNode.getPinType())).append(pinDeclNode.getPinNumber()).append(";");
     }
 }
