@@ -9,6 +9,7 @@ import com.uppaal.model.system.SystemLocation;
 import com.uppaal.model.system.UppaalSystem;
 import com.uppaal.model.system.symbolic.SymbolicState;
 import com.uppaal.model.system.symbolic.SymbolicTransition;
+import dk.aau.cs.d703e20.Main;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 
 import java.io.FileWriter;
@@ -28,8 +29,16 @@ public class ModelChecker {
 
         try {
             Document doc = null;
-            String filePath = getClass().getResource("/UPPAAL_models/CreatePopcorn.xml").getPath().substring(1);
-            doc = new PrototypeDocument().load(new URL("file", null, filePath));
+
+            doc = ModelDemo.createSampleModel();
+
+            // save the model into a file:
+            //doc.save("result.xml");
+
+            //doc = loadModel(args[0]);
+
+            //String filePath = getClass().getResource("/UPPAAL_models/CreatePopcorn.xml").getPath().substring(1);
+            //doc = new PrototypeDocument().load(new URL("file", null, filePath));
 
             // connect to the engine server:
             Engine engine = connectToEngine();
@@ -136,7 +145,8 @@ public class ModelChecker {
 
     public static Engine connectToEngine() throws EngineException, IOException {
         String os = System.getProperty("os.name");
-        String here = System.getProperty("user.dir");
+        //String here = System.getProperty("user.dir");
+        String here = Main.uppaalDirectory;
         String path = null;
         if ("Linux".equals(os)) {
             path = here + "/bin-Linux/server";

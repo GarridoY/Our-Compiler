@@ -12,10 +12,13 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import java.io.IOException;
 
 public class Main {
+    public static String uppaalDirectory;
+
     public static void main(String[] args) {
         String inputFileName = null;
         boolean prettyPrint = false;
 
+        //TODO: we need a better solution for checking arguments
         if (args.length > 0) {
             // Set file name which is to be compiled.
             inputFileName = args[0];
@@ -23,6 +26,8 @@ public class Main {
             if (args.length > 1) {
                 if (args[1].equals("-pp"))
                     prettyPrint = true;
+                else
+                    uppaalDirectory = args[1]; //TODO: this is very hacky
             }
         }
 
