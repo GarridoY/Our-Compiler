@@ -7,7 +7,7 @@ import com.uppaal.model.system.symbolic.SymbolicTransition;
 
 import java.util.ArrayList;
 
-public class TimeFeedback implements QueryFeedback {
+public class Feedback implements QueryFeedback {
     @Override
     public void setProgressAvail(boolean availability) {
     }

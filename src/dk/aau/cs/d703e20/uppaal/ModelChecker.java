@@ -1,4 +1,4 @@
-package dk.aau.cs.d703e20.semantics;
+package dk.aau.cs.d703e20.uppaal;
 
 import com.uppaal.engine.*;
 import com.uppaal.model.core2.Document;
@@ -10,24 +10,21 @@ import com.uppaal.model.system.UppaalSystem;
 import com.uppaal.model.system.symbolic.SymbolicState;
 import com.uppaal.model.system.symbolic.SymbolicTransition;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
-import dk.aau.cs.d703e20.uppaal.TimeFeedback;
 
-import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class TimeVerifier {
-    public TimeVerifier() {
+public class ModelChecker {
+    public ModelChecker() {
 
     }
 
-    public void verifyProgram(ProgramNode programNode) {
-        TimeFeedback feedback = new TimeFeedback();
+    public void checkProgram(ProgramNode programNode) {
+        Feedback feedback = new Feedback();
 
         try {
             Document doc = null;
