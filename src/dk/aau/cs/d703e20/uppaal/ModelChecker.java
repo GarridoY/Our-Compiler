@@ -32,8 +32,11 @@ public class ModelChecker {
 
             doc = ModelDemo.createSampleModel();
 
+            String outputDir = getClass().getResource("/output/do-not-delete.txt").getPath().substring(1);
+            outputDir = outputDir.substring(0, outputDir.length() - "do-not-delete.txt".length());
+
             // save the model into a file:
-            //doc.save("result.xml");
+            doc.save(outputDir + "/result.xml");
 
             //doc = loadModel(args[0]);
 
@@ -50,7 +53,7 @@ public class ModelChecker {
             ArrayList<SymbolicTransition> trace = symbolicSimulation(engine, sys);
 
             // save the trace to an XTR file:
-            saveXTRFile(trace, "result.xtr");
+            saveXTRFile(trace, outputDir + "/result.xtr");
 
             // simple model-checking:
             Query query = new Query("E<> Exp1.Final", "can Exp1 finish?");
