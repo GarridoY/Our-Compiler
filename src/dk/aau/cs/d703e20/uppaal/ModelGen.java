@@ -15,7 +15,7 @@ import java.io.IOException;
 
 public class ModelGen {
     // New model with default properties
-    Document doc = new Document(new PrototypeDocument());
+    Document model = new Document(new PrototypeDocument());
 
 
 
@@ -130,60 +130,89 @@ public class ModelGen {
     // Visitors
     // sample setup and debugging
     void createExample() {
-        Template t = doc.createTemplate();
-        doc.insert(t, null);
-        t.setProperty("name", "Expik");
+        // Model requires at least 1 template
+        Template t = model.createTemplate();
+        // Set name of template
+        t.setProperty("name", "exampleTemplate");
+        // Insert template into model
+        model.insert(t, null);
+        // Add location for new template t
         Location l0 = addLocation(t, "L0", "1", 0, 0);
+        // Location is initial
         l0.setProperty("init", true);
         // add system declaration:
-        doc.setProperty("system",
-                "Exp1=Expik();\n" +
-                        "system Exp1;");
+        model.setProperty("system", "Exp1=exampleTemplate();\n" + "system Exp1;");
 
+        // Save model for debugging
         try {
-            doc.save("C:\\Users\\the_p\\Documents\\GitHub\\P7\\Resources\\output\\hej.xml");
+            String path = System.getProperty("user.dir");
+            model.save(path + "\\Resources\\output\\hej.xml");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Begins the process of generating UPPAAL code corresponding to the program
+     *
+     * @param programNode Top node of program AST
+     * @return Document for UPPAAL to compile
+     */
     public Document visitProgram(ProgramNode programNode) {
         visitSetup(programNode.getSetupNode());
         //TODO: visitLoop();
         createExample(); //TODO: remove
-        return doc;
+        return model;
     }
 
-    void visitSetup(SetupNode setupNode) {
+    /**
+     * Goes through all declarations made in setup() and adds them to global UPPAAL scope
+     *
+     * @param setupNode Source setup() from programNode
+     */
+    private void visitSetup(SetupNode setupNode) {
         // visitBlock(setupNode.getBlockNode(), doc); TODO: figure out if setup needs more than variables
-        StringBuilder globalDecl = new StringBuilder();
+        StringBuilder globalDecl = new StringBuilder("// Global declarations\n");
 
         // Find all declarations
         for (StatementNode statementNode : setupNode.getBlockNode().getStatementNodes()) {
             if (statementNode instanceof VariableDeclarationNode) {
-
+                visitVarDecl((VariableDeclarationNode) statementNode, globalDecl);
             } else if (statementNode instanceof PinDeclarationNode) {
                 visitPinDecl((PinDeclarationNode) statementNode, globalDecl);
             }
         }
-        doc.setProperty("declaration", globalDecl.toString());
-
-        //System.out.println(globalDecl.toString());
+        model.setProperty("declaration", globalDecl.toString());
     }
 
-    void visitBlock(BlockNode blockNode, StringBuilder stringBuilder) {
+    /**
+     * Visit new block.
+     * Pass StringBuilder of new template.
+     *
+     * @param blockNode     Block of current node
+     * @param stringBuilder StringBuilder from current visitor
+     */
+    private void visitBlock(BlockNode blockNode, StringBuilder stringBuilder) {
         // TODO:
-        for (StatementNode snode : blockNode.getStatementNodes()) {
-            visitStatement(snode, stringBuilder);
+        for (StatementNode statementNode : blockNode.getStatementNodes()) {
+            visitStatement(statementNode, stringBuilder);
         }
     }
 
-    void visitStatement(StatementNode statementNode, StringBuilder stringBuilder) {
+    /**
+     * Select visitor based on type of statement.
+     * Some of these visitors open new templates.
+     *
+     * @param statementNode From a BlockNode
+     * @param stringBuilder From a BlockNode
+     */
+    private void visitStatement(StatementNode statementNode, StringBuilder stringBuilder) {
         if (statementNode instanceof PinDeclarationNode)
             visitPinDecl((PinDeclarationNode) statementNode, stringBuilder);
+        else if (statementNode instanceof VariableDeclarationNode)
+            visitVarDecl((VariableDeclarationNode) statementNode, stringBuilder);
         /*
         TODO: visitAssignment (only for clock)
-        TODO: visitVarDecl (only for clock)
         TODO: visitFunctionCall
         TODO: visitIfElseStatement, create new template
         TODO: visitIterativeStatement
@@ -193,12 +222,29 @@ public class ModelGen {
          */
     }
 
-    // pin -> chan, node as they can be attached template-wise and globally
-    void visitPinDecl(PinDeclarationNode pinDeclNode, StringBuilder stringBuilder) {
+    /**
+     * Add PinDeclaration as chan to template/global.
+     * StringBuilder is used as all properties have to be set at once.
+     *
+     * @param stringBuilder StringBuilder from current template
+     * @param pinDeclNode   Source StatementNode
+     */
+    private void visitPinDecl(PinDeclarationNode pinDeclNode, StringBuilder stringBuilder) {
         stringBuilder.append("chan ").append(Enums.stringFromPinType(pinDeclNode.getPinType())).append(pinDeclNode.getPinNumber()).append(";\n");
     }
 
-    void visitFuncDecl(FunctionDeclarationNode functionDeclarationNode) {
+    /**
+     * Add clocks to template/global
+     *
+     * @param varDeclNode   Source StatementNode
+     * @param stringBuilder StringBuilder from current template
+     */
+    private void visitVarDecl(VariableDeclarationNode varDeclNode, StringBuilder stringBuilder) {
+        if (varDeclNode.getDataType() == Enums.DataType.CLOCK)
+            stringBuilder.append("clock ").append(varDeclNode.getVariableName()).append(";\n");
+    }
+
+    private void visitFuncDecl(FunctionDeclarationNode functionDeclarationNode) {
         // TODO: create new template
     }
 }
