@@ -18,10 +18,23 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ModelChecker {
-    ModelGen modelGen = new ModelGen();
-    public ModelChecker() {
+    private ModelGen modelGen;
 
+    public ModelChecker() {
+        modelGen = new ModelGen();
     }
+
+    //TODO: figure out which of these we should use
+    public static final String options = "order 0\n"
+            + "reduction 1\n"
+            + "representation 0\n"
+            + "trace 0\n"
+            + "extrapolation 0\n"
+            + "hashsize 27\n"
+            + "reuse 1\n"
+            + "smcparametric 1\n"
+            + "modest 0\n"
+            + "statistical 0.01 0.01 0.05 0.05 0.05 0.9 1.1 0.0 0.0 1280.0 0.01";
 
     public void checkProgram(ProgramNode programNode) {
 
@@ -30,20 +43,17 @@ public class ModelChecker {
         try {
             Document doc = null;
 
-            // TODO: generate model to use instead of example
+            System.out.println("\nGenerating UPPAAL model...\n");
             doc = modelGen.visitProgram(programNode);
-                    //ModelDemo.createSampleModel();
 
+            // Get output directory
             String outputDir = getClass().getResource("/output/do-not-delete.txt").getPath().substring(1);
             outputDir = outputDir.substring(0, outputDir.length() - "do-not-delete.txt".length());
 
             // save the model into a file:
-            doc.save(outputDir + "/result.xml");
+            doc.save(outputDir + "/output_model.xml");
 
-            //String modelPath = getClass().getResource("/UPPAAL_models/atTemplate.xml").getPath().substring(1);
-            //doc = new PrototypeDocument().load(new URL("file", null, modelPath));
-
-            System.out.println("\nRUNNING UPPAAL:\n");
+            System.out.println("\nVerifying UPPAAL model:\n");
 
             // connect to the engine server:
             Engine engine = connectToEngine();
@@ -55,14 +65,14 @@ public class ModelChecker {
             ArrayList<SymbolicTransition> trace = symbolicSimulation(engine, sys);
 
             // save the trace to an XTR file:
-            saveXTRFile(trace, outputDir + "/result.xtr");
+            saveXTRFile(trace, outputDir + "/output_trace.xtr");
 
             // simple model-checking:
             //Query query = new Query("E<> Exp1.Final", "can Exp1 finish?");
             //System.out.println("===== Simple check =====");
             //System.out.println("Result: "
             //        + engine.query(sys, options, query, feedback));
-//
+            //
             //// SMC model-checking:
             //Query smcq = new Query("Pr[<=30](<> Exp1.Final)", "what is the probability of finishing?");
             //System.out.println("===== SMC check =====");
@@ -98,11 +108,11 @@ public class ModelChecker {
             //System.out.println("===== Custom check ===== ");
             //System.out.println("Result: "
             //        + engine.query(sys, state, options, query, feedback));
-//
+            //
             //System.out.println("===== Custom SMC ===== ");
             //System.out.println("Result: "
             //        + engine.query(sys, state, options, smcq, feedback));
-//
+            //
             //Query smcsim = new Query("simulate 1 [<=30] { v, x, y }", "get simulation trajectories");
             //System.out.println("===== Custom Concrete Simulation ===== ");
             //System.out.println("Result: "
@@ -112,19 +122,13 @@ public class ModelChecker {
             // TODO: throw exception if UPPAAL fails
             System.out.println("\n");
 
-        } catch (CannotEvaluateException ex) {
-            ex.printStackTrace(System.err);
-            System.exit(1);
-        } catch (EngineException ex) {
-            ex.printStackTrace(System.err);
-            System.exit(1);
-        } catch (IOException ex) {
+        } catch (CannotEvaluateException | EngineException | IOException ex) {
             ex.printStackTrace(System.err);
             System.exit(1);
         }
     }
 
-    public static Engine connectToEngine() throws EngineException, IOException {
+    private Engine connectToEngine() throws EngineException, IOException {
         String os = System.getProperty("os.name");
         //String here = System.getProperty("user.dir");
         String here = Main.uppaalDirectory;
@@ -142,8 +146,7 @@ public class ModelChecker {
         return engine;
     }
 
-    public static UppaalSystem compile(Engine engine, Document doc)
-            throws EngineException, IOException {
+    private UppaalSystem compile(Engine engine, Document doc) throws EngineException, IOException {
         // compile the model into system:
         ArrayList<Problem> problems = new ArrayList<Problem>();
         UppaalSystem sys = engine.getSystem(doc, problems);
@@ -163,8 +166,7 @@ public class ModelChecker {
         return sys;
     }
 
-    public static ArrayList<SymbolicTransition> symbolicSimulation(Engine engine,
-                                                                   UppaalSystem sys)
+    private ArrayList<SymbolicTransition> symbolicSimulation(Engine engine, UppaalSystem sys)
             throws EngineException, IOException, CannotEvaluateException {
         ArrayList<SymbolicTransition> trace = new ArrayList<SymbolicTransition>();
         // compute the initial state:
@@ -199,7 +201,7 @@ public class ModelChecker {
         return trace;
     }
 
-    public static void saveXTRFile(ArrayList<SymbolicTransition> trace, String file)
+    private void saveXTRFile(ArrayList<SymbolicTransition> trace, String file)
             throws IOException {
 	/* BNF for the XTR format just in case
 	   (it may change, thus don't rely on it)
@@ -221,19 +223,7 @@ public class ModelChecker {
         out.close();
     }
 
-    //TODO: figure out which of these we should use
-    public static final String options = "order 0\n"
-            + "reduction 1\n"
-            + "representation 0\n"
-            + "trace 0\n"
-            + "extrapolation 0\n"
-            + "hashsize 27\n"
-            + "reuse 1\n"
-            + "smcparametric 1\n"
-            + "modest 0\n"
-            + "statistical 0.01 0.01 0.05 0.05 0.05 0.9 1.1 0.0 0.0 1280.0 0.01";
-
-    public static void print(UppaalSystem sys, SymbolicState s) {
+    private void print(UppaalSystem sys, SymbolicState s) {
         System.out.print("(");
         for (SystemLocation l : s.getLocations()) {
             System.out.print(l.getName() + ", ");
