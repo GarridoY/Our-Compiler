@@ -185,11 +185,24 @@ public class ArduinoGenerator {
 
         if (functionCallNode.getFunctionArgNodes() != null) {
             for (FunctionArgNode argNode : functionCallNode.getFunctionArgNodes()) {
-                functionArgNodes.add(visitArgument(argNode));  //TODO do this
+                functionArgNodes.add(visitFunctionArgument(argNode));
             }
         }
-    
         return new FunctionCallNode(functionName, functionArgNodes);
+    }
+
+    private FunctionArgNode visitFunctionArgument(FunctionArgNode functionArgNode) {
+        ArithExpressionNode arithExpressionNode;
+        BoolExpressionNode boolExpressionNode;
+        if (functionArgNode.getArithExpressionNode() != null) {
+            arithExpressionNode = visitArithExpression(functionArgNode.getArithExpressionNode());
+            return new FunctionArgNode(arithExpressionNode);
+        }
+        else if (functionArgNode.getBoolExpressionNode() != null) {
+            boolExpressionNode = visitBoolExpression(functionArgNode.getBoolExpressionNode());
+            return new FunctionArgNode((boolExpressionNode));
+        }
+        else throw new CompilerException("Invalid function argument", functionArgNode.getCodePosition());
     }
 
     private ConditionalExpressionNode visitConditionalExpression(ConditionalExpressionNode conditionalExpressionNode){
@@ -201,10 +214,26 @@ public class ArduinoGenerator {
         else throw new CompilerException("Invalid conditional-expression", conditionalExpressionNode.getCodePosition());
     }
 
-    private BoolExpressionNode visitBoolExpression(BoolExpressionNode boolExpressionNode){
-        if (boolExpressionNode.getBoolExprOperandNodes() != null)
-            visitBoolOperation(boolExpressionNode.getBoolExpressionOperators()); //TODO it's a trap!
-        return  boolExpressionNode;
+    private WhileStatementNode visitWhileStatement(WhileStatementNode whileStatementNode) {
+        BoolExpressionNode boolExpressionNode;
+        BlockNode blockNode;
+        if (whileStatementNode.getBoolExpressionNode() != null || whileStatementNode.getBlockNode() != null) {
+            boolExpressionNode = visitBoolExpression(whileStatementNode.getBoolExpressionNode());
+            blockNode = visitBlock(whileStatementNode.getBlockNode());
+            return new WhileStatementNode(boolExpressionNode, blockNode);
+        }
+        else throw new CompilerException("invalid while statement", whileStatementNode.getCodePosition());
+    }
+
+    private AtStatementNode visitAtStatement(AtStatementNode atStatementNode) {
+        AtParamsNode atParamsNode;
+        BlockNode blockNode;
+        if (atStatementNode.getAtParamsNode() != null) {
+            atParamsNode = visitAtParams(atStatementNode.getAtParamsNode());
+            blockNode = visitBlock(atStatementNode.getBlockNode());
+            return new AtStatementNode(atParamsNode, blockNode);
+        }
+        else throw new CompilerException("invalid at statement", atStatementNode.getCodePosition());
     }
 
     private ReturnStatementNode visitReturnStatement(ReturnStatementNode returnStatementNode){
@@ -213,6 +242,41 @@ public class ArduinoGenerator {
         }
         else throw new CompilerException("Invalid return-statement", returnStatementNode.getCodePosition());
     }
+
+    //TODO -> VisitArithExpression og VisitBoolExpression
+    private ArithExpressionNode visitArithExpression (ArithExpressionNode arithExpressionNode) {
+        boolean optionalNot = arithExpressionNode.getOptionalNot();
+        ArithExpressionNode arithExpressionNode1;
+        ArithExpressionNode arithExpressionNode2;
+        Enums.ArithOperator arithOperator;
+
+        if (optionalNot) {
+
+        }
+        return arithExpressionNode;
+    }
+
+    private BoolExpressionNode visitBoolExpression(BoolExpressionNode boolExpressionNode){
+        if (boolExpressionNode.getBoolExprOperandNodes() != null)
+            visitBoolOperation(boolExpressionNode.getBoolExpressionOperators());
+        return  boolExpressionNode;
+    }
+
+    //TODO -> visitForStatement
+    private ForStatementNode visitForStatement(ForStatementNode forStatementNode) {
+        ArrayList<StatementNode> statementNodes = new ArrayList<>();
+        ArithExpressionNode arithExpressionNode1 = visitArithExpression(forStatementNode.getArithExpressionNode1());
+        ArithExpressionNode arithExpressionNode2 = visitArithExpression(forStatementNode.getArithExpressionNode2());
+        LoopNode loopNode;
+
+        if (arithExpressionNode1.getVariableName() != null) {
+            statementNodes.add(arithExpressionNode1.getVariableName());
+            return new ForStatementNode(arithExpressionNode1);
+        }
+        else if (arithExpressionNode1.get)
+    }
+
+
 
 
 
