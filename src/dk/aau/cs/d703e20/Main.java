@@ -10,6 +10,8 @@ import dk.aau.cs.d703e20.uppaal.ModelChecker;
 import dk.aau.cs.d703e20.uppaal.ModelGen;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+
+import java.io.File;
 import java.io.IOException;
 
 public class Main {
@@ -18,6 +20,15 @@ public class Main {
     public static void main(String[] args) {
         String inputFileName = null;
         boolean prettyPrint = false;
+
+        String outputDirPath = System.getProperty("user.dir") + "\\Resources\\output";
+        File file = new File(outputDirPath);
+
+        if (!file.isDirectory()) {
+            boolean makeDirSucceeded = file.mkdir();
+            if (!makeDirSucceeded)
+                throw new RuntimeException("Failed to create output folder");
+        }
 
         //TODO: we need a better solution for checking arguments
         if (args.length > 0) {
