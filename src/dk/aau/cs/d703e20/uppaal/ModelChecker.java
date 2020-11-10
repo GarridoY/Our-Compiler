@@ -47,8 +47,7 @@ public class ModelChecker {
             doc = modelGen.visitProgram(programNode);
 
             // Get output directory
-            String outputDir = System.getProperty("user.dir") + "\\Resources\\output"; // getClass().getResource("/output/do-not-delete.txt").getPath().substring(1);
-            //outputDir = outputDir.substring(0, outputDir.length() - "do-not-delete.txt".length());
+            String outputDir = System.getProperty("user.dir") + "\\Resources\\output"; 
 
             // save the model into a file:
             doc.save(outputDir + "/output_model.xml");
