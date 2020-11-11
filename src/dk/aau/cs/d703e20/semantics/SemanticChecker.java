@@ -417,7 +417,11 @@ public class SemanticChecker {
 
                 if (leftArith == null || rightArith == null || operator == null){
                     throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
-                } else {
+                }
+                else if (operator == Enums.BoolOperator.OR || operator == Enums.BoolOperator.AND) {
+                    throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+                }
+                else {
                     visitArithmeticExpression(leftArith);
                     visitArithmeticExpression(rightArith);
                 }

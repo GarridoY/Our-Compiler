@@ -192,9 +192,22 @@ public class semanticTest {
     }
 
     @Test
-    void testIllegalAtStatement() { //This also goes for boundStatement
+    void testIllegalAtStatement01() { //This also goes for boundStatement
         BlockNode blockNode = getNodeFromText(
                 "{int a = 10; at(a == true) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block"
+        );
+        assertThrows(IllegalAtExpressionException.class,
+                ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
+
+    @Test
+    void testIllegalAtStatement02() { //This also goes for boundStatement
+        BlockNode blockNode = getNodeFromText(
+                "{int a = 10; at(a && 2) {}}",
                 BlockNode.class,
                 OurParser.BlockContext.class,
                 "block"
