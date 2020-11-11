@@ -2,7 +2,6 @@ package dk.aau.cs.d703e20.uppaal.structures;
 
 import com.uppaal.model.core2.Document;
 import com.uppaal.model.core2.Element;
-import com.uppaal.model.core2.Template;
 
 public class UPPSystem extends Document {
     // Store all declarations before setting them
@@ -21,7 +20,6 @@ public class UPPSystem extends Document {
     @Override
     public UPPTemplate createTemplate() {
         return new UPPTemplate((Element) this.getPropertyValue("#template"));
-        //return super.createTemplate();
     }
 
     /**

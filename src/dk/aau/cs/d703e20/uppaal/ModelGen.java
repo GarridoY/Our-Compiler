@@ -21,16 +21,6 @@ public class ModelGen {
     // New system with default properties
     UPPSystem system = new UPPSystem(new PrototypeDocument());
 
-
-    /* TODO:
-        Each template is:
-        1. Declarations
-        2. Transitions
-        3. Locations
-        Last is:
-        4. Queries
-    */
-
     // sample setup and debugging
     void createExample() {
         // Model requires at least 1 template

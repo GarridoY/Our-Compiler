@@ -4,7 +4,7 @@ import com.uppaal.model.core2.*;
 
 public class UPPTemplate extends Template {
     // Store all declarations before setting them
-    private StringBuilder declSB;// = new StringBuilder();
+    private final StringBuilder declSB = new StringBuilder();
 
     public UPPTemplate(Element prototype) {
         super(prototype);
