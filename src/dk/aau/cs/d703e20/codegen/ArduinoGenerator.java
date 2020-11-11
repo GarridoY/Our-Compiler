@@ -243,6 +243,62 @@ public class ArduinoGenerator {
         else throw new CompilerException("Invalid return-statement", returnStatementNode.getCodePosition());
     }
 
+    private AtParamsNode visitAtParams(AtParamsNode atParamsNode) {
+        BoolExpressionNode boolExpressionNode;
+        if (atParamsNode.getBoolExpressionNode() != null) {
+            boolExpressionNode = visitBoolExpression(atParamsNode.getBoolExpressionNode());
+            return new AtParamsNode(boolExpressionNode);
+        }
+        else throw new CompilerException("Invalid at parameter", atParamsNode.getCodePosition());
+    }
+
+    //TODO dont check the necessary stuff..
+    private BoundStatementNode visitBoundStatement(BoundStatementNode boundStatementNode) {
+        AtParamsNode atParamsNode;
+        String boolLiteral;
+        BlockNode body;
+        BlockNode catchBlock;
+        BlockNode finalBlock;
+
+        if (boundStatementNode.getAtParamsNode() != null) {
+            atParamsNode = visitAtParams(boundStatementNode.getAtParamsNode());
+            if (boundStatementNode.getBody() != null) {
+                body = visitBlock(boundStatementNode.getBody());
+                if (boundStatementNode.getBoolLiteral() != null) {
+                    boolLiteral = boundStatementNode.getBoolLiteral();
+                    if (boundStatementNode.getFinalBlock() != null) {
+                        finalBlock = visitBlock(boundStatementNode.getFinalBlock());
+                        if (boundStatementNode.getCatchBlock() != null) {
+                            catchBlock = visitBlock(boundStatementNode.getCatchBlock());
+                            return new BoundStatementNode(atParamsNode, boolLiteral, body, catchBlock, finalBlock);
+                        }
+                        else
+                            return new BoundStatementNode(atParamsNode, boolLiteral, body, finalBlock, false);
+                    }
+                    else if (boundStatementNode.getCatchBlock() != null) {
+                        catchBlock = visitBlock(boundStatementNode.getCatchBlock());
+                        return new BoundStatementNode(atParamsNode, boolLiteral, body, catchBlock, true);
+                    }
+                    else
+                        return new BoundStatementNode(atParamsNode, boolLiteral, body);
+                }
+                if (boundStatementNode.getFinalBlock() != null) {
+                    finalBlock = visitBlock(boundStatementNode.getFinalBlock());
+                    if (boundStatementNode.getCatchBlock() != null) {
+                        catchBlock = visitBlock(boundStatementNode.getCatchBlock());
+                        return new BoundStatementNode(atParamsNode, body, catchBlock, finalBlock);
+                    }
+                }
+                else
+                    return new BoundStatementNode(atParamsNode, body);
+            }
+        }
+        throw new CompilerException("invalid bound statement", boundStatementNode.getCodePosition());
+    }
+
+
+
+
     //TODO -> VisitArithExpression og VisitBoolExpression
     private ArithExpressionNode visitArithExpression (ArithExpressionNode arithExpressionNode) {
         boolean optionalNot = arithExpressionNode.getOptionalNot();
