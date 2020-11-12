@@ -74,27 +74,27 @@ public class ArduinoGenerator {
         ArrayList<StatementNode> statementNodes = new ArrayList<>();
 
         if (statementNode instanceof AssignmentNode)
-            statementNodes.add(visitAssignment((AssignmentNode)statementNode));
+            statementNodes.add(visitAssignment((AssignmentNode) statementNode));
         else if (statementNode instanceof VariableDeclarationNode)
-            statementNodes.add(visitVariableDeclaration((VariableDeclarationNode)statementNode));
+            statementNodes.add(visitVariableDeclaration((VariableDeclarationNode) statementNode));
         else if (statementNode instanceof IfElseStatementNode)
-            statementNodes.add(visitIfElseStatement((IfElseStatementNode)statementNode));
+            statementNodes.add(visitIfElseStatement((IfElseStatementNode) statementNode));
         else if (statementNode instanceof ReturnStatementNode)
-            statementNodes.add(visitReturnStatement((ReturnStatementNode)statementNode));
+            statementNodes.add(visitReturnStatement((ReturnStatementNode) statementNode));
         else if (statementNode instanceof FunctionCallNode)
-            statementNodes.add(visitFunctionCall((FunctionCallNode)statementNode));
+            statementNodes.add(visitFunctionCall((FunctionCallNode) statementNode));
         else if (statementNode instanceof ForStatementNode)
-            statementNodes.add(visitForStatement((ForStatementNode)statementNode));
+            statementNodes.add(visitForStatement((ForStatementNode) statementNode));
         else if (statementNode instanceof WhileStatementNode)
-            statementNodes.add(visitWhileStatement((WhileStatementNode)statementNode));
+            statementNodes.add(visitWhileStatement((WhileStatementNode) statementNode));
         else if (statementNode instanceof AtStatementNode)
-            statementNodes.add(visitAtStatement((AtStatementNode)statementNode));
+            statementNodes.add(visitAtStatement((AtStatementNode) statementNode));
         else if (statementNode instanceof BoundStatementNode)
-            statementNodes.add(visitBoundStatement((BoundStatementNode)statementNode));
+            statementNodes.add(visitBoundStatement((BoundStatementNode) statementNode));
         else if (statementNode instanceof AssignArrayNode)
-            statementNodes.add(visitAssignArray((AssignArrayNode)statementNode));
+            statementNodes.add(visitAssignArray((AssignArrayNode) statementNode));
         else if (statementNode instanceof PinDeclarationNode)
-            statementNodes.add(visitPinDeclaration((PinDeclarationNode)statementNode));
+            statementNodes.add(visitPinDeclaration((PinDeclarationNode) statementNode));
         else {
             throw new RuntimeException("Statement is of unknown type: " + statementNode.prettyPrint(0));
         }
@@ -112,9 +112,9 @@ public class ArduinoGenerator {
         return new VariableDeclarationNode(dataType, variableDeclarationNode.getAssignmentNode());
     }
 
-    private IfElseStatementNode visitIfElseStatement(IfElseStatementNode ifElseStatementNode){
+    private IfElseStatementNode visitIfElseStatement(IfElseStatementNode ifElseStatementNode) {
         IfStatementNode ifStatementNode = visitIfStatement(ifElseStatementNode.getIfStatementNode());
-        ElseStatementNode elseStatementNode = null;
+        ElseStatementNode elseStatementNode = visitElseStatement(ifElseStatementNode.getElseStatement());
         ArrayList<ElseIfStatementNode> elseIfStatementNodes = new ArrayList<>();
 
         if (ifElseStatementNode.getElseIfStatementNodes() != null) {
@@ -123,60 +123,35 @@ public class ArduinoGenerator {
             }
         }
 
-        if (ifElseStatementNode.getElseStatement() != null) {
-            elseStatementNode = visitElseStatement(ifElseStatementNode.getElseStatement());
-        }
-
         return new IfElseStatementNode(ifStatementNode, elseIfStatementNodes, elseStatementNode);
     }
 
     private IfStatementNode visitIfStatement(IfStatementNode ifStatementNode) {
-        ConditionalExpressionNode conditionalExpressionNode = null;
-        BlockNode blockNode;
-
-        if (ifStatementNode.getConditionalExpressionNode() != null) {
-            conditionalExpressionNode = visitConditionalExpression(ifStatementNode.getConditionalExpressionNode());
-        }
-
-        if (ifStatementNode.getBlockNode() != null) {
-            blockNode = visitBlock(ifStatementNode.getBlockNode());
-            return new IfStatementNode(conditionalExpressionNode, blockNode);
-        }
-        else throw new CompilerException("Invalid if-statement", ifStatementNode.getCodePosition());
+        ConditionalExpressionNode conditionalExpressionNode = ifStatementNode.getConditionalExpressionNode();
+        BlockNode blockNode = ifStatementNode.getBlockNode();
+        return new IfStatementNode(visitConditionalExpression(conditionalExpressionNode), visitBlock(blockNode));
     }
 
-    private ElseIfStatementNode visitElseIfStatement(ElseIfStatementNode elseIfStatementNode){
-        ConditionalExpressionNode conditionalExpressionNode = null;
-        BlockNode blockNode;
-
-        if (elseIfStatementNode.getConditionalExpressionNode() != null) {
-            conditionalExpressionNode = visitConditionalExpression(elseIfStatementNode.getConditionalExpressionNode());
-        }
-
-        if (elseIfStatementNode.getBlockNode() != null) {
-            blockNode = visitBlock(elseIfStatementNode.getBlockNode());
-            return new ElseIfStatementNode(conditionalExpressionNode, blockNode);
-        }
-        else
-            throw new CompilerException("Invalid else-if-statement", elseIfStatementNode.getCodePosition());
+    private ElseIfStatementNode visitElseIfStatement(ElseIfStatementNode elseIfStatementNode) {
+        ConditionalExpressionNode conditionalExpressionNode = elseIfStatementNode.getConditionalExpressionNode();
+        BlockNode blockNode = elseIfStatementNode.getBlockNode();
+        return new ElseIfStatementNode(visitConditionalExpression(conditionalExpressionNode), visitBlock(blockNode));
     }
 
     private ElseStatementNode visitElseStatement(ElseStatementNode elseStatementNode) {
-        BlockNode blockNode;
-        if (elseStatementNode.getBlockNode() != null) {
-            blockNode = visitBlock(elseStatementNode.getBlockNode());
-            return new ElseStatementNode(blockNode);
-        }
-        else throw new CompilerException("Invalid else-statement", elseStatementNode.getCodePosition());
+        return new ElseStatementNode(visitBlock(elseStatementNode.getBlockNode()));
     }
 
     private FunctionDeclarationNode visitFunctionDeclaration(FunctionDeclarationNode functionDeclarationNode) {
-        if (functionDeclarationNode.getDataType() != null) {
-            Functions.add(functionDeclarationNode);
+        Enums.DataType dataType = functionDeclarationNode.getDataType();
+        String functionName = functionDeclarationNode.getFunctionName();
+        BlockNode blockNode = visitBlock(functionDeclarationNode.getBlockNode());
+        ArrayList<FunctionParameterNode> functionParameterNodes = new ArrayList<>();
+
+        for (FunctionParameterNode functionParameterNode : functionDeclarationNode.getFunctionParameterNodes()) {
+            functionParameterNodes.add(visitFunctionParameter(functionParameterNode));
         }
-        else
-            throw new CompilerException("Function without data type.", functionDeclarationNode.getCodePosition());
-        return functionDeclarationNode;
+        return new FunctionDeclarationNode(dataType, functionName, visitBlock(blockNode), functionParameterNodes);
     }
 
     private FunctionCallNode visitFunctionCall(FunctionCallNode functionCallNode) {
@@ -197,110 +172,68 @@ public class ArduinoGenerator {
         if (functionArgNode.getArithExpressionNode() != null) {
             arithExpressionNode = visitArithExpression(functionArgNode.getArithExpressionNode());
             return new FunctionArgNode(arithExpressionNode);
-        }
-        else if (functionArgNode.getBoolExpressionNode() != null) {
+        } else if (functionArgNode.getBoolExpressionNode() != null) {
             boolExpressionNode = visitBoolExpression(functionArgNode.getBoolExpressionNode());
             return new FunctionArgNode((boolExpressionNode));
-        }
-        else throw new CompilerException("Invalid function argument", functionArgNode.getCodePosition());
-    }
-
-    private ConditionalExpressionNode visitConditionalExpression(ConditionalExpressionNode conditionalExpressionNode){
-        BoolExpressionNode boolExpressionNode;
-        if (conditionalExpressionNode.getBoolExpressionNode() != null) {
-            boolExpressionNode = visitBoolExpression(conditionalExpressionNode.getBoolExpressionNode());
-            return new ConditionalExpressionNode(boolExpressionNode);
-        }
-        else throw new CompilerException("Invalid conditional-expression", conditionalExpressionNode.getCodePosition());
+        } else throw new CompilerException("Invalid function argument", functionArgNode.getCodePosition());
     }
 
     private WhileStatementNode visitWhileStatement(WhileStatementNode whileStatementNode) {
-        BoolExpressionNode boolExpressionNode;
-        BlockNode blockNode;
-        if (whileStatementNode.getBoolExpressionNode() != null || whileStatementNode.getBlockNode() != null) {
-            boolExpressionNode = visitBoolExpression(whileStatementNode.getBoolExpressionNode());
-            blockNode = visitBlock(whileStatementNode.getBlockNode());
-            return new WhileStatementNode(boolExpressionNode, blockNode);
-        }
-        else throw new CompilerException("invalid while statement", whileStatementNode.getCodePosition());
+        BoolExpressionNode boolExpressionNode = whileStatementNode.getBoolExpressionNode();
+        BlockNode blockNode = whileStatementNode.getBlockNode();
+        return new WhileStatementNode(boolExpressionNode, blockNode);
     }
 
     private AtStatementNode visitAtStatement(AtStatementNode atStatementNode) {
-        AtParamsNode atParamsNode;
-        BlockNode blockNode;
-        if (atStatementNode.getAtParamsNode() != null) {
-            atParamsNode = visitAtParams(atStatementNode.getAtParamsNode());
-            blockNode = visitBlock(atStatementNode.getBlockNode());
-            return new AtStatementNode(atParamsNode, blockNode);
-        }
-        else throw new CompilerException("invalid at statement", atStatementNode.getCodePosition());
+        AtParamsNode atParamsNode = atStatementNode.getAtParamsNode();
+        BlockNode blockNode = atStatementNode.getBlockNode();
+        return new AtStatementNode(atParamsNode, blockNode);
     }
 
-    private ReturnStatementNode visitReturnStatement(ReturnStatementNode returnStatementNode){
-        if (returnStatementNode.getVariableName() != null) {
-            return returnStatementNode;
-        }
-        else throw new CompilerException("Invalid return-statement", returnStatementNode.getCodePosition());
+    private ReturnStatementNode visitReturnStatement(ReturnStatementNode returnStatementNode) {
+        return new ReturnStatementNode(returnStatementNode.getVariableName());
     }
 
     private AtParamsNode visitAtParams(AtParamsNode atParamsNode) {
-        BoolExpressionNode boolExpressionNode;
-        if (atParamsNode.getBoolExpressionNode() != null) {
-            boolExpressionNode = visitBoolExpression(atParamsNode.getBoolExpressionNode());
-            return new AtParamsNode(boolExpressionNode);
-        }
-        else throw new CompilerException("Invalid at parameter", atParamsNode.getCodePosition());
+        return new AtParamsNode(visitBoolExpression(atParamsNode.getBoolExpressionNode()));
     }
 
-    //TODO dont check the necessary stuff..
     private BoundStatementNode visitBoundStatement(BoundStatementNode boundStatementNode) {
-        AtParamsNode atParamsNode;
-        String boolLiteral;
-        BlockNode body;
+        AtParamsNode atParamsNode = visitAtParams(boundStatementNode.getAtParamsNode());
+        BlockNode body = visitBlock(boundStatementNode.getBody());
+        String boolLiteral = boundStatementNode.getBoolLiteral();
         BlockNode catchBlock;
         BlockNode finalBlock;
 
-        if (boundStatementNode.getAtParamsNode() != null) {
-            atParamsNode = visitAtParams(boundStatementNode.getAtParamsNode());
-            if (boundStatementNode.getBody() != null) {
-                body = visitBlock(boundStatementNode.getBody());
-                if (boundStatementNode.getBoolLiteral() != null) {
-                    boolLiteral = boundStatementNode.getBoolLiteral();
-                    if (boundStatementNode.getFinalBlock() != null) {
-                        finalBlock = visitBlock(boundStatementNode.getFinalBlock());
-                        if (boundStatementNode.getCatchBlock() != null) {
-                            catchBlock = visitBlock(boundStatementNode.getCatchBlock());
-                            return new BoundStatementNode(atParamsNode, boolLiteral, body, catchBlock, finalBlock);
-                        }
-                        else
-                            return new BoundStatementNode(atParamsNode, boolLiteral, body, finalBlock, false);
-                    }
-                    else if (boundStatementNode.getCatchBlock() != null) {
-                        catchBlock = visitBlock(boundStatementNode.getCatchBlock());
-                        return new BoundStatementNode(atParamsNode, boolLiteral, body, catchBlock, true);
-                    }
-                    else
-                        return new BoundStatementNode(atParamsNode, boolLiteral, body);
-                }
-                if (boundStatementNode.getFinalBlock() != null) {
-                    finalBlock = visitBlock(boundStatementNode.getFinalBlock());
-                    if (boundStatementNode.getCatchBlock() != null) {
-                        catchBlock = visitBlock(boundStatementNode.getCatchBlock());
-                        return new BoundStatementNode(atParamsNode, body, catchBlock, finalBlock);
-                    }
-                }
-                else
-                    return new BoundStatementNode(atParamsNode, body);
-            }
+        if (boolLiteral != null) {
+            if (boundStatementNode.getFinalBlock() != null) {
+                finalBlock = visitBlock(boundStatementNode.getFinalBlock());
+                if (boundStatementNode.getCatchBlock() != null) {
+                    catchBlock = visitBlock(boundStatementNode.getCatchBlock());
+                    return new BoundStatementNode(atParamsNode, boolLiteral, body, catchBlock, finalBlock);
+                } else
+                    return new BoundStatementNode(atParamsNode, boolLiteral, body, finalBlock, false);
+            } else if (boundStatementNode.getCatchBlock() != null) {
+                catchBlock = visitBlock(boundStatementNode.getCatchBlock());
+                return new BoundStatementNode(atParamsNode, boolLiteral, body, catchBlock, true);
+            } else
+                return new BoundStatementNode(atParamsNode, boolLiteral, body);
         }
+        if (boundStatementNode.getFinalBlock() != null) {
+            finalBlock = visitBlock(boundStatementNode.getFinalBlock());
+            if (boundStatementNode.getCatchBlock() != null) {
+                catchBlock = visitBlock(boundStatementNode.getCatchBlock());
+                return new BoundStatementNode(atParamsNode, body, catchBlock, finalBlock);
+            }
+        } else
+            return new BoundStatementNode(atParamsNode, body);
+
         throw new CompilerException("invalid bound statement", boundStatementNode.getCodePosition());
     }
 
 
-
-
-    //TODO -> VisitArithExpression og VisitBoolExpression
-    private ArithExpressionNode visitArithExpression (ArithExpressionNode arithExpressionNode) {
+    //TODO -> VisitArithExpression og VisitBoolExpression og visitConditionalExpression
+    private ArithExpressionNode visitArithExpression(ArithExpressionNode arithExpressionNode) {
         boolean optionalNot = arithExpressionNode.getOptionalNot();
         ArithExpressionNode arithExpressionNode1;
         ArithExpressionNode arithExpressionNode2;
@@ -312,10 +245,10 @@ public class ArduinoGenerator {
         return arithExpressionNode;
     }
 
-    private BoolExpressionNode visitBoolExpression(BoolExpressionNode boolExpressionNode){
+    private BoolExpressionNode visitBoolExpression(BoolExpressionNode boolExpressionNode) {
         if (boolExpressionNode.getBoolExprOperandNodes() != null)
             visitBoolOperation(boolExpressionNode.getBoolExpressionOperators());
-        return  boolExpressionNode;
+        return boolExpressionNode;
     }
 
     //TODO -> visitForStatement
@@ -328,16 +261,17 @@ public class ArduinoGenerator {
         if (arithExpressionNode1.getVariableName() != null) {
             statementNodes.add(arithExpressionNode1.getVariableName());
             return new ForStatementNode(arithExpressionNode1);
-        }
-        else if (arithExpressionNode1.get)
+        } else if (arithExpressionNode1.get)
     }
 
-
-
-
-
-
-
+    private ConditionalExpressionNode visitConditionalExpression(ConditionalExpressionNode conditionalExpressionNode) {
+        BoolExpressionNode boolExpressionNode;
+        if (conditionalExpressionNode.getBoolExpressionNode() != null) {
+            boolExpressionNode = visitBoolExpression(conditionalExpressionNode.getBoolExpressionNode());
+            return new ConditionalExpressionNode(boolExpressionNode);
+        } else
+            throw new CompilerException("Invalid conditional-expression", conditionalExpressionNode.getCodePosition());
+    }
 
 
 }
