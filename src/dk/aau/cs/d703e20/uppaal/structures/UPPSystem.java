@@ -2,10 +2,18 @@ package dk.aau.cs.d703e20.uppaal.structures;
 
 import com.uppaal.model.core2.Document;
 import com.uppaal.model.core2.Element;
+import com.uppaal.model.core2.Location;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.LKind;
+import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.setLabel;
 
 public class UPPSystem extends Document {
     // Store all declarations before setting them
     private final StringBuilder globalDeclSB = new StringBuilder("// Global declarations\n");
+    private final List<UPPTemplate> templateList = new ArrayList<>();
 
     public UPPSystem(Element prototype) {
         super(prototype);
@@ -14,12 +22,16 @@ public class UPPSystem extends Document {
     /**
      * Overwritten to return subclass.
      * Template cannot be cast to UPPTemplate.
+     * Automatically setup start location.
      *
      * @return new UPPTemplate
      */
     @Override
     public UPPTemplate createTemplate() {
-        return new UPPTemplate((Element) this.getPropertyValue("#template"));
+        UPPTemplate t = new UPPTemplate((Element) this.getPropertyValue("#template"));
+        Location l = t.addLocation("start", 0, 0);
+        setLabel(l, LKind.init, true, 0, 0);
+        return t;
     }
 
     /**
@@ -34,10 +46,15 @@ public class UPPSystem extends Document {
         t.setProperty("name", name);
         // Insert template into UPPAAL model
         this.insert(t, null);
+        templateList.add(t);
         return t;
     }
 
     public StringBuilder getGlobalDeclSB() {
         return globalDeclSB;
+    }
+
+    public List<UPPTemplate> getTemplateList() {
+        return templateList;
     }
 }

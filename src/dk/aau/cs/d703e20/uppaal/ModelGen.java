@@ -7,19 +7,19 @@ import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.statements.PinDeclarationNode;
 import dk.aau.cs.d703e20.ast.statements.StatementNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
-import dk.aau.cs.d703e20.ast.structure.BlockNode;
-import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
-import dk.aau.cs.d703e20.ast.structure.ProgramNode;
-import dk.aau.cs.d703e20.ast.structure.SetupNode;
+import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
 import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 
 public class ModelGen {
     // New system with default properties
     UPPSystem system = new UPPSystem(new PrototypeDocument());
+    // Map of channels to start templates from loop
+    HashMap<UPPTemplate, String> chanMap = new HashMap<>();
 
     // sample setup and debugging
     void createExample() {
@@ -29,7 +29,7 @@ public class ModelGen {
         Location l0 = t.addLocation("L0", 0, 0);
         // Location is initial
         l0.setProperty("init", true);
-        // add system declaration:
+        // add system declaration
         system.setProperty("system", "Exp1=exampleTemplate();\n" + "system Exp1;");
 
         // Save model for debugging
@@ -41,6 +41,11 @@ public class ModelGen {
         }
     }
 
+    // Adds declaration from pair to global scope
+    private void printChanMap(UPPTemplate key, String value) {
+        system.getGlobalDeclSB().append("chan ").append(value).append(";\n");
+    }
+
     /**
      * Begins the process of generating UPPAAL code corresponding to the program
      *
@@ -48,14 +53,21 @@ public class ModelGen {
      * @return Document for UPPAAL to compile
      */
     public UPPSystem visitProgram(ProgramNode programNode) {
+        programNode.getFunctionDeclarationNodes().forEach(this::visitFuncDecl);
+        visitLoop(programNode.getLoopNode());
         visitSetup(programNode.getSetupNode());
-        //TODO: visitLoop();
         createExample(); //TODO: remove
         return system;
     }
 
+    private void visitLoop(LoopNode loopNode) {
+        UPPTemplate template = system.createTemplate("controller");
+        visitBlock(loopNode.getBlockNode(), template);
+        template.flushSB();
+    }
+
     /**
-     * Goes through all declarations made in setup() and adds them to global UPPAAL scope
+     * Goes through all declarations made in setup() and finally sets global UPPAAL scope
      *
      * @param setupNode Source setup() from programNode
      */
@@ -70,6 +82,7 @@ public class ModelGen {
                 visitPinDecl((PinDeclarationNode) statementNode, system);
             }
         }
+        chanMap.forEach(this::printChanMap);
         system.setProperty("declaration", system.getGlobalDeclSB().toString());
     }
 
@@ -77,23 +90,23 @@ public class ModelGen {
      * Visit new block.
      * Pass StringBuilder of new template.
      *
-     * @param blockNode     Block of current node
-     * @param stringBuilder StringBuilder from current visitor
+     * @param blockNode Block of current node
+     * @param template  Current UPPTemplate for statement, function declaration or loop
      */
-    private void visitBlock(BlockNode blockNode, StringBuilder stringBuilder, UPPTemplate template) {
-        for (StatementNode statementNode : blockNode.getStatementNodes()) {
-            visitStatement(statementNode, stringBuilder, template);
-        }
+    private void visitBlock(BlockNode blockNode, UPPTemplate template) {
+        // Visit each statement in block
+        blockNode.getStatementNodes().forEach(statementNode -> visitStatement(statementNode, template));
+
     }
 
     /**
      * Select visitor based on type of statement.
      * Some of these visitors open new templates.
      *
-     * @param statementNode From a BlockNode
-     * @param stringBuilder From a BlockNode
+     * @param statementNode Current statement in BlockNode
+     * @param template      Current template from BlockNode
      */
-    private void visitStatement(StatementNode statementNode, StringBuilder stringBuilder, UPPTemplate template) {
+    private void visitStatement(StatementNode statementNode, UPPTemplate template) {
         if (statementNode instanceof PinDeclarationNode)
             visitPinDecl((PinDeclarationNode) statementNode, template);
         else if (statementNode instanceof VariableDeclarationNode)
@@ -101,12 +114,11 @@ public class ModelGen {
         /*
         TODO:
           visitAssignment (only for clock)
-          visitFunctionCall
+          visitFunctionCall, begin_Function!
           visitIfElseStatement, create new template
-          visitIterativeStatement
+          visitIterativeStatement, create new template
           visitAtStatement, create new template
           visitBoundStatement, create new template
-          visitReturnStatement
          */
     }
 
@@ -146,6 +158,11 @@ public class ModelGen {
     }
 
     private void visitFuncDecl(FunctionDeclarationNode functionDeclarationNode) {
-        // TODO: create new template
+        // Create new template
+        UPPTemplate template = system.createTemplate(functionDeclarationNode.getFunctionName());
+        chanMap.put(template, "begin_" + functionDeclarationNode.getFunctionName());
+        visitBlock(functionDeclarationNode.getBlockNode(), template);
+        // Flush StringBuilder into property
+        template.flushSB();
     }
 }
