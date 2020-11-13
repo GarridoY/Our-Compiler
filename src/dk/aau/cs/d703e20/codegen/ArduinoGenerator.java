@@ -64,8 +64,8 @@ public class ArduinoGenerator {
     private BlockNode visitBlock(BlockNode blockNode) {
         ArrayList<StatementNode> statementNodes = new ArrayList<>();
 
-        //for (StatementNode statement : blockNode.getStatementNodes())
-        //    statementNodes.addAll(visitStatement(statement));
+        for (StatementNode statement : blockNode.getStatementNodes())
+            statementNodes.addAll(visitStatement(statement));
 
         return new BlockNode(statementNodes);
     }
@@ -237,7 +237,7 @@ public class ArduinoGenerator {
         throw new CompilerException("invalid bound statement", boundStatementNode.getCodePosition());
     }
 
-    private AssignArrayNode visitAssignArray(AssignArrayNode assignArrayNode){
+    private AssignArrayNode visitAssignArray(AssignArrayNode assignArrayNode) {
         String variableName = assignArrayNode.getVariableName();
         ArrayList<ArrayParamNode> arrayParamNodes = new ArrayList<>();
 
@@ -247,14 +247,13 @@ public class ArduinoGenerator {
         return new AssignArrayNode(variableName, arrayParamNodes);
     }
 
-    private ArrayParamNode visitArrayParam(ArrayParamNode arrayParamNode){
+    private ArrayParamNode visitArrayParam(ArrayParamNode arrayParamNode) {
         String literal = arrayParamNode.getLiteral();
         ArithExpressionNode arithExpressionNode = arrayParamNode.getArithExpressionNode();
 
         if (literal != null) {
             return new ArrayParamNode(literal);
-        }
-        else return new ArrayParamNode(visitArithExpression(arithExpressionNode));
+        } else return new ArrayParamNode(visitArithExpression(arithExpressionNode));
     }
 
     private ForStatementNode visitForStatement(ForStatementNode forStatementNode) {
@@ -271,35 +270,6 @@ public class ArduinoGenerator {
         String pinNumber = pinDeclarationNode.getPinNumber();
 
         return new PinDeclarationNode(pinType, variableName, pinNumber);
-    }
-
-
-    //TODO -> VisitArithExpression og VisitBoolExpression og visitConditionalExpression
-    private ArithExpressionNode visitArithExpression(ArithExpressionNode arithExpressionNode) {
-        boolean optionalNot = arithExpressionNode.getOptionalNot();
-        ArithExpressionNode arithExpressionNode1;
-        ArithExpressionNode arithExpressionNode2;
-        Enums.ArithOperator arithOperator;
-
-        if (optionalNot) {
-
-        }
-        return arithExpressionNode;
-    }
-
-    private BoolExpressionNode visitBoolExpression(BoolExpressionNode boolExpressionNode) {
-        if (boolExpressionNode.getBoolExprOperandNodes() != null)
-            visitBoolOperation(boolExpressionNode.getBoolExpressionOperators());
-        return boolExpressionNode;
-    }
-
-    private ConditionalExpressionNode visitConditionalExpression(ConditionalExpressionNode conditionalExpressionNode) {
-        BoolExpressionNode boolExpressionNode;
-        if (conditionalExpressionNode.getBoolExpressionNode() != null) {
-            boolExpressionNode = visitBoolExpression(conditionalExpressionNode.getBoolExpressionNode());
-            return new ConditionalExpressionNode(boolExpressionNode);
-        } else
-            throw new CompilerException("Invalid conditional-expression", conditionalExpressionNode.getCodePosition());
     }
 
 
