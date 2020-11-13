@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UPPTemplate extends Template {
+    String Name;
     // Store all local declarations before setting them
     private final StringBuilder declSB = new StringBuilder();
     // 0 is always start
@@ -21,6 +22,14 @@ public class UPPTemplate extends Template {
 
     public List<Location> getLocationList() {
         return locationList;
+    }
+
+    public String getName() {
+        return Name;
+    }
+
+    public void setName(String name) {
+        Name = name;
     }
 
     /**

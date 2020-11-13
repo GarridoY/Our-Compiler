@@ -42,12 +42,23 @@ public class UPPSystem extends Document {
      */
     public UPPTemplate createTemplate(String name) {
         UPPTemplate t = createTemplate();
-        // Set template name
+        // Set template name (UPPAAL) then (JAVA)
         t.setProperty("name", name);
+        t.setName(name);
         // Insert template into UPPAAL model
         this.insert(t, null);
         templateList.add(t);
         return t;
+    }
+
+    public void setDeclaration() {
+        StringBuilder sb = new StringBuilder("system");
+        for (UPPTemplate template : templateList) {
+            sb.append(" ").append(template.getName()).append(",");
+        }
+        // End with ; rather than ,
+        sb.setCharAt(sb.length()-1, ';');
+        this.setProperty("system", (sb.toString()));
     }
 
     public StringBuilder getGlobalDeclSB() {

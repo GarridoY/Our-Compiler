@@ -30,7 +30,7 @@ public class ModelGen {
         // Location is initial
         l0.setProperty("init", true);
         // add system declaration
-        system.setProperty("system", "Exp1=exampleTemplate();\n" + "system Exp1;");
+        system.setDeclaration();
 
         // Save model for debugging
         try {
