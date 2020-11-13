@@ -67,7 +67,7 @@ public class VariableDeclarationNode extends StatementNode {
     public String prettyPrint(int indentation) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(Enums.stringFromDataType(dataType));
+        sb.append(Enums.stringFromDataType(dataType, allocatedSize));
         sb.append(" ");
         if (assignmentNode != null)
             sb.append(assignmentNode.prettyPrint(indentation));
