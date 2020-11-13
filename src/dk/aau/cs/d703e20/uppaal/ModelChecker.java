@@ -129,14 +129,14 @@ public class ModelChecker {
 
     private Engine connectToEngine() throws EngineException, IOException {
         String os = System.getProperty("os.name");
-        //String here = System.getProperty("user.dir");
         String here = Main.uppaalDirectory;
+
         String path = null;
-        if ("Linux".equals(os)) {
+        if ("Linux".equals(os))
             path = here + "/bin-Linux/server";
-        } else {
+        else
             path = here + "\\bin-Windows\\server.exe";
-        }
+
         Engine engine = new Engine();
         engine.setServerPath(path);
         engine.setServerHost("localhost");
@@ -183,7 +183,8 @@ public class ModelChecker {
             if (tr.getSize() == 0) {
                 // no edges, something special (like "deadlock"):
                 System.out.println(tr.getEdgeDescription());
-            } else {
+            }
+            else {
                 // one or more edges involved, print them:
                 for (SystemEdge e : tr.getEdges()) {
                     System.out.print(e.getProcessName() + ": "
