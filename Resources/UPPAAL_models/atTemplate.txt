@@ -5,7 +5,7 @@ setup {
 
 loop {
 	int index = 0;
-	bool ready = true;
+	bool ready = false;
 
 	// Example 1, simple
 	at (x > 20) {
@@ -28,6 +28,7 @@ loop {
 	}
 
 	// Statements
+	ready = true;
 }
 
 

@@ -64,8 +64,8 @@ public class ArduinoGenerator {
     private BlockNode visitBlock(BlockNode blockNode) {
         ArrayList<StatementNode> statementNodes = new ArrayList<>();
 
-        for (StatementNode statement : blockNode.getStatementNodes())
-            statementNodes.addAll(visitStatement(statement));
+        //for (StatementNode statement : blockNode.getStatementNodes())
+        //    statementNodes.addAll(visitStatement(statement));
 
         return new BlockNode(statementNodes);
     }
