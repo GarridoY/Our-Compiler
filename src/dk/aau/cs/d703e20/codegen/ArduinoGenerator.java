@@ -1,147 +1,88 @@
 package dk.aau.cs.d703e20.codegen;
 
 import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.expressions.*;
+import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.FunctionArgNode;
 import dk.aau.cs.d703e20.ast.statements.*;
-import dk.aau.cs.d703e20.ast.structure.*;
+import dk.aau.cs.d703e20.ast.structure.BlockNode;
+import dk.aau.cs.d703e20.ast.structure.LoopNode;
+import dk.aau.cs.d703e20.ast.structure.ProgramNode;
+import dk.aau.cs.d703e20.ast.structure.SetupNode;
+import dk.aau.cs.d703e20.codegen.arduino.statements.*;
+import dk.aau.cs.d703e20.codegen.arduino.structure.*;
 import dk.aau.cs.d703e20.errorhandling.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.List;
 
 
 public class ArduinoGenerator {
 
-    private StringBuilder sb;
-
-    private static HashMap<String, VariableDeclarationNode> variables;
-    private LinkedHashSet<String> usedVariables;
-    private ArrayList<FunctionDeclarationNode> Functions;
-
-    public static HashMap<String, VariableDeclarationNode> getVariables() {
-        return variables;
-    }
+    private ArrayList<VariableDeclarationNode> globalVariables;
+    private ArrayList<FunctionDeclarationNode> functions;
 
     public String GenerateArduino(ProgramNode ast) {
-        sb = new StringBuilder();
+        globalVariables = new ArrayList<>();
+        functions = new ArrayList<>();
 
-        variables = new HashMap<>();
-        usedVariables = new LinkedHashSet<>();
+        ArduinoProgramNode program = visitProgram(ast);
 
-        Functions = new ArrayList<>();
-
-        ProgramNode program = visitProgram(ast);
-
-        //TODO: generateSetup();
-        //TODO: generateLoop();
-        //TODO generateFunctions();
-
-        return sb.toString();
+        return program.prettyPrint(0);
     }
 
 
-    private ProgramNode visitProgram(ProgramNode programNode) {
-        SetupNode setupNode = visitSetup(programNode.getSetupNode());
-        LoopNode loopNode = visitLoop(programNode.getLoopNode());
+    private ArduinoProgramNode visitProgram(ProgramNode programNode) {
+        ArduinoSetupNode setupNode = visitSetup(programNode.getSetupNode());
+        ArduinoLoopNode loopNode = visitLoop(programNode.getLoopNode());
+
+        // TODO: visit function declarations
         ArrayList<FunctionDeclarationNode> functionDeclarationNodes = new ArrayList<>();
 
-        for (FunctionDeclarationNode functionDeclarationNode : programNode.getFunctionDeclarationNodes()) {
-            functionDeclarationNodes.add(visitFunctionDeclaration(functionDeclarationNode));
+        return new ArduinoProgramNode(globalVariables, setupNode, loopNode, functionDeclarationNodes);
+    }
+
+    private ArduinoSetupNode visitSetup(SetupNode setupNode) {
+        ArduinoSetupNode arduinoSetupNode = new ArduinoSetupNode(visitBlockNode(setupNode.getBlockNode()));
+        return arduinoSetupNode;
+    }
+
+    private ArduinoLoopNode visitLoop(LoopNode loopNode) {
+        ArduinoLoopNode arduinoLoopNode = new ArduinoLoopNode(visitBlockNode(loopNode.getBlockNode()));
+        return arduinoLoopNode;
+    }
+
+    private BlockNode visitBlockNode(BlockNode blockNode) {
+        List<StatementNode> statementNodes = new ArrayList<>();
+        for (StatementNode statementNode : blockNode.getStatementNodes()) {
+            if (statementNode instanceof PinDeclarationNode) {
+                PinDeclarationNode pinDeclNode = (PinDeclarationNode)statementNode;
+                statementNodes.add(visitPinDeclaration(pinDeclNode));
+            }
+            //TODO: do specific visits
+            statementNodes.add(statementNode);
         }
-
-        return new ProgramNode(setupNode, loopNode, functionDeclarationNodes);
-    }
-
-    private SetupNode visitSetup(SetupNode setupNode) {
-        return new SetupNode(visitBlock(setupNode.getBlockNode()));
-    }
-
-    private LoopNode visitLoop(LoopNode loopNode) {
-        return new LoopNode(visitBlock(loopNode.getBlockNode()));
-    }
-
-    private BlockNode visitBlock(BlockNode blockNode) {
-        ArrayList<StatementNode> statementNodes = new ArrayList<>();
-
-        for (StatementNode statement : blockNode.getStatementNodes())
-            statementNodes.addAll(visitStatement(statement));
-
         return new BlockNode(statementNodes);
     }
 
-    private ArrayList<StatementNode> visitStatement(StatementNode statementNode) {
-        ArrayList<StatementNode> statementNodes = new ArrayList<>();
+    // Adds a variable declaration [ int pinName = number; ] globally
+    // and returns a function call [ pinMode(pinName, INPUT/OUTPUT); ]
+    private FunctionCallNode visitPinDeclaration(PinDeclarationNode pinDeclarationNode) {
+        String varName = pinDeclarationNode.getVariableName();
+        String pinNumber = pinDeclarationNode.getPinNumber();
+        Enums.PinType pinType = pinDeclarationNode.getPinType();
 
-        if (statementNode instanceof AssignmentNode)
-            statementNodes.add(visitAssignment((AssignmentNode) statementNode));
-        else if (statementNode instanceof VariableDeclarationNode)
-            statementNodes.add(visitVariableDeclaration((VariableDeclarationNode) statementNode));
-        else if (statementNode instanceof IfElseStatementNode)
-            statementNodes.add(visitIfElseStatement((IfElseStatementNode) statementNode));
-        else if (statementNode instanceof ReturnStatementNode)
-            statementNodes.add(visitReturnStatement((ReturnStatementNode) statementNode));
-        else if (statementNode instanceof FunctionCallNode)
-            statementNodes.add(visitFunctionCall((FunctionCallNode) statementNode));
-        else if (statementNode instanceof ForStatementNode)
-            statementNodes.add(visitForStatement((ForStatementNode) statementNode));
-        else if (statementNode instanceof WhileStatementNode)
-            statementNodes.add(visitWhileStatement((WhileStatementNode) statementNode));
-        else if (statementNode instanceof AtStatementNode)
-            statementNodes.add(visitAtStatement((AtStatementNode) statementNode));
-        else if (statementNode instanceof BoundStatementNode)
-            statementNodes.add(visitBoundStatement((BoundStatementNode) statementNode));
-        else if (statementNode instanceof AssignArrayNode)
-            statementNodes.add(visitAssignArray((AssignArrayNode) statementNode));
-        else if (statementNode instanceof PinDeclarationNode)
-            statementNodes.add(visitPinDeclaration((PinDeclarationNode) statementNode));
-        else {
-            throw new RuntimeException("Statement is of unknown type: " + statementNode.prettyPrint(0));
-        }
-        return statementNodes;
+        // int pinName = number;
+        globalVariables.add(new VariableDeclarationNode(Enums.DataType.INT, new AssignmentNode(varName, pinNumber)));
+
+        // pinMode(pinName, INPUT/OUTPUT);
+        List<FunctionArgNode> functionArgNodes = new ArrayList<>();
+        functionArgNodes.add(new FunctionArgNode(new ArithExpressionNode(varName, false)));
+        String io = pinType == Enums.PinType.IPIN ? "INPUT" : "OUTPUT";
+        functionArgNodes.add(new FunctionArgNode(new ArithExpressionNode(io, false)));
+        return new FunctionCallNode("pinMode", functionArgNodes);
     }
 
-    private AssignmentNode visitAssignment(AssignmentNode assignmentNode) {
-        String variableName = assignmentNode.getVariableName();
-        ArithExpressionNode arithExpressionNode = assignmentNode.getArithExpressionNode();
-        return new AssignmentNode(variableName, arithExpressionNode);
-    }
-
-    private VariableDeclarationNode visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
-        Enums.DataType dataType = variableDeclarationNode.getDataType();
-        return new VariableDeclarationNode(dataType, variableDeclarationNode.getAssignmentNode());
-    }
-
-    private IfElseStatementNode visitIfElseStatement(IfElseStatementNode ifElseStatementNode) {
-        IfStatementNode ifStatementNode = visitIfStatement(ifElseStatementNode.getIfStatementNode());
-        ElseStatementNode elseStatementNode = visitElseStatement(ifElseStatementNode.getElseStatement());
-        ArrayList<ElseIfStatementNode> elseIfStatementNodes = new ArrayList<>();
-
-        if (ifElseStatementNode.getElseIfStatementNodes() != null) {
-            for (ElseIfStatementNode elseIfStatementNode : ifElseStatementNode.getElseIfStatementNodes()) {
-                elseIfStatementNodes.add(visitElseIfStatement(elseIfStatementNode));
-            }
-        }
-
-        return new IfElseStatementNode(ifStatementNode, elseIfStatementNodes, elseStatementNode);
-    }
-
-    private IfStatementNode visitIfStatement(IfStatementNode ifStatementNode) {
-        ConditionalExpressionNode conditionalExpressionNode = ifStatementNode.getConditionalExpressionNode();
-        BlockNode blockNode = ifStatementNode.getBlockNode();
-        return new IfStatementNode(visitConditionalExpression(conditionalExpressionNode), visitBlock(blockNode));
-    }
-
-    private ElseIfStatementNode visitElseIfStatement(ElseIfStatementNode elseIfStatementNode) {
-        ConditionalExpressionNode conditionalExpressionNode = elseIfStatementNode.getConditionalExpressionNode();
-        BlockNode blockNode = elseIfStatementNode.getBlockNode();
-        return new ElseIfStatementNode(visitConditionalExpression(conditionalExpressionNode), visitBlock(blockNode));
-    }
-
-    private ElseStatementNode visitElseStatement(ElseStatementNode elseStatementNode) {
-        return new ElseStatementNode(visitBlock(elseStatementNode.getBlockNode()));
-    }
-
+    /*
     private FunctionDeclarationNode visitFunctionDeclaration(FunctionDeclarationNode functionDeclarationNode) {
         Enums.DataType dataType = functionDeclarationNode.getDataType();
         String functionName = functionDeclarationNode.getFunctionName();
@@ -263,14 +204,6 @@ public class ArduinoGenerator {
 
         return new ForStatementNode(visitArithExpression(arithExpressionNode1), visitArithExpression(arithExpressionNode2), visitBlock(blockNode));
     }
-
-    private PinDeclarationNode visitPinDeclaration(PinDeclarationNode pinDeclarationNode) {
-        Enums.PinType pinType = pinDeclarationNode.getPinType();
-        String variableName = pinDeclarationNode.getVariableName();
-        String pinNumber = pinDeclarationNode.getPinNumber();
-
-        return new PinDeclarationNode(pinType, variableName, pinNumber);
-    }
-
+    */
 
 }
