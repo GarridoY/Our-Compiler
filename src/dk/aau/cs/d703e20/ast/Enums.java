@@ -62,6 +62,21 @@ public class Enums {
         }
     }
 
+    public static String stringFromDataType (DataType dataType, int allocatedSize) {
+        switch (dataType) {
+            case INT:          return "int";
+            case STRING:       return "string";
+            case CLOCK:        return "clock";
+            case BOOL:         return "bool";
+            case DOUBLE:       return "double";
+            case INT_ARRAY:    return allocatedSize > 0 ? "int[" + allocatedSize + "]" : "int[]";
+            case DOUBLE_ARRAY: return allocatedSize > 0 ? "double[" + allocatedSize + "]" : "double[]";
+            case BOOL_ARRAY:   return allocatedSize > 0 ? "bool[" + allocatedSize + "]" : "bool[]";
+            case VOID:         return "void";
+            default:           return "UNKNOWN DATATYPE";
+        }
+    }
+
     public static String stringFromPinType (PinType pinType) {
         switch (pinType) {
             case IPIN: return "ipin";
