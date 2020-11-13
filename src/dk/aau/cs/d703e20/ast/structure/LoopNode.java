@@ -20,7 +20,7 @@ public class LoopNode implements ASTNode {
     public String prettyPrint(int indentation) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("void loop() ");
+        sb.append("Loop ");
         sb.append(blockNode.prettyPrint(indentation));
 
         return sb.toString();

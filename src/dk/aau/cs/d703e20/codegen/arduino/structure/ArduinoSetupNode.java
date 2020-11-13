@@ -21,7 +21,7 @@ public class ArduinoSetupNode implements ASTNode {
     public String prettyPrint(int indentation) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Setup ");
+        sb.append("void setup() ");
         sb.append(blockNode.prettyPrint(indentation));
 
         return sb.toString();

@@ -21,7 +21,7 @@ public class ArduinoLoopNode implements ASTNode {
     public String prettyPrint(int indentation) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Loop ");
+        sb.append("void loop() ");
         sb.append(blockNode.prettyPrint(indentation));
 
         return sb.toString();

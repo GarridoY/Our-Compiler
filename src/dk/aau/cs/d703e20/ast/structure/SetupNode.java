@@ -20,7 +20,7 @@ public class SetupNode implements ASTNode {
     public String prettyPrint(int indentation) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("void setup() ");
+        sb.append("Setup ");
         sb.append(blockNode.prettyPrint(indentation));
 
         return sb.toString();
