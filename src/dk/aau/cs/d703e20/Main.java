@@ -6,16 +6,31 @@ import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.semantics.SemanticChecker;
-import dk.aau.cs.d703e20.semantics.TimeVerifier;
+import dk.aau.cs.d703e20.uppaal.ModelChecker;
+import dk.aau.cs.d703e20.uppaal.ModelGen;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+
+import java.io.File;
 import java.io.IOException;
 
 public class Main {
+    public static String uppaalDirectory;
+
     public static void main(String[] args) {
         String inputFileName = null;
         boolean prettyPrint = false;
 
+        String outputDirPath = System.getProperty("user.dir") + "\\Resources\\output";
+        File file = new File(outputDirPath);
+
+        if (!file.isDirectory()) {
+            boolean makeDirSucceeded = file.mkdir();
+            if (!makeDirSucceeded)
+                throw new RuntimeException("Failed to create output folder");
+        }
+
+        //TODO: we need a better solution for checking arguments
         if (args.length > 0) {
             // Set file name which is to be compiled.
             inputFileName = args[0];
@@ -23,6 +38,8 @@ public class Main {
             if (args.length > 1) {
                 if (args[1].equals("-pp"))
                     prettyPrint = true;
+                else
+                    uppaalDirectory = args[1]; //TODO: this is very hacky
             }
         }
 
@@ -60,8 +77,8 @@ public class Main {
             System.out.println("Semantics ok");
 
             // VERIFY TIME IN UPPAAL
-            TimeVerifier timeVerifier = new TimeVerifier();
-            timeVerifier.verifyProgram(programNode);
+            ModelChecker modelChecker = new ModelChecker();
+            modelChecker.checkProgram(programNode);
             System.out.println("Time ok");
         }
         catch (IOException e) {

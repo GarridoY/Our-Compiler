@@ -18,8 +18,6 @@ public class SemanticChecker {
     public SemanticChecker() {
         HashMap<String, ASTNode> newSymbolTable = new HashMap<>();
         this.hashMapStack.push(newSymbolTable);
-
-
         // Add standard functions to symbol table
         enterFunction(
             new FunctionDeclarationNode(
@@ -265,83 +263,225 @@ public class SemanticChecker {
         ASTNode declaration = retrieveSymbol(functionCallNode.getFunctionName());
         if (declaration != null) {
             FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode)declaration;
-
+            List<FunctionParameterNode> functionParameterNodes = functionDeclarationNode.getFunctionParameterNodes();
             //TODO: check if arguments/parameters match etc.
-
+            for (int i = 0; i < functionCallNode.getFunctionArgNodes().size(); i++) {
+                FunctionArgNode functionArgNode = functionCallNode.getFunctionArgNodes().get(i);
+                Enums.DataType functionArgNodeDataType = null;
+                if (functionArgNode.getArithExpressionNode() != null) {
+                    functionArgNodeDataType = visitArithmeticExpression(functionArgNode.getArithExpressionNode());
+                } else if (functionArgNode.getBoolExpressionNode() != null) {
+                    functionArgNodeDataType = Enums.DataType.BOOL;
+                }
+                if (functionParameterNodes.get(i).getDataType() != functionArgNodeDataType) {
+                    throw new IllegalFunctionCallException(functionCallNode.getFunctionName(), functionCallNode.getCodePosition());
+                }
+            }
             return functionDeclarationNode.getDataType();
         }
         else {
-            throw new UndeclaredFunctionException(
-                    functionCallNode.getFunctionName(),
-                    functionCallNode.getCodePosition());
+            throw new UndeclaredFunctionException(functionCallNode.getFunctionName(), functionCallNode.getCodePosition());
         }
     }
 
     private void visitIfElseStatement(IfElseStatementNode ifElseStatementNode) {
+        IfStatementNode ifStatementNode = ifElseStatementNode.getIfStatementNode();
 
-    }
 
-    private void visitForStatement(ForStatementNode forStatementNode) {
+        visitConditionalExpression(ifStatementNode.getConditionalExpressionNode());
+        //visitBooleanExpression(ifStatementNode.getConditionalExpressionNode().getBoolExpressionNode());
+        if (ifStatementNode.getBlockNode() != null){
+            visitBlock(ifStatementNode.getBlockNode());
+        } else if (ifStatementNode.getBlockNode().getStatementNodes() != null){
+            for (StatementNode statement: ifStatementNode.getBlockNode().getStatementNodes()) {
+                visitStatement(statement);
+            }
+        } else {
+            for (StatementNode statement: ifStatementNode.getBlockNode().getStatementNodes()
+            ) {
+                if (statement instanceof ReturnStatementNode){
+                    visitReturnStatement((ReturnStatementNode) statement, getDataTypeFromName(((ReturnStatementNode) statement).getVariableName()));
+                }
+            }
+        }
 
-    }
+        if (ifElseStatementNode.getElseIfStatementNodes() != null){
+            for (ElseIfStatementNode elseIfStatementNode: ifElseStatementNode.getElseIfStatementNodes()) {
+                visitConditionalExpression(elseIfStatementNode.getConditionalExpressionNode());
+                //visitBooleanExpression(elseIfStatementNode.getConditionalExpressionNode().getBoolExpressionNode());
+                if (elseIfStatementNode.getBlockNode() != null){
+                    visitBlock(elseIfStatementNode.getBlockNode());
+                } else if (elseIfStatementNode.getBlockNode().getStatementNodes() != null){
+                    for (StatementNode statement : elseIfStatementNode.getBlockNode().getStatementNodes()) {
+                        visitStatement(statement);
+                    }
+                } else {
+                    for (StatementNode statement : elseIfStatementNode.getBlockNode().getStatementNodes()) {
+                        visitReturnStatement((ReturnStatementNode) statement, getDataTypeFromName(((ReturnStatementNode) statement).getVariableName()));
+                    }
+                }
+            }
+        }
 
-    private void visitWhileStatement(WhileStatementNode whileStatementNode) {
-
-    }
-
-    private void visitAtStatement(AtStatementNode atStatementNode) {
-
-    }
-
-    private void visitBoundStatement(BoundStatementNode boundStatementNode) {
-
-    }
-
-    public void visitBooleanExpression(BoolExpressionNode boolExpressionNode) {
-        for (int i = 0; i < boolExpressionNode.getBoolExpressionOperators().size(); i++) {
-            Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(i);
-
-            ArithExpressionNode leftArith =
-                    boolExpressionNode.getBoolExprOperandNodes().get(i).getArithExpressionNode();
-
-            ArithExpressionNode rightArith =
-                    boolExpressionNode.getBoolExprOperandNodes().get(i+1).getArithExpressionNode();
-
-            String leftBool = boolExpressionNode.getBoolExprOperandNodes().get(i).getBoolLiteral();
-            String rightBool = boolExpressionNode.getBoolExprOperandNodes().get(i+1).getBoolLiteral();
-
-            // Typechecking operators (Only bools can &&, ||. Bools cannot <, >)
-            switch (operator) {
-                case OR:
-                case AND:
-                    throwIfNotBool(leftArith, boolExpressionNode.getCodePosition());
-                    throwIfNotBool(rightArith, boolExpressionNode.getCodePosition());
-                    break;
-                    
-                case GREATER_THAN:
-                case GREATER_OR_EQUAL:
-                case LESS_THAN:
-                case LESS_OR_EQUAL:
-                    throwIfBool(leftArith, leftBool, boolExpressionNode.getCodePosition());
-                    throwIfBool(rightArith, rightBool, boolExpressionNode.getCodePosition());
-                    break;
+        if (ifElseStatementNode.getElseStatement() != null){
+            if (ifElseStatementNode.getElseStatement().getBlockNode() != null) {
+                visitBlock(ifElseStatementNode.getElseStatement().getBlockNode());
+            } else if (ifElseStatementNode.getElseStatement().getBlockNode().getStatementNodes() != null){
+                for (StatementNode statement : ifElseStatementNode.getElseStatement().getBlockNode().getStatementNodes()) {
+                    visitStatement(statement);
+                }
+            } else {
+                for (StatementNode statement : ifElseStatementNode.getElseStatement().getBlockNode().getStatementNodes()) {
+                    visitReturnStatement((ReturnStatementNode) statement, getDataTypeFromName(((ReturnStatementNode) statement).getVariableName()));
+                }
             }
         }
     }
 
-    private void throwIfNotBool(ArithExpressionNode arithExp, CodePosition codePosition) {
-        if (arithExp != null) {
-            if (visitArithmeticExpression(arithExp) != Enums.DataType.BOOL)
-                throw new IllegalOperandException(arithExp.prettyPrint(0), codePosition);
+    private void visitConditionalExpression(ConditionalExpressionNode conditionalExpressionNode) {
+        if (conditionalExpressionNode.getBoolExpressionNode() != null) {
+            visitBooleanExpression(conditionalExpressionNode.getBoolExpressionNode());
+        } else if (conditionalExpressionNode.getVariableName() != null){
+            if (!getDataTypeFromName(conditionalExpressionNode.getVariableName()).equals(Enums.DataType.BOOL) ) {
+                throw new IllegalConditionalExpressionException(conditionalExpressionNode.getCodePosition());
+            }
+        } else if (conditionalExpressionNode.getFunctionCallNode() != null) {
+            if (!getDataTypeFromName(conditionalExpressionNode.getFunctionCallNode().getFunctionName()).equals(Enums.DataType.BOOL)) {
+                throw new IllegalConditionalExpressionException(conditionalExpressionNode.getCodePosition());
+            }
+        } else if (conditionalExpressionNode.getSubscriptNode() != null) {
+            if (!getDataTypeFromName(conditionalExpressionNode.getSubscriptNode().getVariableName()).equals(Enums.DataType.BOOL)){
+                throw new IllegalConditionalExpressionException(conditionalExpressionNode.getCodePosition());
+            }
         }
     }
 
-    private void throwIfBool(ArithExpressionNode arithExp, String boolExp, CodePosition codePosition) {
-        if (boolExp != null)
-            throw new IllegalOperandException(boolExp, codePosition);
-        else if (arithExp != null) {
-            if (visitArithmeticExpression(arithExp) == Enums.DataType.BOOL)
-                throw new IllegalOperandException(arithExp.prettyPrint(0), codePosition);
+    private void visitForStatement(ForStatementNode forStatementNode) {
+        ArithExpressionNode forLoopExpression1 = forStatementNode.getArithExpressionNode1();
+        ArithExpressionNode forLoopExpression2 = forStatementNode.getArithExpressionNode2();
+
+        openScope();
+
+        visitArithmeticExpression(forLoopExpression1);
+        visitArithmeticExpression(forLoopExpression2);
+
+        if (forStatementNode.getBlockNode() != null) {
+            visitBlock(forStatementNode.getBlockNode());
+        }
+        closeScope();
+    }
+
+    private void visitWhileStatement(WhileStatementNode whileStatementNode) {
+        BoolExpressionNode whileLoopExpression = whileStatementNode.getBoolExpressionNode();
+
+        openScope();
+
+        visitBooleanExpression(whileLoopExpression);
+
+        if (whileStatementNode.getBlockNode() != null) {
+            visitBlock(whileStatementNode.getBlockNode());
+        }
+        closeScope();
+    }
+
+    public void visitAtStatement(AtStatementNode atStatementNode) {
+        visitAtParams(atStatementNode.getAtParamsNode().getBoolExpressionNode());
+        if (atStatementNode.getBlockNode() != null) {
+            visitBlock(atStatementNode.getBlockNode());
+        }
+    }
+
+    public void visitBoundStatement(BoundStatementNode boundStatementNode) {
+        visitAtParams(boundStatementNode.getAtParamsNode().getBoolExpressionNode());
+        if (boundStatementNode.getBody() != null){
+            visitBlock(boundStatementNode.getBody());
+        }
+        if (boundStatementNode.getCatchBlock() != null) {
+            visitBlock(boundStatementNode.getCatchBlock());
+        }
+        if (boundStatementNode.getFinalBlock() != null) {
+            visitBlock(boundStatementNode.getFinalBlock());
+        }
+    }
+
+    private void visitAtParams(BoolExpressionNode boolExpressionNode) {
+        if (boolExpressionNode.getBoolExpressionOperators() != null) {
+            for (int i = 0; i < boolExpressionNode.getBoolExpressionOperators().size(); i++) {
+                Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(i);
+
+                ArithExpressionNode leftArith =
+                        boolExpressionNode.getBoolExprOperandNodes().get(i).getArithExpressionNode();
+
+                ArithExpressionNode rightArith =
+                        boolExpressionNode.getBoolExprOperandNodes().get(i+1).getArithExpressionNode();
+
+                if (leftArith == null || rightArith == null || operator == null){
+                    throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+                }
+                else if (operator == Enums.BoolOperator.OR || operator == Enums.BoolOperator.AND) {
+                    throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+                }
+                else {
+                    visitArithmeticExpression(leftArith);
+                    visitArithmeticExpression(rightArith);
+                }
+            }
+        } else {
+            throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+        }
+    }
+
+    public void visitBooleanExpression(BoolExpressionNode boolExpressionNode) {
+        if (boolExpressionNode.getBoolExpressionOperators() != null) {
+
+            for (int i = 0; i < boolExpressionNode.getBoolExpressionOperators().size(); i++) {
+                Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(i);
+
+                ArithExpressionNode leftArith =
+                        boolExpressionNode.getBoolExprOperandNodes().get(i).getArithExpressionNode();
+
+                ArithExpressionNode rightArith =
+                        boolExpressionNode.getBoolExprOperandNodes().get(i+1).getArithExpressionNode();
+
+                Enums.DataType leftType = null;
+                Enums.DataType rightType = null;
+
+                if (leftArith != null) {
+                    leftType = visitArithmeticExpression(leftArith);
+                } else {
+                    leftType = Enums.DataType.BOOL;
+                }
+
+                if (rightArith != null) {
+                    rightType = visitArithmeticExpression(rightArith);
+                } else {
+                    rightType = Enums.DataType.BOOL;
+                }
+
+                if (leftType != rightType) {
+                    throw new IllegalOperandException(boolExpressionNode.getCodePosition());
+                }
+                // Typechecking operators (Only bools can &&, ||. Bools cannot <, >)
+                switch (operator) {
+                    case OR:
+                    case AND:
+                        if (leftType != Enums.DataType.BOOL || rightType != Enums.DataType.BOOL) {
+                            throw new IllegalOperandException(boolExpressionNode.getCodePosition());
+                        }
+                        break;
+
+                    case GREATER_THAN:
+                    case GREATER_OR_EQUAL:
+                    case LESS_THAN:
+                    case LESS_OR_EQUAL:
+                        if (leftType == Enums.DataType.BOOL || rightType == Enums.DataType.BOOL) {
+                            throw new IllegalOperandException(boolExpressionNode.getCodePosition());
+                        }
+                        break;
+                }
+            }
+        } else if (boolExpressionNode.getBoolExpressionNode() != null){
+            visitBooleanExpression(boolExpressionNode.getBoolExpressionNode());
         }
     }
 
@@ -397,7 +537,6 @@ public class SemanticChecker {
 
         if (variableDeclaration.getDataType() != returnType)
             throw new IncorrectReturnTypeException(returnType, variableDeclaration.getDataType(), returnStatementNode.getCodePosition());
-
     }
 
     private Enums.DataType getDataTypeFromLiteral(String literal) {
