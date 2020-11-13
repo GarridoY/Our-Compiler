@@ -154,6 +154,12 @@ public class ArduinoGenerator {
         return new FunctionDeclarationNode(dataType, functionName, visitBlock(blockNode), functionParameterNodes);
     }
 
+    private FunctionParameterNode visitFunctionParameter(FunctionParameterNode functionParameterNode) {
+        Enums.DataType dataType = functionParameterNode.getDataType();
+        String variableName = functionParameterNode.getVariableName();
+        return new FunctionParameterNode(dataType, variableName);
+    }
+
     private FunctionCallNode visitFunctionCall(FunctionCallNode functionCallNode) {
         ArrayList<FunctionArgNode> functionArgNodes = new ArrayList<>();
         String functionName = functionCallNode.getFunctionName();
@@ -231,6 +237,42 @@ public class ArduinoGenerator {
         throw new CompilerException("invalid bound statement", boundStatementNode.getCodePosition());
     }
 
+    private AssignArrayNode visitAssignArray(AssignArrayNode assignArrayNode){
+        String variableName = assignArrayNode.getVariableName();
+        ArrayList<ArrayParamNode> arrayParamNodes = new ArrayList<>();
+
+        for (ArrayParamNode arrayParamNode : assignArrayNode.getParamNodes()) {
+            arrayParamNodes.add(visitArrayParam(arrayParamNode));
+        }
+        return new AssignArrayNode(variableName, arrayParamNodes);
+    }
+
+    private ArrayParamNode visitArrayParam(ArrayParamNode arrayParamNode){
+        String literal = arrayParamNode.getLiteral();
+        ArithExpressionNode arithExpressionNode = arrayParamNode.getArithExpressionNode();
+
+        if (literal != null) {
+            return new ArrayParamNode(literal);
+        }
+        else return new ArrayParamNode(visitArithExpression(arithExpressionNode));
+    }
+
+    private ForStatementNode visitForStatement(ForStatementNode forStatementNode) {
+        ArithExpressionNode arithExpressionNode1 = forStatementNode.getArithExpressionNode1();
+        ArithExpressionNode arithExpressionNode2 = forStatementNode.getArithExpressionNode2();
+        BlockNode blockNode = forStatementNode.getBlockNode();
+
+        return new ForStatementNode(visitArithExpression(arithExpressionNode1), visitArithExpression(arithExpressionNode2), visitBlock(blockNode));
+    }
+
+    private PinDeclarationNode visitPinDeclaration(PinDeclarationNode pinDeclarationNode) {
+        Enums.PinType pinType = pinDeclarationNode.getPinType();
+        String variableName = pinDeclarationNode.getVariableName();
+        String pinNumber = pinDeclarationNode.getPinNumber();
+
+        return new PinDeclarationNode(pinType, variableName, pinNumber);
+    }
+
 
     //TODO -> VisitArithExpression og VisitBoolExpression og visitConditionalExpression
     private ArithExpressionNode visitArithExpression(ArithExpressionNode arithExpressionNode) {
@@ -249,19 +291,6 @@ public class ArduinoGenerator {
         if (boolExpressionNode.getBoolExprOperandNodes() != null)
             visitBoolOperation(boolExpressionNode.getBoolExpressionOperators());
         return boolExpressionNode;
-    }
-
-    //TODO -> visitForStatement
-    private ForStatementNode visitForStatement(ForStatementNode forStatementNode) {
-        ArrayList<StatementNode> statementNodes = new ArrayList<>();
-        ArithExpressionNode arithExpressionNode1 = visitArithExpression(forStatementNode.getArithExpressionNode1());
-        ArithExpressionNode arithExpressionNode2 = visitArithExpression(forStatementNode.getArithExpressionNode2());
-        LoopNode loopNode;
-
-        if (arithExpressionNode1.getVariableName() != null) {
-            statementNodes.add(arithExpressionNode1.getVariableName());
-            return new ForStatementNode(arithExpressionNode1);
-        } else if (arithExpressionNode1.get)
     }
 
     private ConditionalExpressionNode visitConditionalExpression(ConditionalExpressionNode conditionalExpressionNode) {
