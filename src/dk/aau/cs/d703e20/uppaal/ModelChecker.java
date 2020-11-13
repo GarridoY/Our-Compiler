@@ -92,7 +92,7 @@ public class ModelChecker {
             int[] vars = state.getVariableValues();
             if (vi < 0 || vi >= vars.length) {
                 System.err.println("Variable v was not found");
-                System.exit(1);
+                return;
             }
 
             // set variable v to value 2:

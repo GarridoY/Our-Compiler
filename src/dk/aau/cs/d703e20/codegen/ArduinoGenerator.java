@@ -58,8 +58,10 @@ public class ArduinoGenerator {
                 PinDeclarationNode pinDeclNode = (PinDeclarationNode)statementNode;
                 statementNodes.add(visitPinDeclaration(pinDeclNode));
             }
-            //TODO: do specific visits
-            statementNodes.add(statementNode);
+            //TODO: add more specific visits
+            else {
+                statementNodes.add(statementNode);
+            }
         }
         return new BlockNode(statementNodes);
     }

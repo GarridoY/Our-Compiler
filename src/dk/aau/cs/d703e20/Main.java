@@ -1,6 +1,7 @@
 package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.ASTBuilder;
+import dk.aau.cs.d703e20.codegen.ArduinoGenerator;
 import dk.aau.cs.d703e20.errorhandling.ReasonableErrorStrategy;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 import dk.aau.cs.d703e20.parser.OurLexer;
@@ -79,7 +80,11 @@ public class Main {
             // VERIFY TIME IN UPPAAL
             ModelChecker modelChecker = new ModelChecker();
             modelChecker.checkProgram(programNode);
-            System.out.println("Time ok");
+            System.out.println("Time check finished\n");
+
+            // Generate and print Arduino code
+            ArduinoGenerator arduinoGenerator = new ArduinoGenerator();
+            System.out.println(arduinoGenerator.GenerateArduino(programNode));
         }
         catch (IOException e) {
             e.printStackTrace();
