@@ -295,7 +295,7 @@ public class semanticTest {
 
     @Test
     void testValidAt02() {
-        BlockNode blockNode = getNodeFromText("{clock a = 0; at(a > 20 && a < 30) {}}",
+        BlockNode blockNode = getNodeFromText("{clock a = 0; at((a > 20) && (a < 30)) {}}",
                 BlockNode.class,
                 OurParser.BlockContext.class,
                 "block");
@@ -304,7 +304,7 @@ public class semanticTest {
 
     @Test
     void testValidAt03() {
-        BlockNode blockNode = getNodeFromText("{clock a = 0; at(a == 20 && a < 50) {}}",
+        BlockNode blockNode = getNodeFromText("{clock a = 0; at((a == 20) && (a < 50)) {}}",
                 BlockNode.class,
                 OurParser.BlockContext.class,
                 "block");

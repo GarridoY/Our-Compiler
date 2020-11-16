@@ -397,18 +397,34 @@ public class SemanticChecker {
             for (int i = 0; i < boolExpressionNode.getBoolExpressionOperators().size(); i++) {
                 Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(i);
 
+                BoolExpressionNode leftBoolExp =
+                        boolExpressionNode.getBoolExprOperandNodes().get(i).getBoolExpressionNode();
+                BoolExpressionNode rightBoolExp =
+                        boolExpressionNode.getBoolExprOperandNodes().get(i+1).getBoolExpressionNode();
+
                 ArithExpressionNode leftArith =
                         boolExpressionNode.getBoolExprOperandNodes().get(i).getArithExpressionNode();
-
                 ArithExpressionNode rightArith =
                         boolExpressionNode.getBoolExprOperandNodes().get(i+1).getArithExpressionNode();
 
-                if (leftArith == null || rightArith == null || operator == null){
+                if ((operator == null
+                    || leftArith == null && leftBoolExp == null)
+                    || (rightArith == null && rightBoolExp == null)) {
                     throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
                 }
                 else {
-                    Enums.DataType leftType = visitArithmeticExpression(leftArith);
-                    Enums.DataType rightType = visitArithmeticExpression(rightArith);
+                    Enums.DataType leftType;
+                    Enums.DataType rightType;
+
+                    if (leftArith != null)
+                        leftType = visitArithmeticExpression(leftArith);
+                    else
+                        leftType = Enums.DataType.BOOL;
+
+                    if (rightArith != null)
+                        rightType = visitArithmeticExpression(rightArith);
+                    else
+                        rightType = Enums.DataType.BOOL;
 
                     if (operator == Enums.BoolOperator.OR || operator == Enums.BoolOperator.AND) {
                         if (leftType != Enums.DataType.BOOL || rightType != Enums.DataType.BOOL) {
