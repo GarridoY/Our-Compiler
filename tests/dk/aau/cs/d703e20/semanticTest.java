@@ -1,6 +1,7 @@
 package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
+import dk.aau.cs.d703e20.ast.statements.AtStatementNode;
 import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static dk.aau.cs.d703e20.resources.Utilities.getNodeFromText;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class semanticTest {
@@ -175,7 +177,6 @@ public class semanticTest {
         );
     }
 
-
     @Test
     void testIllegalOperandInBoolExpr() {
         BoolExpressionNode boolExpressionNode = getNodeFromText(
@@ -187,6 +188,71 @@ public class semanticTest {
 
         assertThrows(IllegalOperandException.class,
                 ()-> semanticChecker.visitBooleanExpression(boolExpressionNode)
+        );
+    }
+
+    @Test
+    void testIllegalAtStatement01() { //This also goes for boundStatement
+        BlockNode blockNode = getNodeFromText(
+                "{int a = 10; at(a == true) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block"
+        );
+        assertThrows(IllegalAtExpressionException.class,
+                ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
+
+    @Test
+    void testIllegalAtStatement02() { //This also goes for boundStatement
+        BlockNode blockNode = getNodeFromText(
+                "{int a = 10; at(a && 2) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block"
+        );
+        assertThrows(IllegalAtExpressionException.class,
+                ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
+
+    @Test
+    void testForLoop() {
+        BlockNode blockNode = getNodeFromText(
+                "{int leet = 1337; for (1 + 3 + 3 + 7 to 9 + 10 +2) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block"
+        );
+        assertDoesNotThrow(
+                ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
+
+    @Test
+    void testIfElseIf() {
+        BlockNode blockNode = getNodeFromText(
+                "{bool a = true; if(true) {} else if(a){}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block"
+        );
+        assertDoesNotThrow(
+                ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
+
+    @Test
+    void testWhileLoop(){
+        BlockNode blockNode = getNodeFromText(
+                "{int leet = 1337; while (leet == true) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block"
+        );
+        assertThrows(IllegalOperandException.class,
+                ()-> semanticChecker.visitBlock(blockNode)
         );
     }
 }
