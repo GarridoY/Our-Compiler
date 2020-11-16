@@ -425,24 +425,25 @@ public class SemanticChecker {
                 if (leftArith == null || rightArith == null || operator == null){
                     throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
                 }
-                else if (operator == Enums.BoolOperator.OR || operator == Enums.BoolOperator.AND) {
-                    throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
-                }
                 else {
                     Enums.DataType leftType = visitArithmeticExpression(leftArith);
                     Enums.DataType rightType = visitArithmeticExpression(rightArith);
 
-                    System.out.println("left " + leftType);
-                    System.out.println("right " + rightType);
+                    if (operator == Enums.BoolOperator.OR || operator == Enums.BoolOperator.AND) {
+                        if (leftType != Enums.DataType.BOOL || rightType != Enums.DataType.BOOL) {
+                            throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+                        }
+                    }
+                    else {
+                        if (leftType != Enums.DataType.CLOCK && leftType != Enums.DataType.INT)
+                            throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
 
-                    if (leftType != Enums.DataType.CLOCK && leftType != Enums.DataType.INT)
-                        throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+                        if (rightType != Enums.DataType.CLOCK && rightType != Enums.DataType.INT)
+                            throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
 
-                    if (rightType != Enums.DataType.CLOCK && rightType != Enums.DataType.INT)
-                        throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
-
-                    if (leftType != Enums.DataType.CLOCK && rightType != Enums.DataType.CLOCK)
-                        throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+                        if (leftType != Enums.DataType.CLOCK && rightType != Enums.DataType.CLOCK)
+                            throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+                    }
                 }
             }
         } else {

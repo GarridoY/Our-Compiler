@@ -276,8 +276,35 @@ public class semanticTest {
     }
 
     @Test
+    void testIllegalAt() {
+        BlockNode blockNode = getNodeFromText("{clock a = 0; at(a && 10) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block");
+        assertThrows(IllegalAtExpressionException.class, ()-> semanticChecker.visitBlock(blockNode));
+    }
+
+    @Test
     void testValidAt() {
         BlockNode blockNode = getNodeFromText("{clock a = 0; at(a > 20) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block");
+        assertDoesNotThrow(()-> semanticChecker.visitBlock(blockNode));
+    }
+
+    @Test
+    void testValidAt02() {
+        BlockNode blockNode = getNodeFromText("{clock a = 0; at(a > 20 && a < 30) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block");
+        assertDoesNotThrow(()-> semanticChecker.visitBlock(blockNode));
+    }
+
+    @Test
+    void testValidAt03() {
+        BlockNode blockNode = getNodeFromText("{clock a = 0; at(a == 20 && a < 50) {}}",
                 BlockNode.class,
                 OurParser.BlockContext.class,
                 "block");
