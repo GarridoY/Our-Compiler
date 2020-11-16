@@ -299,17 +299,6 @@ public class SemanticChecker {
         //visitBooleanExpression(ifStatementNode.getConditionalExpressionNode().getBoolExpressionNode());
         if (ifStatementNode.getBlockNode() != null){
             visitBlock(ifStatementNode.getBlockNode());
-        } else if (ifStatementNode.getBlockNode().getStatementNodes() != null){
-            for (StatementNode statement: ifStatementNode.getBlockNode().getStatementNodes()) {
-                visitStatement(statement);
-            }
-        } else {
-            for (StatementNode statement: ifStatementNode.getBlockNode().getStatementNodes()
-            ) {
-                if (statement instanceof ReturnStatementNode){
-                    visitReturnStatement((ReturnStatementNode) statement, getDataTypeFromName(((ReturnStatementNode) statement).getVariableName()));
-                }
-            }
         }
 
         if (ifElseStatementNode.getElseIfStatementNodes() != null){
@@ -318,14 +307,6 @@ public class SemanticChecker {
                 //visitBooleanExpression(elseIfStatementNode.getConditionalExpressionNode().getBoolExpressionNode());
                 if (elseIfStatementNode.getBlockNode() != null){
                     visitBlock(elseIfStatementNode.getBlockNode());
-                } else if (elseIfStatementNode.getBlockNode().getStatementNodes() != null){
-                    for (StatementNode statement : elseIfStatementNode.getBlockNode().getStatementNodes()) {
-                        visitStatement(statement);
-                    }
-                } else {
-                    for (StatementNode statement : elseIfStatementNode.getBlockNode().getStatementNodes()) {
-                        visitReturnStatement((ReturnStatementNode) statement, getDataTypeFromName(((ReturnStatementNode) statement).getVariableName()));
-                    }
                 }
             }
         }
