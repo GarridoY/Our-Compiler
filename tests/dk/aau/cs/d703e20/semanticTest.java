@@ -257,13 +257,22 @@ public class semanticTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"int a = 10", "double a = 10.0", "string a = \"\"", "bool a = true"})
+    @ValueSource(strings = {"int a = 10", "double a = 10.0", "bool a = true"})
     void testIllegalAtTypes(String type) {
         BlockNode blockNode = getNodeFromText("{" + type + "; at(a > 20) {}}",
                 BlockNode.class,
                 OurParser.BlockContext.class,
                 "block");
         assertThrows(IllegalAtExpressionException.class, ()-> semanticChecker.visitBlock(blockNode));
+    }
+
+    @Test
+    void testIllegalAtTypesString() {
+        BlockNode blockNode = getNodeFromText("{string a = \"\"; at(a > 20) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block");
+        assertThrows(InconsistentTypeException.class, ()-> semanticChecker.visitBlock(blockNode));
     }
 
     @Test
