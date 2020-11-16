@@ -1,18 +1,18 @@
 package dk.aau.cs.d703e20;
 
 import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
-import dk.aau.cs.d703e20.ast.statements.AtStatementNode;
 import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 import dk.aau.cs.d703e20.errorhandling.*;
-import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.semantics.SemanticChecker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static dk.aau.cs.d703e20.resources.Utilities.getNodeFromText;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -254,5 +254,15 @@ public class semanticTest {
         assertThrows(IllegalOperandException.class,
                 ()-> semanticChecker.visitBlock(blockNode)
         );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"int a = 10", "double a = 10.0", "string a = \"\"", "bool a = true"})
+    void testAtTypes(String type) {
+        BlockNode blockNode = getNodeFromText("{" + type + "; at(a > 20) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block");
+        assertThrows(IllegalAtExpressionException.class, ()-> semanticChecker.visitBlock(blockNode));
     }
 }
