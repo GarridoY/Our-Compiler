@@ -41,27 +41,38 @@ public class ArduinoGenerator {
         return new ArduinoProgramNode(globalVariables, setupNode, loopNode, functionDeclarationNodes);
     }
 
+    // Handles setup block
     private ArduinoSetupNode visitSetup(SetupNode setupNode) {
-        ArduinoSetupNode arduinoSetupNode = new ArduinoSetupNode(visitBlockNode(setupNode.getBlockNode()));
-        return arduinoSetupNode;
-    }
+        BlockNode blockNode = setupNode.getBlockNode();
 
-    private ArduinoLoopNode visitLoop(LoopNode loopNode) {
-        ArduinoLoopNode arduinoLoopNode = new ArduinoLoopNode(visitBlockNode(loopNode.getBlockNode()));
-        return arduinoLoopNode;
-    }
-
-    private BlockNode visitBlockNode(BlockNode blockNode) {
         List<StatementNode> statementNodes = new ArrayList<>();
         for (StatementNode statementNode : blockNode.getStatementNodes()) {
             if (statementNode instanceof PinDeclarationNode) {
                 PinDeclarationNode pinDeclNode = (PinDeclarationNode)statementNode;
                 statementNodes.add(visitPinDeclaration(pinDeclNode));
             }
-            //TODO: add more specific visits
-            else {
-                statementNodes.add(statementNode);
+            else if (statementNode instanceof VariableDeclarationNode) {
+                VariableDeclarationNode varDeclNode = (VariableDeclarationNode)statementNode;
+                // TODO: add to global variables
             }
+            // else nothing. Only declarations allowed
+        }
+
+        return new ArduinoSetupNode(visitBlockNode(new BlockNode(statementNodes)));
+    }
+
+    private ArduinoLoopNode visitLoop(LoopNode loopNode) {
+        return new ArduinoLoopNode(visitBlockNode(loopNode.getBlockNode()));
+    }
+
+    // Does not handle setup block
+    private BlockNode visitBlockNode(BlockNode blockNode) {
+        List<StatementNode> statementNodes = new ArrayList<>();
+        for (StatementNode statementNode : blockNode.getStatementNodes()) {
+            // TODO: handle different statement nodes with visitors
+            //if (statementNode instanceof SomeSpecificNode) {
+            //}
+            statementNodes.add(statementNode);
         }
         return new BlockNode(statementNodes);
     }
