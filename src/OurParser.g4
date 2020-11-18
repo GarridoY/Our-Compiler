@@ -109,7 +109,8 @@ boolExpr
     | NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
 
 boolExprOperand
-    : BOOL_LITERAL
+    : LEFT_PAREN boolExpr RIGHT_PAREN
+    | BOOL_LITERAL
     | arithExpr;
 
 // DECLARATIONS AND ASSIGNMENTS
