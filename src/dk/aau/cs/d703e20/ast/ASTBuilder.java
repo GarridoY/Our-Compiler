@@ -313,7 +313,9 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
     public ASTNode visitBoolExprOperand(OurParser.BoolExprOperandContext ctx) {
         BoolExprOperandNode boolExprOperandNode;
 
-        if (ctx.arithExpr() != null)
+        if (ctx.boolExpr() != null)
+            boolExprOperandNode = new BoolExprOperandNode((BoolExpressionNode) visitBoolExpr(ctx.boolExpr()));
+        else if (ctx.arithExpr() != null)
             boolExprOperandNode = new BoolExprOperandNode((ArithExpressionNode) visitArithExpr(ctx.arithExpr()));
         else if (ctx.BOOL_LITERAL() != null)
             boolExprOperandNode = new BoolExprOperandNode(ctx.BOOL_LITERAL().getText());
