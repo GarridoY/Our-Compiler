@@ -1,7 +1,6 @@
 package dk.aau.cs.d703e20.semantics;
 
 import dk.aau.cs.d703e20.ast.ASTNode;
-import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
@@ -77,12 +76,37 @@ public class SemanticChecker {
         closeScope();
     }
 
-    private void visitSetup(SetupNode setupNode) {
-        visitBlock(setupNode.getBlockNode());
+    public void visitSetup(SetupNode setupNode) {
+        visitSetupBlock(setupNode.getBlockNode());
     }
 
-    private void visitLoop(LoopNode loopNode) {
-        visitBlock(loopNode.getBlockNode());
+    public void visitLoop(LoopNode loopNode) {
+        visitLoopBlock(loopNode.getBlockNode());
+    }
+
+    private void visitSetupBlock(BlockNode blockNode) {
+        openScope();
+        for (StatementNode statement : blockNode.getStatementNodes()) {
+            if (statement instanceof  VariableDeclarationNode) {
+                visitStatement(statement);
+            } else if (statement instanceof PinDeclarationNode){
+                visitStatement(statement);
+            } else {
+                throw new IllegalSetupStatementException(blockNode.getCodePosition());
+            }
+        }
+    }
+
+    private void visitLoopBlock(BlockNode blockNode){
+        openScope();
+        for (StatementNode statement : blockNode.getStatementNodes()){
+            if (statement instanceof PinDeclarationNode){
+                throw new IllegalLoopStatementException(blockNode.getCodePosition());
+            } else {
+                visitStatement(statement);
+            }
+        }
+        closeScope();
     }
 
     public void visitBlock(BlockNode blockNode) {
