@@ -1,29 +1,20 @@
-package dk.aau.cs.d703e20.ast.expressions;
+package dk.aau.cs.d703e20.codegen.arduino.expressions;
 
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 
-public class BoolExprOperandNode implements ASTNode {
-    private String boolLiteral;
+public class FunctionArgNode implements ASTNode {
     private ArithExpressionNode arithExpressionNode;
     private BoolExpressionNode boolExpressionNode;
 
     private CodePosition codePosition;
 
-    public BoolExprOperandNode(String boolLiteral) {
-        this.boolLiteral = boolLiteral;
-    }
-
-    public BoolExprOperandNode(ArithExpressionNode arithExpressionNode) {
+    public FunctionArgNode(ArithExpressionNode arithExpressionNode) {
         this.arithExpressionNode = arithExpressionNode;
     }
 
-    public BoolExprOperandNode(BoolExpressionNode boolExpressionNode) {
+    public FunctionArgNode(BoolExpressionNode boolExpressionNode) {
         this.boolExpressionNode = boolExpressionNode;
-    }
-
-    public String getBoolLiteral() {
-        return boolLiteral;
     }
 
     public ArithExpressionNode getArithExpressionNode() {
@@ -36,12 +27,16 @@ public class BoolExprOperandNode implements ASTNode {
 
     @Override
     public String prettyPrint(int indentation) {
-        if (arithExpressionNode != null)
-            return arithExpressionNode.prettyPrint(indentation);
-        else if (boolExpressionNode != null)
-            return boolExpressionNode.prettyPrint(indentation);
-        else
-            return boolLiteral;
+        StringBuilder sb = new StringBuilder();
+
+        if (arithExpressionNode != null) {
+            sb.append(arithExpressionNode.prettyPrint(indentation));
+        }
+        else if (boolExpressionNode != null) {
+            sb.append(boolExpressionNode.prettyPrint(indentation));
+        }
+
+        return sb.toString();
     }
 
     @Override

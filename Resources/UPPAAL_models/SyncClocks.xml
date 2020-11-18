@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+
+clock x;
+clock y;
+clock z;
+
+double atX;
+double atY;
+
+chan synchronized;
+chan unsynchronized;
+</declaration>
+	<template>
+		<name x="5" y="5">SyncClocks</name>
+		<declaration>// Place local declarations here.</declaration>
+		<location id="id0" x="-1581" y="-994">
+			<name x="-1623" y="-1036">ClockInit</name>
+		</location>
+		<location id="id1" x="-1266" y="-993">
+			<name x="-1291" y="-1036">ifStmt</name>
+			<urgent/>
+		</location>
+		<location id="id2" x="-1156" y="-1087">
+			<name x="-1147" y="-1122">End</name>
+		</location>
+		<location id="id3" x="-1155" y="-891">
+			<name x="-1224" y="-884">elseIfStmt</name>
+			<urgent/>
+		</location>
+		<location id="id4" x="-977" y="-891">
+			<name x="-1003" y="-934">at_x_do_y</name>
+		</location>
+		<location id="id5" x="-977" y="-747">
+			<name x="-994" y="-790">at_y_do_x</name>
+		</location>
+		<location id="id6" x="-1419" y="-994">
+			<name x="-1428" y="-1028">Start</name>
+		</location>
+		<branchpoint id="id7" x="-977" y="-637">
+		</branchpoint>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-1164" y="-986">x &lt; y</label>
+			<nail x="-1173" y="-969"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id1"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-1547" y="-926">unsynchronized!</label>
+			<label kind="assignment" x="-1521" y="-943">y = 10</label>
+			<nail x="-1504" y="-943"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-1555" y="-1087">unsynchronized!</label>
+			<label kind="assignment" x="-1521" y="-1070">x = 10</label>
+			<nail x="-1504" y="-1045"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-1291" y="-679">synchronized!</label>
+			<label kind="assignment" x="-1402" y="-637">x = 0,
+y = 0</label>
+			<nail x="-1419" y="-637"/>
+		</transition>
+		<transition controllable="false">
+			<source ref="id5"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-1045" y="-705">z == y - x</label>
+		</transition>
+		<transition controllable="false">
+			<source ref="id4"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-875" y="-748">z == x - y</label>
+			<nail x="-884" y="-892"/>
+			<nail x="-884" y="-637"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-1105" y="-823">x &lt; y</label>
+			<label kind="assignment" x="-1105" y="-807">z = 0</label>
+			<label kind="comments" x="-1054" y="-840">false</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="guard" x="-1079" y="-891">x &gt; y</label>
+			<label kind="assignment" x="-1079" y="-875">z = 0</label>
+			<label kind="comments" x="-1079" y="-925">true</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-1275" y="-918">x &gt; y</label>
+			<label kind="comments" x="-1232" y="-960">false</label>
+			<nail x="-1258" y="-926"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-1207" y="-1044">x == y</label>
+			<label kind="comments" x="-1223" y="-1087">true</label>
+		</transition>
+	</template>
+	<template>
+		<name>State</name>
+		<location id="id8" x="-85" y="-187">
+			<name x="-95" y="-221">start</name>
+		</location>
+		<location id="id9" x="17" y="-25">
+			<name x="34" y="-59">inSync</name>
+		</location>
+		<location id="id10" x="-170" y="-25">
+			<name x="-246" y="-59">outOfSync</name>
+		</location>
+		<init ref="id8"/>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="-42" y="-144">synchronized?</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-238" y="-144">unsynchronized?</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-119" y="17">unsynchronized?</label>
+			<nail x="-76" y="17"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="-127" y="-93">synchronized?</label>
+			<nail x="-76" y="-68"/>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+//Process = Template();
+// List one or more processes to be composed into a system.
+system SyncClocks, State;
+        </system>
+	<queries>
+		<query>
+			<formula></formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>
