@@ -3,9 +3,7 @@ package dk.aau.cs.d703e20;
 import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 import dk.aau.cs.d703e20.ast.statements.FunctionCallNode;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
-import dk.aau.cs.d703e20.ast.structure.BlockNode;
-import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
-import dk.aau.cs.d703e20.ast.structure.ProgramNode;
+import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.errorhandling.*;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.semantics.SemanticChecker;
@@ -16,7 +14,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static dk.aau.cs.d703e20.resources.Utilities.getNodeFromText;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static dk.aau.cs.d703e20.resources.Utilities.getNodeFromText;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class semanticTest {
@@ -25,6 +22,48 @@ public class semanticTest {
     @BeforeEach
     void initSemanticChecker() {
         semanticChecker = new SemanticChecker();
+    }
+
+    @Test
+    void testIllegalStatement01(){
+        SetupNode setup = getNodeFromText(
+          "Setup {int a = 10; if (a > 10) {}}",
+          SetupNode.class,
+          OurParser.SetupContext.class,
+         "setup"
+        );
+
+        assertThrows(IllegalSetupStatementException.class,
+                ()-> semanticChecker.visitSetup(setup)
+        );
+    }
+
+    @Test
+    void testIllegalStatement02(){
+        LoopNode loop = getNodeFromText(
+                "Loop {ipin a 1; if (a > 10) {}}",
+                LoopNode.class,
+                OurParser.LoopContext.class,
+                "loop"
+        );
+
+        assertThrows(IllegalLoopStatementException.class,
+                ()-> semanticChecker.visitLoop(loop)
+        );
+    }
+
+    @Test
+    void testIllegalStatement03(){
+        SetupNode setup = getNodeFromText(
+                "Setup {int a = 10; ipin b 1; opin c 3;}",
+                SetupNode.class,
+                OurParser.SetupContext.class,
+                "setup"
+        );
+
+        assertDoesNotThrow(
+                ()-> semanticChecker.visitSetup(setup)
+        );
     }
 
     @Test

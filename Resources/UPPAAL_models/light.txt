@@ -1,20 +1,20 @@
-setup {
+Setup {
 	clock h;
 	clock v;
 	
-	opin lane1_green
-	opin lane1_red
-	opin lane1_yellow
-	opin lane2_green
-	opin lane2_red
-	opin lane2_yellow
+	opin lane1_green 1;
+	opin lane1_red 2;
+	opin lane1_yellow 3;
+	opin lane2_green 4;
+	opin lane2_red 5;
+	opin lane2_yellow 6;
 	
 	// sensor thingies
-	ipin lane1;
-	ipin lane2;
+	ipin lane1 7;
+	ipin lane2 8;
 }
 
-loop {
+Loop {
 
 	// Traffic on lane 1, set lane 2 to yellow then red
 	if (lane1 == true) { // is pins true/false?
