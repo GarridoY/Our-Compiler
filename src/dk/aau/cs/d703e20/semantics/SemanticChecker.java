@@ -130,13 +130,20 @@ public class SemanticChecker {
             if (varDeclNode.getAssignmentNode() != null) {
                 Enums.DataType assignmentDataType = visitAssignment(varDeclNode.getAssignmentNode());
 
-                if (assignmentDataType != dataType)
+                boolean typesMatch;
+
+                if (dataType == Enums.DataType.CLOCK)
+                    typesMatch = assignmentDataType == Enums.DataType.INT;
+                else
+                    typesMatch = assignmentDataType == dataType;
+
+                if (typesMatch)
+                    enterSymbol(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode);
+                else
                     throw new InconsistentTypeException(
                             varDeclNode.getVariableName(),
                             varDeclNode.getCodePosition(),
                             dataType, assignmentDataType);
-                else
-                    enterSymbol(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode);
             }
             // Array assignment rule
             else if (varDeclNode.getAssignArrayNode() != null) {
@@ -292,17 +299,6 @@ public class SemanticChecker {
         //visitBooleanExpression(ifStatementNode.getConditionalExpressionNode().getBoolExpressionNode());
         if (ifStatementNode.getBlockNode() != null){
             visitBlock(ifStatementNode.getBlockNode());
-        } else if (ifStatementNode.getBlockNode().getStatementNodes() != null){
-            for (StatementNode statement: ifStatementNode.getBlockNode().getStatementNodes()) {
-                visitStatement(statement);
-            }
-        } else {
-            for (StatementNode statement: ifStatementNode.getBlockNode().getStatementNodes()
-            ) {
-                if (statement instanceof ReturnStatementNode){
-                    visitReturnStatement((ReturnStatementNode) statement, getDataTypeFromName(((ReturnStatementNode) statement).getVariableName()));
-                }
-            }
         }
 
         if (ifElseStatementNode.getElseIfStatementNodes() != null){
@@ -311,14 +307,6 @@ public class SemanticChecker {
                 //visitBooleanExpression(elseIfStatementNode.getConditionalExpressionNode().getBoolExpressionNode());
                 if (elseIfStatementNode.getBlockNode() != null){
                     visitBlock(elseIfStatementNode.getBlockNode());
-                } else if (elseIfStatementNode.getBlockNode().getStatementNodes() != null){
-                    for (StatementNode statement : elseIfStatementNode.getBlockNode().getStatementNodes()) {
-                        visitStatement(statement);
-                    }
-                } else {
-                    for (StatementNode statement : elseIfStatementNode.getBlockNode().getStatementNodes()) {
-                        visitReturnStatement((ReturnStatementNode) statement, getDataTypeFromName(((ReturnStatementNode) statement).getVariableName()));
-                    }
                 }
             }
         }
@@ -409,21 +397,50 @@ public class SemanticChecker {
             for (int i = 0; i < boolExpressionNode.getBoolExpressionOperators().size(); i++) {
                 Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(i);
 
+                BoolExpressionNode leftBoolExp =
+                        boolExpressionNode.getBoolExprOperandNodes().get(i).getBoolExpressionNode();
+                BoolExpressionNode rightBoolExp =
+                        boolExpressionNode.getBoolExprOperandNodes().get(i+1).getBoolExpressionNode();
+
                 ArithExpressionNode leftArith =
                         boolExpressionNode.getBoolExprOperandNodes().get(i).getArithExpressionNode();
-
                 ArithExpressionNode rightArith =
                         boolExpressionNode.getBoolExprOperandNodes().get(i+1).getArithExpressionNode();
 
-                if (leftArith == null || rightArith == null || operator == null){
-                    throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
-                }
-                else if (operator == Enums.BoolOperator.OR || operator == Enums.BoolOperator.AND) {
+                if ((operator == null
+                    || leftArith == null && leftBoolExp == null)
+                    || (rightArith == null && rightBoolExp == null)) {
                     throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
                 }
                 else {
-                    visitArithmeticExpression(leftArith);
-                    visitArithmeticExpression(rightArith);
+                    Enums.DataType leftType;
+                    Enums.DataType rightType;
+
+                    if (leftArith != null)
+                        leftType = visitArithmeticExpression(leftArith);
+                    else
+                        leftType = Enums.DataType.BOOL;
+
+                    if (rightArith != null)
+                        rightType = visitArithmeticExpression(rightArith);
+                    else
+                        rightType = Enums.DataType.BOOL;
+
+                    if (operator == Enums.BoolOperator.OR || operator == Enums.BoolOperator.AND) {
+                        if (leftType != Enums.DataType.BOOL || rightType != Enums.DataType.BOOL) {
+                            throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+                        }
+                    }
+                    else {
+                        if (leftType != Enums.DataType.CLOCK && leftType != Enums.DataType.INT)
+                            throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+
+                        if (rightType != Enums.DataType.CLOCK && rightType != Enums.DataType.INT)
+                            throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+
+                        if (leftType != Enums.DataType.CLOCK && rightType != Enums.DataType.CLOCK)
+                            throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+                    }
                 }
             }
         } else {
