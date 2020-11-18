@@ -156,10 +156,13 @@ public class SemanticChecker {
 
                 boolean typesMatch;
 
+                typesMatch = assignmentDataType == dataType;
+
                 if (dataType == Enums.DataType.CLOCK)
-                    typesMatch = assignmentDataType == Enums.DataType.INT;
-                else
-                    typesMatch = assignmentDataType == dataType;
+                    typesMatch = typesMatch || (assignmentDataType == Enums.DataType.INT);
+
+                if (dataType == Enums.DataType.INT)
+                    typesMatch = typesMatch || (assignmentDataType == Enums.DataType.CLOCK);
 
                 if (typesMatch)
                     enterSymbol(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode);
@@ -217,8 +220,18 @@ public class SemanticChecker {
         // Variable name rule
         if (arithExpressionNode.getVariableName() != null) {
             ASTNode declaration = retrieveSymbol(arithExpressionNode.getVariableName());
-            if (declaration != null)
-                return ((VariableDeclarationNode) declaration).getDataType();
+            if (declaration != null) {
+                if (declaration instanceof PinDeclarationNode){
+                    if (((PinDeclarationNode) declaration).isAnalog()) {
+                        return Enums.DataType.INT;
+                    } else {
+                        return Enums.DataType.BOOL;
+                    }
+                }
+                else {
+                    return ((VariableDeclarationNode) declaration).getDataType();
+                }
+            }
             else
                 throw new UndeclaredVariableException(
                         arithExpressionNode.getVariableName(),
@@ -249,7 +262,10 @@ public class SemanticChecker {
             else
                 return dataType1;
         }
-        return null;
+        // NOT? (arithExpr)
+        else {
+            return visitArithmeticExpression(arithExpressionNode.getArithExpressionNode1());
+        }
     }
 
     private Enums.DataType visitAssignArray(AssignArrayNode assignArrayNode) {
@@ -599,6 +615,10 @@ public class SemanticChecker {
         } else if (node instanceof FunctionDeclarationNode) {
             dataType = ((FunctionDeclarationNode) node).getDataType();
         }
-        return dataType;
+        if (dataType != null){
+            return dataType;
+        } else {
+            throw new RuntimeException(name);
+        }
     }
 }
