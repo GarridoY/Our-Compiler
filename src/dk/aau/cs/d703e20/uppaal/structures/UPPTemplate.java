@@ -2,9 +2,15 @@ package dk.aau.cs.d703e20.uppaal.structures;
 
 import com.uppaal.model.core2.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UPPTemplate extends Template {
-    // Store all declarations before setting them
+    String Name;
+    // Store all local declarations before setting them
     private final StringBuilder declSB = new StringBuilder();
+    // 0 is always start
+    private final List<Location> locationList = new ArrayList<>();
 
     public UPPTemplate(Element prototype) {
         super(prototype);
@@ -12,6 +18,25 @@ public class UPPTemplate extends Template {
 
     public StringBuilder getDeclSB() {
         return declSB;
+    }
+
+    public List<Location> getLocationList() {
+        return locationList;
+    }
+
+    public String getName() {
+        return Name;
+    }
+
+    public void setName(String name) {
+        Name = name;
+    }
+
+    /**
+     * Flush StringBuilder into property for template. Required to set variable declarations.
+     */
+    public void flushSB() {
+        this.setProperty("declaration", declSB.toString());
     }
 
     /**
@@ -90,6 +115,7 @@ public class UPPTemplate extends Template {
         l.setProperty("y", y);
         if (name != null)
             setLabel(l, LKind.name, name, x, y - 28);
+        locationList.add(l);
         return l;
     }
 
