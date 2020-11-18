@@ -10,6 +10,8 @@ import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 import java.io.IOException;
 import java.util.HashMap;
 
+import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.setNail;
+
 
 public class ModelGen {
     // New system with default properties
@@ -21,8 +23,11 @@ public class ModelGen {
 
     int atCount = 0;
     int boundCount = 0;
-    int opinCount = 1;
-    int ipinCount = 1;
+    // count the amount of channels needed
+    int opinCount = 0;
+    int ipinCount = 0;
+    String opinChanName = "out";
+    String ipinChanName = "in";
 
     // sample setup and debugging
     void createExample() {
@@ -44,34 +49,28 @@ public class ModelGen {
         }
     }
 
-    void setNail(Edge e, int x, int y) {
-        Nail nail = e.createNail();
-        nail.setProperty("x", x);
-        nail.setProperty("y", y);
-    }
-
     // Create template to handle world input/output
-    void createNaiveWorldModel() {
-        int opinCountTemp = opinCount - 1;
-        int ipinCountTemp = ipinCount - 1;
+    //TODO: use with main arg
+    UPPTemplate createNaiveWorldModel() {
         UPPTemplate template = system.createTemplate("Naive_World");
 
         // New edge from/to init for input chan
         Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "in[i]!", null);
-        UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + opinCountTemp + "]", 0, 0);
+        UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + opinCount + "]", 0, 0);
         setNail(outputHandler, -10, -5);
         setNail(outputHandler, -10, 5);
 
         // New edge from/to init for output
         Edge inputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "out[i]?", null);
-        UPPTemplate.setLabel(inputHandler, UPPTemplate.EKind.select, "i : int[0," + ipinCountTemp + "]", 0, 0);
+        UPPTemplate.setLabel(inputHandler, UPPTemplate.EKind.select, "i : int[0," + ipinCount + "]", 0, 0);
         setNail(inputHandler, 10, -5);
         setNail(inputHandler, 10, 5);
+        return template;
     }
 
     // Adds declaration from pair to global scope
     private void appendChanMapGlobal(UPPTemplate key, String value) {
-        system.getGlobalDeclSB().append("chan ").append(value).append(";\n");
+        system.addChan(value);
     }
 
     /**
@@ -91,7 +90,7 @@ public class ModelGen {
     private void visitLoop(LoopNode loopNode) {
         UPPTemplate template = system.createTemplate("controller");
         visitBlock(loopNode.getBlockNode(), template);
-        template.flushSB();
+        template.setDeclaration();
     }
 
     /**
@@ -111,11 +110,13 @@ public class ModelGen {
             }
         }
         // Add channel with size of ipin & opin counts
-        system.getGlobalDeclSB().append("chan out[").append(opinCount - 1).append("];\n");
-        system.getGlobalDeclSB().append("chan in[").append(ipinCount - 1).append("];\n");
+        if (opinCount > 0)
+            system.addChan(opinChanName, opinCount, Enums.PinType.OPIN);
+        if (ipinCount > 0)
+            system.addChan(ipinChanName, ipinCount, Enums.PinType.IPIN);
         // Add channel for each template
         templateChanMap.forEach(this::appendChanMapGlobal);
-        system.setProperty("declaration", system.getGlobalDeclSB().toString());
+        system.setGlobalDecl();
     }
 
     /**
@@ -160,16 +161,17 @@ public class ModelGen {
     /**
      * Add PinDeclaration as chan to template/global.
      * StringBuilder is used as all properties have to be set at once.
+     * Counts are used to set all declaration at once later.
      *
      * @param pinDeclNode Source StatementNode
      */
     private void visitPinDecl(PinDeclarationNode pinDeclNode) {
-        // Save pin (name, value) in map, value = count - 1 as array in 0-indexed
+        // Save pin (name, value) in map
         if (pinDeclNode.getPinType() == Enums.PinType.IPIN) {
-            pinChanMap.put(pinDeclNode.getVariableName() + pinDeclNode.getPinNumber(), ipinCount - 1);
+            pinChanMap.put(pinDeclNode.getVariableName(), ipinCount);
             ipinCount++;
         } else {
-            pinChanMap.put(pinDeclNode.getVariableName() + pinDeclNode.getPinNumber(), opinCount - 1);
+            pinChanMap.put(pinDeclNode.getVariableName(), opinCount);
             opinCount++;
         }
     }
@@ -181,15 +183,12 @@ public class ModelGen {
      * @param node        UPPTemplate or UPPSystem
      */
     private void visitVarDecl(VariableDeclarationNode varDeclNode, Node node) {
-        String varDecl = "clock ".concat(varDeclNode.getVariableName()).concat(";\n");
-        if (varDeclNode.getDataType() == Enums.DataType.CLOCK) {
-            if (node instanceof UPPSystem) {
-                ((UPPSystem) node).getGlobalDeclSB().append(varDecl);
-            } else if (node instanceof UPPTemplate) {
-                ((UPPTemplate) node).getDeclSB().append(varDecl);
-            } else
-                throw new IllegalArgumentException("Wrong Node instance");
-        }
+        if (node instanceof UPPSystem) {
+            ((UPPSystem) node).addDecl(varDeclNode);
+        } else if (node instanceof UPPTemplate) {
+            ((UPPTemplate) node).addDecl(varDeclNode);
+        } else
+            throw new IllegalArgumentException("Wrong Node instance");
     }
 
     private void visitAtStatement(AtStatementNode atStatementNode) {
@@ -199,7 +198,7 @@ public class ModelGen {
         visitBlock(atStatementNode.getBlockNode(), template);
 
         // Flush StringBuilder into property
-        template.flushSB();
+        template.setDeclaration();
     }
 
     private void visitBoundStatement(BoundStatementNode boundStatementNode) {
@@ -217,7 +216,7 @@ public class ModelGen {
         }
 
         // Flush StringBuilder into property
-        template.flushSB();
+        template.setDeclaration();
     }
 
     private void visitFuncDecl(FunctionDeclarationNode functionDeclarationNode) {
@@ -227,6 +226,6 @@ public class ModelGen {
         visitBlock(functionDeclarationNode.getBlockNode(), template);
 
         // Flush StringBuilder into property
-        template.flushSB();
+        template.setDeclaration();
     }
 }

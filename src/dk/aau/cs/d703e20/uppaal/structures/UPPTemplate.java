@@ -1,6 +1,8 @@
 package dk.aau.cs.d703e20.uppaal.structures;
 
 import com.uppaal.model.core2.*;
+import dk.aau.cs.d703e20.ast.Enums;
+import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +18,6 @@ public class UPPTemplate extends Template {
         super(prototype);
     }
 
-    public StringBuilder getDeclSB() {
-        return declSB;
-    }
-
     public List<Location> getLocationList() {
         return locationList;
     }
@@ -32,11 +30,23 @@ public class UPPTemplate extends Template {
         Name = name;
     }
 
+    public void addDecl(VariableDeclarationNode varDecl) {
+        if (varDecl.getDataType() == Enums.DataType.CLOCK) {
+            declSB.append("clock ").append(varDecl.getVariableName()).append(";\n");
+        }
+    }
+
     /**
      * Flush StringBuilder into property for template. Required to set variable declarations.
      */
-    public void flushSB() {
+    public void setDeclaration() {
         this.setProperty("declaration", declSB.toString());
+    }
+
+    public static void setNail(Edge e, int x, int y) {
+        Nail nail = e.createNail();
+        nail.setProperty("x", x);
+        nail.setProperty("y", y);
     }
 
     /**
