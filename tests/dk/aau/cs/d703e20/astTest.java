@@ -420,6 +420,27 @@ public class astTest {
     }
 
     @Test
+    void TestBOOLEXPR3() {
+        BoolExpressionNode boolExpressionNode = getNodeFromText(
+                "(a > 3) && (a < 9)",
+                BoolExpressionNode.class,
+                OurParser.BoolExprContext.class,
+                "boolExpr"
+        );
+
+        Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(0);
+
+        assertAll(
+                () -> assertEquals("a > 3", boolExpressionNode.getBoolExprOperandNodes().get(0).prettyPrint(0)),
+
+                () -> assertEquals(
+                        "a < 9", boolExpressionNode.getBoolExprOperandNodes().get(1).prettyPrint(0)),
+
+                () -> assertEquals(Enums.BoolOperator.AND, operator)
+        );
+    }
+
+    @Test
     void TestSUBSCRIPT() {
         ConditionalExpressionNode conditionalExpressionNode = getNodeFromText(
                 "array[23]",
