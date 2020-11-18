@@ -1,7 +1,6 @@
 package dk.aau.cs.d703e20.semantics;
 
 import dk.aau.cs.d703e20.ast.ASTNode;
-import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
@@ -77,12 +76,37 @@ public class SemanticChecker {
         closeScope();
     }
 
-    private void visitSetup(SetupNode setupNode) {
-        visitBlock(setupNode.getBlockNode());
+    public void visitSetup(SetupNode setupNode) {
+        visitSetupBlock(setupNode.getBlockNode());
     }
 
-    private void visitLoop(LoopNode loopNode) {
-        visitBlock(loopNode.getBlockNode());
+    public void visitLoop(LoopNode loopNode) {
+        visitLoopBlock(loopNode.getBlockNode());
+    }
+
+    private void visitSetupBlock(BlockNode blockNode) {
+        openScope();
+        for (StatementNode statement : blockNode.getStatementNodes()) {
+            if (statement instanceof  VariableDeclarationNode) {
+                visitStatement(statement);
+            } else if (statement instanceof PinDeclarationNode){
+                visitStatement(statement);
+            } else {
+                throw new IllegalSetupStatementException(blockNode.getCodePosition());
+            }
+        }
+    }
+
+    private void visitLoopBlock(BlockNode blockNode){
+        openScope();
+        for (StatementNode statement : blockNode.getStatementNodes()){
+            if (statement instanceof PinDeclarationNode){
+                throw new IllegalLoopStatementException(blockNode.getCodePosition());
+            } else {
+                visitStatement(statement);
+            }
+        }
+        closeScope();
     }
 
     public void visitBlock(BlockNode blockNode) {
@@ -132,10 +156,13 @@ public class SemanticChecker {
 
                 boolean typesMatch;
 
+                typesMatch = assignmentDataType == dataType;
+
                 if (dataType == Enums.DataType.CLOCK)
-                    typesMatch = assignmentDataType == Enums.DataType.INT;
-                else
-                    typesMatch = assignmentDataType == dataType;
+                    typesMatch = typesMatch || (assignmentDataType == Enums.DataType.INT);
+
+                if (dataType == Enums.DataType.INT)
+                    typesMatch = typesMatch || (assignmentDataType == Enums.DataType.CLOCK);
 
                 if (typesMatch)
                     enterSymbol(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode);
@@ -193,8 +220,18 @@ public class SemanticChecker {
         // Variable name rule
         if (arithExpressionNode.getVariableName() != null) {
             ASTNode declaration = retrieveSymbol(arithExpressionNode.getVariableName());
-            if (declaration != null)
-                return ((VariableDeclarationNode) declaration).getDataType();
+            if (declaration != null) {
+                if (declaration instanceof PinDeclarationNode){
+                    if (((PinDeclarationNode) declaration).isAnalog()) {
+                        return Enums.DataType.INT;
+                    } else {
+                        return Enums.DataType.BOOL;
+                    }
+                }
+                else {
+                    return ((VariableDeclarationNode) declaration).getDataType();
+                }
+            }
             else
                 throw new UndeclaredVariableException(
                         arithExpressionNode.getVariableName(),
@@ -225,7 +262,10 @@ public class SemanticChecker {
             else
                 return dataType1;
         }
-        return null;
+        // NOT? (arithExpr)
+        else {
+            return visitArithmeticExpression(arithExpressionNode.getArithExpressionNode1());
+        }
     }
 
     private Enums.DataType visitAssignArray(AssignArrayNode assignArrayNode) {
@@ -575,6 +615,10 @@ public class SemanticChecker {
         } else if (node instanceof FunctionDeclarationNode) {
             dataType = ((FunctionDeclarationNode) node).getDataType();
         }
-        return dataType;
+        if (dataType != null){
+            return dataType;
+        } else {
+            throw new RuntimeException(name);
+        }
     }
 }
