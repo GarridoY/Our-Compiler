@@ -99,4 +99,15 @@ public class Enums {
             default:               return "UNKNOWN BOOL OPERATOR";
         }
     }
+
+    public static String stringFromArithOperator (ArithOperator arithOperator) {
+        switch (arithOperator) {
+            case ADD: return "+";
+            case SUB: return "-";
+            case MOD: return "%";
+            case DIV: return "/";
+            case MUL: return "*";
+            default:  return "UNKNOWN ARITH OPERATOR";
+        }
+    }
 }
