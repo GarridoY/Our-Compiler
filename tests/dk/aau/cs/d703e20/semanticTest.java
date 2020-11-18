@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import static dk.aau.cs.d703e20.resources.Utilities.getNodeFromText;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static dk.aau.cs.d703e20.resources.Utilities.getNodeFromText;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class semanticTest {
