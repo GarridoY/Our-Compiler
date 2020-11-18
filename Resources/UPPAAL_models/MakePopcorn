@@ -10,8 +10,8 @@ setup{
     opin yellowLight 4;
 
 }
-    redLight = true;
 loop{                                   // we need to wait till the popcorn are popping (2min)
+    redLight = true;
     at (time > 120){                    // after 2 min we want to start check the time between pops
         while (redLight){
             if (detector == true){
