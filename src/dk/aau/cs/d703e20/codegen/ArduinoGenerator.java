@@ -7,18 +7,21 @@ import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.codegen.arduino.structure.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
 public class ArduinoGenerator {
 
     private ArrayList<VariableDeclarationNode> globalVariables;
+    private HashMap<String, PinDeclarationNode> pins;
     private ArrayList<AtStatementNode> atStatements;
     private ArrayList<String> clockNames;
     private ArrayList<FunctionDeclarationNode> functions;
 
     public String GenerateArduino(ProgramNode ast) {
         globalVariables = new ArrayList<>();
+        pins = new HashMap<>();
         atStatements = new ArrayList<>();
         clockNames = new ArrayList<>();
         functions = new ArrayList<>();
@@ -73,6 +76,7 @@ public class ArduinoGenerator {
         for (StatementNode statementNode : blockNode.getStatementNodes()) {
             if (statementNode instanceof PinDeclarationNode) {
                 PinDeclarationNode pinDeclNode = (PinDeclarationNode)statementNode;
+                pins.put(pinDeclNode.getVariableName(), pinDeclNode);
                 statementNodes.add(visitPinDeclaration(pinDeclNode));
             }
             else if (statementNode instanceof VariableDeclarationNode) {
@@ -94,16 +98,23 @@ public class ArduinoGenerator {
     private BlockNode visitBlockNode(BlockNode blockNode) {
         List<StatementNode> statementNodes = new ArrayList<>();
         for (StatementNode statementNode : blockNode.getStatementNodes()) {
-            if (statementNode instanceof AtStatementNode) {
+            if (statementNode instanceof VariableDeclarationNode) {
+                VariableDeclarationNode varDeclNode = (VariableDeclarationNode) statementNode;
+                visitVariableDeclaration(varDeclNode);
+                statementNodes.add(varDeclNode);
+            }
+            else if (statementNode instanceof AssignmentNode) {
+                AssignmentNode assignmentNode = (AssignmentNode) statementNode;
+                statementNodes.add(visitAssignment(assignmentNode));
+            }
+            else if (statementNode instanceof IfElseStatementNode) {
+                statementNodes.add(visitIfElseStatement((IfElseStatementNode) statementNode));
+            }
+            else if (statementNode instanceof AtStatementNode) {
                 visitAtStatement((AtStatementNode) statementNode);
             }
             else if (statementNode instanceof BoundStatementNode) {
                 visitBoundStatement((BoundStatementNode) statementNode);
-            }
-            else if (statementNode instanceof VariableDeclarationNode) {
-                VariableDeclarationNode varDeclNode = (VariableDeclarationNode) statementNode;
-                visitVariableDeclaration(varDeclNode);
-                statementNodes.add(varDeclNode);
             }
             // TODO: handle other statement node types with visitors
             else
@@ -133,6 +144,62 @@ public class ArduinoGenerator {
     private void visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
         if (variableDeclarationNode.getDataType() == Enums.DataType.CLOCK)
             clockNames.add(variableDeclarationNode.getVariableName());
+    }
+
+    private StatementNode visitAssignment(AssignmentNode assignmentNode) {
+        if (pins.containsKey(assignmentNode.getVariableName())) {
+            PinDeclarationNode pinDecl = pins.get(assignmentNode.getVariableName());
+
+            // digital/analog-Write arguments
+            List<FunctionArgNode> functionArgNodes = new ArrayList<>();
+
+            // arg 1: pin number
+            FunctionArgNode argName = new FunctionArgNode(new ArithExpressionNode(assignmentNode.getVariableName(), false));
+            functionArgNodes.add(argName);
+
+            // arg 2: value
+            FunctionArgNode argValue;
+            if (assignmentNode.getArithExpressionNode() != null)
+                argValue = new FunctionArgNode(assignmentNode.getArithExpressionNode());
+            else
+                argValue = new FunctionArgNode(new ArithExpressionNode(assignmentNode.getVariableName(), false));
+            functionArgNodes.add(argValue);
+
+            return new FunctionCallNode(pinDecl.isAnalog() ? "analogWrite" : "digitalWrite", functionArgNodes);
+        }
+        else
+            return assignmentNode;
+    }
+
+    private IfElseStatementNode visitIfElseStatement(IfElseStatementNode ifElseStatementNode) {
+        IfStatementNode ifStatementNode = visitIfStatement(ifElseStatementNode.getIfStatementNode());
+
+        List<ElseIfStatementNode> elseIfStatementNodes = new ArrayList<>();
+        for (ElseIfStatementNode elseIfStatementNode: ifElseStatementNode.getElseIfStatementNodes()) {
+            elseIfStatementNodes.add(visitElseIfStatement(elseIfStatementNode));
+        }
+
+        ElseStatementNode elseStatementNode = null;
+        if (ifElseStatementNode.getElseStatement() != null) {
+            elseStatementNode = visitElseStatement(ifElseStatementNode.getElseStatement());
+        }
+
+        return new IfElseStatementNode(ifStatementNode, elseIfStatementNodes, elseStatementNode);
+    }
+
+    private IfStatementNode visitIfStatement(IfStatementNode ifStatementNode) {
+        BlockNode blockNode = visitBlockNode(ifStatementNode.getBlockNode());
+        return new IfStatementNode(ifStatementNode.getConditionalExpressionNode(), blockNode);
+    }
+
+    private ElseIfStatementNode visitElseIfStatement(ElseIfStatementNode elseIfStatementNode) {
+        BlockNode blockNode = visitBlockNode(elseIfStatementNode.getBlockNode());
+        return new ElseIfStatementNode(elseIfStatementNode.getConditionalExpressionNode(), blockNode);
+    }
+
+    private ElseStatementNode visitElseStatement(ElseStatementNode elseStatementNode) {
+        BlockNode blockNode = visitBlockNode(elseStatementNode.getBlockNode());
+        return new ElseStatementNode(blockNode);
     }
 
     private void visitAtStatement (AtStatementNode atStatementNode) {
