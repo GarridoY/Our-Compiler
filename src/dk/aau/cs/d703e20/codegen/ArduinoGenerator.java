@@ -5,6 +5,7 @@ import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.codegen.arduino.structure.*;
+import dk.aau.cs.d703e20.errorhandling.CompilerException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -161,8 +162,24 @@ public class ArduinoGenerator {
             FunctionArgNode argValue;
             if (assignmentNode.getArithExpressionNode() != null)
                 argValue = new FunctionArgNode(assignmentNode.getArithExpressionNode());
-            else
-                argValue = new FunctionArgNode(new ArithExpressionNode(assignmentNode.getVariableName(), false));
+            else {
+                String value;
+
+                if (pinDecl.isAnalog())
+                    value = assignmentNode.getLiteralValue();
+                else {
+                    switch (assignmentNode.getLiteralValue()) {
+                        case "true": value = "HIGH";
+                            break;
+                        case "false": value = "LOW";
+                            break;
+                        default:
+                            throw new CompilerException("ERROR: assignment to pin failed, expected true or false. Got " + assignmentNode.getLiteralValue());
+                    }
+                }
+
+                argValue = new FunctionArgNode(new ArithExpressionNode(value, true));
+            }
             functionArgNodes.add(argValue);
 
             return new FunctionCallNode(pinDecl.isAnalog() ? "analogWrite" : "digitalWrite", functionArgNodes);

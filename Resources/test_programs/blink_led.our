@@ -17,14 +17,14 @@ Loop {
         previousMillis = currentMillis;
 
         // if the LED is off turn it on and vice-versa:
-        if (ledState == false) {
-            ledState = true;
+        ledState = !(ledState);
+
+        if (ledState == true) {
+            ledPin = true;
         }
         else {
-            ledState = false;
+            ledPin = false;
         }
-
-        ledPin = ledState;
     }
 }
 
