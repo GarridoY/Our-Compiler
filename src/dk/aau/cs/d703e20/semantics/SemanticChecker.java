@@ -17,6 +17,7 @@ public class SemanticChecker {
     public SemanticChecker() {
         HashMap<String, ASTNode> newSymbolTable = new HashMap<>();
         this.hashMapStack.push(newSymbolTable);
+
         // Add standard functions to symbol table
         enterFunction(
             new FunctionDeclarationNode(
@@ -34,6 +35,9 @@ public class SemanticChecker {
                 new BlockNode(new ArrayList<StatementNode>()),
                 new ArrayList<>()
         ));
+
+        // Add arduino constants to symbol table
+        enterSymbol("LED_BUILTIN", new VariableDeclarationNode(Enums.DataType.INT, "LED_BUILTIN"));
     }
 
     private void openScope(){
