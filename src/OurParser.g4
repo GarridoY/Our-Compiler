@@ -115,7 +115,7 @@ boolExprOperand
 
 // DECLARATIONS AND ASSIGNMENTS
 pinDecl
-    : pinType variableName (DIGIT | ANALOGPIN);
+    : pinType variableName (DIGIT | ANALOGPIN | LED_BUILTIN);
 
 // Declaration of variable
 variableDecl
