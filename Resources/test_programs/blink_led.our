@@ -3,7 +3,7 @@ Setup {
     int previousMillis = 0; //unsigned long
     bool ledState = false;
 
-    opin ledPin 0; //LED_BUILTIN
+    opin ledPin LED_BUILTIN;
 }
 
 Loop {
@@ -26,9 +26,4 @@ Loop {
             ledPin = false;
         }
     }
-}
-
-int millis() {
-    int milly = 0;
-    return milly;
 }
