@@ -1,0 +1,15 @@
+Setup {
+	clock x = 0;
+	opin out 1;
+}
+
+Loop {
+	int index = 0;
+	bool ready = false;
+
+	at (x == 3) {
+		out = true;
+		index = index + 1;
+	    ready = true;
+	}
+}

@@ -1,0 +1,34 @@
+Setup {
+    int interval = 1000; //const long
+    int previousMillis = 0; //unsigned long
+    bool ledState = false;
+
+    opin ledPin 0; //LED_BUILTIN
+}
+
+Loop {
+    // check to see if it's time to blink the LED; that is, if the difference
+    // between the current time and last time you blinked the LED is bigger than
+    // the interval at which you want to blink the LED.
+    int currentMillis = millis(); //unsigned long
+
+    if (currentMillis - previousMillis >= interval) {
+        // save the last time you blinked the LED
+        previousMillis = currentMillis;
+
+        // if the LED is off turn it on and vice-versa:
+        ledState = !(ledState);
+
+        if (ledState == true) {
+            ledPin = true;
+        }
+        else {
+            ledPin = false;
+        }
+    }
+}
+
+int millis() {
+    int milly = 0;
+    return milly;
+}
