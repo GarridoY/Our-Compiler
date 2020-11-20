@@ -36,7 +36,7 @@ public class FunctionCallNode extends StatementNode {
             sb.append(functionArgNode.prettyPrint(indentation));
             prefix = ", ";
         }
-        sb.append(");");
+        sb.append(")");
 
         return sb.toString();
     }

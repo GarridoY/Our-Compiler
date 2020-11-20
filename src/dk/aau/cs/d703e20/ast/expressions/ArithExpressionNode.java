@@ -94,7 +94,7 @@ public class ArithExpressionNode implements ASTNode {
         if (arithExpressionOperator != null) {
             sb.append(arithExpressionNode1.prettyPrint(indentation));
             sb.append(" ");
-            sb.append(arithExpressionOperator);
+            sb.append(Enums.stringFromArithOperator(arithExpressionOperator));
             sb.append(" ");
             sb.append(arithExpressionNode2.prettyPrint(indentation));
         }

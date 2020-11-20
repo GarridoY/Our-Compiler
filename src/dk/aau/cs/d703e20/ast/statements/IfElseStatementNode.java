@@ -35,9 +35,9 @@ public class IfElseStatementNode extends StatementNode {
 
         sb.append(ifStatementNode.prettyPrint(indentation));
         for (ElseIfStatementNode elseif : elseIfStatementNodes)
-            sb.append(elseif.prettyPrint(indentation));
+            sb.append(" " + elseif.prettyPrint(indentation));
         if (elseStatementNode != null)
-            sb.append(elseStatementNode.prettyPrint(indentation));
+            sb.append(" " + elseStatementNode.prettyPrint(indentation));
 
         return sb.toString();
     }
