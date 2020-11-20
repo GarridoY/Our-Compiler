@@ -3,6 +3,7 @@ package dk.aau.cs.d703e20.codegen.arduino.structure;
 import dk.aau.cs.d703e20.ast.ASTNode;
 import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
+import dk.aau.cs.d703e20.ast.structure.FunctionDeclarationNode;
 
 import java.util.List;
 
@@ -45,13 +46,14 @@ public class ArduinoProgramNode implements ASTNode {
             sb.append(varDecl.prettyPrint(indentation));
             sb.append("\n");
         }
+        sb.append("\n");
         sb.append(setupNode.prettyPrint(indentation));
-        sb.append("\n");
+        sb.append("\n\n");
         sb.append(loopNode.prettyPrint(indentation));
-        sb.append("\n");
+        sb.append("\n\n");
         for (FunctionDeclarationNode funcDecl : functionDeclarationNodes) {
             sb.append(funcDecl.prettyPrint(indentation));
-            sb.append("\n");
+            sb.append("\n\n");
         }
 
         return sb.toString();

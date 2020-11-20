@@ -1,9 +1,9 @@
-setup {
+Setup {
 	clock x = 0;
 	opin out 1;
 }
 
-loop {
+Loop {
 	int index = 0;
 	bool ready = false;
 
