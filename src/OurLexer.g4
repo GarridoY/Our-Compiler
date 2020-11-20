@@ -18,6 +18,9 @@ OPIN: 'opin';
 // Analog pin
 ANALOGPIN: 'A' DIGIT;
 
+// Predefined arduino constants
+LED_BUILTIN: 'LED_BUILTIN';
+
 // Access arrays
 SUBSCRIPT: ID '[' DIGIT ']';
 
