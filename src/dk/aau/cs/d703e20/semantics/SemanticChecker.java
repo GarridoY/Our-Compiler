@@ -27,6 +27,13 @@ public class SemanticChecker {
                     new FunctionParameterNode(Enums.DataType.INT, "ms")
                 ))
         ));
+        enterFunction(
+                new FunctionDeclarationNode(
+                Enums.DataType.INT,
+                "millis",
+                new BlockNode(new ArrayList<StatementNode>()),
+                new ArrayList<>()
+        ));
     }
 
     private void openScope(){

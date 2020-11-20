@@ -27,8 +27,3 @@ Loop {
         }
     }
 }
-
-int millis() {
-    int milly = 0;
-    return milly;
-}
