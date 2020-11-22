@@ -1,6 +1,9 @@
 package dk.aau.cs.d703e20.uppaal;
 
-import com.uppaal.model.core2.*;
+import com.uppaal.model.core2.Edge;
+import com.uppaal.model.core2.Location;
+import com.uppaal.model.core2.Node;
+import com.uppaal.model.core2.PrototypeDocument;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
@@ -9,6 +12,8 @@ import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Stack;
 
 import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.setNail;
 
@@ -20,6 +25,9 @@ public class ModelGen {
     HashMap<UPPTemplate, String> templateChanMap = new HashMap<>();
     // Map of io pins (name, number)
     HashMap<String, Integer> pinChanMap = new HashMap<>();
+
+    // List of strings to contain clock used in current and upper scopes
+    Stack<List<String>> clockDeclScopes = new Stack<>();
 
     int atCount = 0;
     int boundCount = 0;
@@ -77,7 +85,7 @@ public class ModelGen {
      * Begins the process of generating UPPAAL code corresponding to the program
      *
      * @param programNode Top node of program AST
-     * @return Document for UPPAAL to compile
+     * @return UPPSystem for UPPAAL to compile
      */
     public UPPSystem visitProgram(ProgramNode programNode) {
         programNode.getFunctionDeclarationNodes().forEach(this::visitFuncDecl);
@@ -151,12 +159,26 @@ public class ModelGen {
 
         /*
         TODO:
-          visitAssignment (only for clock)
+          visitAssignment (only for clock and pins)
           visitFunctionCall, begin_Function!
           visitIfElseStatement, create new template
           visitIterativeStatement, create new template
          */
     }
+
+    private void visitAssignment(AssignmentNode assignmentNode, UPPTemplate template) {
+        // Is variable pin?
+        if (pinChanMap.containsKey(assignmentNode.getVariableName())) {
+            if (assignmentNode.getLiteralValue().equals("true")) {
+                // chan!
+            } else if (assignmentNode.getLiteralValue().equals("false")) {
+                //TODO: figure out if there should be another chan!, I don't think we need it
+            }
+            // TODO: introduce local variables
+            template.addEdge(template.getLocationList().get(template.getLocationList().size()), template.addLocation("Assigned", 0, 0), null, null, opinChanName.concat("[") + pinChanMap.get(assignmentNode.getVariableName()) + "]!");
+        }
+    }
+
 
     /**
      * Add PinDeclaration as chan to template/global.
@@ -183,10 +205,12 @@ public class ModelGen {
      * @param node        UPPTemplate or UPPSystem
      */
     private void visitVarDecl(VariableDeclarationNode varDeclNode, Node node) {
+        // Setup
         if (node instanceof UPPSystem) {
             ((UPPSystem) node).addDecl(varDeclNode);
         } else if (node instanceof UPPTemplate) {
             ((UPPTemplate) node).addDecl(varDeclNode);
+
         } else
             throw new IllegalArgumentException("Wrong Node instance");
     }
@@ -195,6 +219,17 @@ public class ModelGen {
         // Create new template
         UPPTemplate template = system.createTemplate("At" + atCount);
         templateChanMap.put(template, "begin_" + "AT" + atCount);
+
+
+        // Create new location to check time and sync edge to call at
+        Location checkTime = template.addLocation("CheckTime");
+        template.addEdge(template.getLocationList().get(0), checkTime, null, templateChanMap.get(template) + "?", null);
+
+        // Edge and location for starting at
+        Location startAt = template.addLocation("starAt");
+        String guard = atStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0);
+        template.addEdge(template.getLocationList().get(1), startAt, guard, null, null);
+
         visitBlock(atStatementNode.getBlockNode(), template);
 
         // Flush StringBuilder into property

@@ -9,10 +9,14 @@ import java.util.List;
 
 public class UPPTemplate extends Template {
     String Name;
+    int locationX = 0;
+    int locationY = 0;
+    int locationCoordIncr = 1000;
     // Store all local declarations before setting them
     private final StringBuilder declSB = new StringBuilder();
-    // 0 is always start
+    // 0 is always start TODO: consider hashmap
     private final List<Location> locationList = new ArrayList<>();
+    private final List<String> clockList = new ArrayList<>();
 
     public UPPTemplate(Element prototype) {
         super(prototype);
@@ -20,6 +24,10 @@ public class UPPTemplate extends Template {
 
     public List<Location> getLocationList() {
         return locationList;
+    }
+
+    public List<String> getClockList() {
+        return clockList;
     }
 
     public String getName() {
@@ -32,7 +40,10 @@ public class UPPTemplate extends Template {
 
     public void addDecl(VariableDeclarationNode varDecl) {
         if (varDecl.getDataType() == Enums.DataType.CLOCK) {
+            // Add variable to list of declarations
             declSB.append("clock ").append(varDecl.getVariableName()).append(";\n");
+            // Add variableName
+            clockList.add(varDecl.getVariableName());
         }
     }
 
@@ -126,6 +137,31 @@ public class UPPTemplate extends Template {
         if (name != null)
             setLabel(l, LKind.name, name, x, y - 28);
         locationList.add(l);
+
+        // Update placement of next location by input
+        locationX = x + locationCoordIncr;
+
+        return l;
+    }
+
+    /**
+     * Creates and adds Location to template with automatic spacing
+     *
+     * @param name Name of location
+     * @return the new Location
+     */
+    public Location addLocation(String name) {
+        Location l = createLocation();
+        insert(l, null);
+        l.setProperty("x", locationX);
+        l.setProperty("y", locationY);
+        if (name != null)
+            setLabel(l, LKind.name, name, locationX, locationY - 28);
+        locationList.add(l);
+
+        //Increment x placement for next location
+        locationX += locationCoordIncr;
+
         return l;
     }
 
