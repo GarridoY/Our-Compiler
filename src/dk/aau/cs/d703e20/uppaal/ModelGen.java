@@ -2,7 +2,6 @@ package dk.aau.cs.d703e20.uppaal;
 
 import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.Location;
-import com.uppaal.model.core2.Node;
 import com.uppaal.model.core2.PrototypeDocument;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.statements.*;
@@ -12,8 +11,6 @@ import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Stack;
 
 import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.setNail;
 
@@ -25,9 +22,6 @@ public class ModelGen {
     HashMap<UPPTemplate, String> templateChanMap = new HashMap<>();
     // Map of io pins (name, number)
     HashMap<String, Integer> pinChanMap = new HashMap<>();
-
-    // List of strings to contain clock used in current and upper scopes
-    Stack<List<String>> clockDeclScopes = new Stack<>();
 
     int atCount = 0;
     int boundCount = 0;
@@ -97,7 +91,7 @@ public class ModelGen {
 
     private void visitLoop(LoopNode loopNode) {
         UPPTemplate template = system.createTemplate("controller");
-        visitBlock(loopNode.getBlockNode(), template);
+        visitBlock(loopNode.getBlockNode());
         template.setDeclaration();
     }
 
@@ -112,7 +106,7 @@ public class ModelGen {
         // Find all declarations
         for (StatementNode statementNode : setupNode.getBlockNode().getStatementNodes()) {
             if (statementNode instanceof VariableDeclarationNode) {
-                visitVarDecl((VariableDeclarationNode) statementNode, system);
+                visitVarDecl((VariableDeclarationNode) statementNode);
             } else if (statementNode instanceof PinDeclarationNode) {
                 visitPinDecl((PinDeclarationNode) statementNode);
             }
@@ -132,11 +126,10 @@ public class ModelGen {
      * Pass StringBuilder of new template.
      *
      * @param blockNode Block of current node
-     * @param template  Current UPPTemplate for statement, function declaration or loop
      */
-    private void visitBlock(BlockNode blockNode, UPPTemplate template) {
+    private void visitBlock(BlockNode blockNode) {
         // Visit each statement in block
-        blockNode.getStatementNodes().forEach(statementNode -> visitStatement(statementNode, template));
+        blockNode.getStatementNodes().forEach(this::visitStatement);
 
     }
 
@@ -145,13 +138,12 @@ public class ModelGen {
      * Some of these visitors open new templates.
      *
      * @param statementNode Current statement in BlockNode
-     * @param template      Current template from BlockNode
      */
-    private void visitStatement(StatementNode statementNode, UPPTemplate template) {
+    private void visitStatement(StatementNode statementNode) {
         if (statementNode instanceof PinDeclarationNode)
             visitPinDecl((PinDeclarationNode) statementNode);
         else if (statementNode instanceof VariableDeclarationNode)
-            visitVarDecl((VariableDeclarationNode) statementNode, template);
+            visitVarDecl((VariableDeclarationNode) statementNode);
         else if (statementNode instanceof AtStatementNode)
             visitAtStatement((AtStatementNode) statementNode);
         else if (statementNode instanceof BoundStatementNode)
@@ -199,20 +191,14 @@ public class ModelGen {
     }
 
     /**
-     * Add clocks to template/system
+     * Add clocks to system as global variables
      *
      * @param varDeclNode Source StatementNode
-     * @param node        UPPTemplate or UPPSystem
      */
-    private void visitVarDecl(VariableDeclarationNode varDeclNode, Node node) {
-        // Setup
-        if (node instanceof UPPSystem) {
-            ((UPPSystem) node).addDecl(varDeclNode);
-        } else if (node instanceof UPPTemplate) {
-            ((UPPTemplate) node).addDecl(varDeclNode);
-
-        } else
-            throw new IllegalArgumentException("Wrong Node instance");
+    private void visitVarDecl(VariableDeclarationNode varDeclNode) {
+        // Only clock types are used in UPPAAL
+        // All clocks are global due to scoping with templates
+        system.addDecl(varDeclNode);
     }
 
     private void visitAtStatement(AtStatementNode atStatementNode) {
@@ -230,7 +216,7 @@ public class ModelGen {
         String guard = atStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0);
         template.addEdge(template.getLocationList().get(1), startAt, guard, null, null);
 
-        visitBlock(atStatementNode.getBlockNode(), template);
+        visitBlock(atStatementNode.getBlockNode());
 
         // Flush StringBuilder into property
         template.setDeclaration();
@@ -240,14 +226,14 @@ public class ModelGen {
         // Create new template
         UPPTemplate template = system.createTemplate("Bound" + boundCount);
         templateChanMap.put(template, "begin_" + "Bound" + boundCount);
-        visitBlock(boundStatementNode.getBody(), template);
+        visitBlock(boundStatementNode.getBody());
 
         // Check for additional blocks
         if (boundStatementNode.getCatchBlock() != null) {
-            visitBlock(boundStatementNode.getCatchBlock(), template);
+            visitBlock(boundStatementNode.getCatchBlock());
         }
         if (boundStatementNode.getFinalBlock() != null) {
-            visitBlock(boundStatementNode.getFinalBlock(), template);
+            visitBlock(boundStatementNode.getFinalBlock());
         }
 
         // Flush StringBuilder into property
@@ -258,7 +244,7 @@ public class ModelGen {
         // Create new template
         UPPTemplate template = system.createTemplate(functionDeclarationNode.getFunctionName());
         templateChanMap.put(template, "begin_" + functionDeclarationNode.getFunctionName());
-        visitBlock(functionDeclarationNode.getBlockNode(), template);
+        visitBlock(functionDeclarationNode.getBlockNode());
 
         // Flush StringBuilder into property
         template.setDeclaration();
