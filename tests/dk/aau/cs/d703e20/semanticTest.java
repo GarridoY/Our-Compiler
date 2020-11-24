@@ -350,4 +350,13 @@ public class semanticTest {
                 "block");
         assertDoesNotThrow(()-> semanticChecker.visitBlock(blockNode));
     }
+
+    @Test
+    void testScopeRule01(){
+        ProgramNode programNode = getNodeFromText("Setup{clock x;} Loop{clock x;}",
+                ProgramNode.class,
+                OurParser.ProgramContext.class,
+                "program");
+        assertThrows(VariableAlreadyDeclaredException.class, ()-> semanticChecker.visitProgram(programNode));
+    }
 }
