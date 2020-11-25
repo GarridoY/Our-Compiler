@@ -564,6 +564,10 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             pinDeclarationNode =
                     new PinDeclarationNode(pinType, ctx.variableName().getText(), ctx.ANALOGPIN().getText());
         }
+        else if (ctx.LED_BUILTIN() != null) {
+            pinDeclarationNode =
+                    new PinDeclarationNode(pinType, ctx.variableName().getText(), ctx.LED_BUILTIN().getText());
+        }
         else
             throw new CompilerException("Invalid pin declaration", getCodePosition(ctx));
 
