@@ -19,11 +19,14 @@ Loop {
         // if the LED is off turn it on and vice-versa:
         ledState = !(ledState);
 
+        ledPin = ledState;
+        /*
         if (ledState == true) {
             ledPin = true;
         }
         else {
             ledPin = false;
         }
+        */
     }
 }
