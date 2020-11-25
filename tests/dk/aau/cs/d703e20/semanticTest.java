@@ -260,7 +260,7 @@ public class semanticTest {
     @Test
     void testForLoop() {
         BlockNode blockNode = getNodeFromText(
-                "{int leet = 1337; for (1 + 3 + 3 + 7 to 9 + 10 +2) {}}",
+                "{clock x; int leet = 1337; bound (x < 20) { for (1 + 3 + 3 + 7 to 9 + 10 +2) {}}}",
                 BlockNode.class,
                 OurParser.BlockContext.class,
                 "block"
@@ -268,6 +268,28 @@ public class semanticTest {
         assertDoesNotThrow(
                 ()-> semanticChecker.visitBlock(blockNode)
         );
+    }
+
+    @Test
+    void testWhileOutsideBound() {
+        BlockNode blockNode = getNodeFromText(
+                "{clock x; int leet = 1337; bound (x < 35) {} while (true) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block"
+        );
+        assertThrows(IllegalIterativeStatementException.class, ()-> semanticChecker.visitBlock(blockNode));
+    }
+
+    @Test
+    void testForOutsideBound() {
+        BlockNode blockNode = getNodeFromText(
+                "{int leet = 1337; for (1 + 3 + 3 + 7 to 9 + 10 +2) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block"
+        );
+        assertThrows(IllegalIterativeStatementException.class, ()-> semanticChecker.visitBlock(blockNode));
     }
 
     @Test
@@ -286,7 +308,7 @@ public class semanticTest {
     @Test
     void testWhileLoop(){
         BlockNode blockNode = getNodeFromText(
-                "{int leet = 1337; while (leet == true) {}}",
+                "{clock x; int leet = 1337; bound (x < leet) { while (leet == true) {}}}",
                 BlockNode.class,
                 OurParser.BlockContext.class,
                 "block"
@@ -349,5 +371,14 @@ public class semanticTest {
                 OurParser.BlockContext.class,
                 "block");
         assertDoesNotThrow(()-> semanticChecker.visitBlock(blockNode));
+    }
+
+    @Test
+    void testScopeRule01(){
+        ProgramNode programNode = getNodeFromText("Setup{clock x;} Loop{clock x;}",
+                ProgramNode.class,
+                OurParser.ProgramContext.class,
+                "program");
+        assertThrows(VariableAlreadyDeclaredException.class, ()-> semanticChecker.visitProgram(programNode));
     }
 }
