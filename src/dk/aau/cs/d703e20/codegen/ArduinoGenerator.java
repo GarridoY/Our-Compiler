@@ -4,6 +4,7 @@ import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
+import dk.aau.cs.d703e20.codegen.arduino.code.Functions;
 import dk.aau.cs.d703e20.codegen.arduino.structure.*;
 import dk.aau.cs.d703e20.errorhandling.CompilerException;
 
@@ -20,7 +21,10 @@ public class ArduinoGenerator {
     private ArrayList<String> clockNames;
     private ArrayList<FunctionDeclarationNode> functions;
 
+    private boolean digitalWriteUsed;
+
     public String GenerateArduino(ProgramNode ast) {
+        StringBuilder stringBuilder = new StringBuilder();
         globalVariables = new ArrayList<>();
         pins = new HashMap<>();
         atStatements = new ArrayList<>();
@@ -55,7 +59,13 @@ public class ArduinoGenerator {
             program.getLoopNode().getBlockNode().getStatementNodes().add(clockIncrement);
         }
 
-        return program.prettyPrint(0);
+        stringBuilder.append(program.prettyPrint(0));
+
+        // add custom write functions to end of program
+        if (digitalWriteUsed)
+            stringBuilder.append(Functions.dWrite);
+
+        return stringBuilder.toString();
     }
 
 
@@ -163,8 +173,9 @@ public class ArduinoGenerator {
             if (assignmentNode.getArithExpressionNode() != null)
                 argValue = new FunctionArgNode(assignmentNode.getArithExpressionNode());
             else {
-                String value;
+                String value = assignmentNode.getLiteralValue();
 
+                /*
                 if (pinDecl.isAnalog())
                     value = assignmentNode.getLiteralValue();
                 else {
@@ -177,12 +188,16 @@ public class ArduinoGenerator {
                             throw new CompilerException("ERROR: assignment to pin failed, expected true or false. Got " + assignmentNode.getLiteralValue());
                     }
                 }
+                */
 
                 argValue = new FunctionArgNode(new ArithExpressionNode(value, true));
             }
             functionArgNodes.add(argValue);
 
-            return new FunctionCallNode(pinDecl.isAnalog() ? "analogWrite" : "digitalWrite", functionArgNodes);
+            if (!pinDecl.isAnalog())
+                digitalWriteUsed = true;
+
+            return new FunctionCallNode(pinDecl.isAnalog() ? "analogWrite" : "dWrite", functionArgNodes);
         }
         else
             return assignmentNode;
