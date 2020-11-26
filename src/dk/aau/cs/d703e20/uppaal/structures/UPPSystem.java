@@ -67,10 +67,8 @@ public class UPPSystem extends Document {
         return templateList;
     }
 
-    public void addDecl(VariableDeclarationNode varDecl) {
-        if (varDecl.getDataType() == Enums.DataType.CLOCK) {
-            globalDeclSB.append("clock ").append(varDecl.getVariableName()).append(";\n");
-        }
+    public void addClockDecl(VariableDeclarationNode varDecl) {
+        globalDeclSB.append("clock ").append(varDecl.getVariableName()).append(";\n");
     }
 
 

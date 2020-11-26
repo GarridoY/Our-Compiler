@@ -77,12 +77,12 @@ public class Main {
             semanticChecker.visitProgram(programNode);
             System.out.println("Semantics ok");
 
-            /*
+
             // VERIFY TIME IN UPPAAL
             ModelChecker modelChecker = new ModelChecker();
             modelChecker.checkProgram(programNode);
             System.out.println("Time check finished\n");
-            */
+
 
             // Generate and print Arduino code
             System.out.println("\nGenerated arduino sketch:\n");

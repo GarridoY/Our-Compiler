@@ -27,8 +27,11 @@ public class ModelGenTest {
 
     @Test
     void testClockScope() {
-        UPPSystem system = parseProgramLoop("clock x; at (x == 10) { FuncTwo(); }");
-        System.out.println(system.getTemplateList().get(1).getName());
-        assertTrue(system.getTemplateList().get(1).getProperty("declaration").getValue().toString().contains("clock x"));
+        UPPSystem system = parseProgramLoop("clock x; at (x == 10) {}");
+
+        assertAll(
+                () -> assertFalse(system.getTemplateList().get(0).getProperty("declaration").getValue().toString().contains("clock x")),
+                () -> assertFalse(system.getTemplateList().get(1).getProperty("declaration").getValue().toString().contains("clock x"))
+        );
     }
 }

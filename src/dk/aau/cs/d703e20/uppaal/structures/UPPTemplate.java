@@ -1,8 +1,6 @@
 package dk.aau.cs.d703e20.uppaal.structures;
 
 import com.uppaal.model.core2.*;
-import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +14,6 @@ public class UPPTemplate extends Template {
     private final StringBuilder declSB = new StringBuilder();
     // 0 is always start TODO: consider hashmap
     private final List<Location> locationList = new ArrayList<>();
-    private final List<String> clockList = new ArrayList<>();
 
     public UPPTemplate(Element prototype) {
         super(prototype);
@@ -26,9 +23,6 @@ public class UPPTemplate extends Template {
         return locationList;
     }
 
-    public List<String> getClockList() {
-        return clockList;
-    }
 
     public String getName() {
         return Name;
@@ -36,15 +30,6 @@ public class UPPTemplate extends Template {
 
     public void setName(String name) {
         Name = name;
-    }
-
-    public void addDecl(VariableDeclarationNode varDecl) {
-        if (varDecl.getDataType() == Enums.DataType.CLOCK) {
-            // Add variable to list of declarations
-            declSB.append("clock ").append(varDecl.getVariableName()).append(";\n");
-            // Add variableName
-            clockList.add(varDecl.getVariableName());
-        }
     }
 
     /**
@@ -145,24 +130,36 @@ public class UPPTemplate extends Template {
     }
 
     /**
-     * Creates and adds Location to template with automatic spacing
+     * Wrapper for addLocation to avoid manual spacing. <P></P>
+     * Creates and adds Location to template with automatic spacing.
      *
      * @param name Name of location
-     * @return the new Location
+     * @return l the new Location
      */
     public Location addLocation(String name) {
-        Location l = createLocation();
-        insert(l, null);
-        l.setProperty("x", locationX);
-        l.setProperty("y", locationY);
-        if (name != null)
-            setLabel(l, LKind.name, name, locationX, locationY - 28);
-        locationList.add(l);
+        Location l = addLocation(name, locationX, locationY);
 
         //Increment x placement for next location
         locationX += locationCoordIncr;
 
         return l;
+    }
+
+
+    /**
+     * Adds new edge from last location to new location
+     *
+     * @param newLocName name of the new location
+     * @param guard      guard expression
+     * @param sync       sync expression
+     * @param update     update expression
+     */
+    public void edgeFromLastLoc(String newLocName, String guard, String sync, String update) {
+        // Save current last location of template
+        Location lastLoc = this.locationList.get(this.getLocationList().size() - 1);
+        // Add edge to new location
+        Location newLoc = this.addLocation(newLocName);
+        this.addEdge(lastLoc, newLoc, guard, sync, update);
     }
 
     /**

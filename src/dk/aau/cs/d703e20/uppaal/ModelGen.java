@@ -10,7 +10,9 @@ import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
 import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.setNail;
 
@@ -22,6 +24,8 @@ public class ModelGen {
     HashMap<UPPTemplate, String> templateChanMap = new HashMap<>();
     // Map of io pins (name, number)
     HashMap<String, Integer> pinChanMap = new HashMap<>();
+    // List of used clocks
+    List<String> clockList = new ArrayList<>();
 
     int atCount = 0;
     int boundCount = 0;
@@ -91,7 +95,7 @@ public class ModelGen {
 
     private void visitLoop(LoopNode loopNode) {
         UPPTemplate template = system.createTemplate("controller");
-        visitBlock(loopNode.getBlockNode());
+        visitBlock(loopNode.getBlockNode(), template);
         template.setDeclaration();
     }
 
@@ -127,10 +131,9 @@ public class ModelGen {
      *
      * @param blockNode Block of current node
      */
-    private void visitBlock(BlockNode blockNode) {
+    private void visitBlock(BlockNode blockNode, UPPTemplate template) {
         // Visit each statement in block
-        blockNode.getStatementNodes().forEach(this::visitStatement);
-
+        blockNode.getStatementNodes().forEach(statementNode -> visitStatement(statementNode, template));
     }
 
     /**
@@ -139,15 +142,17 @@ public class ModelGen {
      *
      * @param statementNode Current statement in BlockNode
      */
-    private void visitStatement(StatementNode statementNode) {
+    private void visitStatement(StatementNode statementNode, UPPTemplate template) {
         if (statementNode instanceof PinDeclarationNode)
             visitPinDecl((PinDeclarationNode) statementNode);
         else if (statementNode instanceof VariableDeclarationNode)
             visitVarDecl((VariableDeclarationNode) statementNode);
         else if (statementNode instanceof AtStatementNode)
-            visitAtStatement((AtStatementNode) statementNode);
+            visitAtStatement((AtStatementNode) statementNode, template);
         else if (statementNode instanceof BoundStatementNode)
             visitBoundStatement((BoundStatementNode) statementNode);
+        else if (statementNode instanceof AssignmentNode)
+            visitAssignment((AssignmentNode) statementNode, template);
 
         /*
         TODO:
@@ -168,6 +173,14 @@ public class ModelGen {
             }
             // TODO: introduce local variables
             template.addEdge(template.getLocationList().get(template.getLocationList().size()), template.addLocation("Assigned", 0, 0), null, null, opinChanName.concat("[") + pinChanMap.get(assignmentNode.getVariableName()) + "]!");
+        } else if (clockList.contains(assignmentNode.getVariableName())) {
+            // Update string
+            String updateStmt = assignmentNode.getArithExpressionNode().prettyPrint(0);
+
+            // New location for update edge
+            Location prevLoc = template.getLocationList().get(template.getLocationList().size() - 1);
+            Location newLoc = template.addLocation("");
+            template.addEdge(prevLoc, newLoc, null, null, updateStmt);
         }
     }
 
@@ -198,42 +211,47 @@ public class ModelGen {
     private void visitVarDecl(VariableDeclarationNode varDeclNode) {
         // Only clock types are used in UPPAAL
         // All clocks are global due to scoping with templates
-        system.addDecl(varDeclNode);
+        if (varDeclNode.getDataType() == Enums.DataType.CLOCK) {
+            system.addClockDecl(varDeclNode);
+            clockList.add(varDeclNode.getVariableName());
+        }
     }
 
-    private void visitAtStatement(AtStatementNode atStatementNode) {
+    private void visitAtStatement(AtStatementNode atStatementNode, UPPTemplate fromTemplate) {
         // Create new template
-        UPPTemplate template = system.createTemplate("At" + atCount);
-        templateChanMap.put(template, "begin_" + "AT" + atCount);
+        UPPTemplate atTemplate = system.createTemplate("At" + atCount);
+        // Create channel for synchronisation
+        templateChanMap.put(atTemplate, "begin_" + "AT" + atCount);
 
+        // Add edge to sync previous template into new one
+        fromTemplate.edgeFromLastLoc("sched" + atTemplate.getName(), null, templateChanMap.get(atTemplate) + "!", null);
 
-        // Create new location to check time and sync edge to call at
-        Location checkTime = template.addLocation("CheckTime");
-        template.addEdge(template.getLocationList().get(0), checkTime, null, templateChanMap.get(template) + "?", null);
+        // Create new location to check time and edge to sync at schedule
+        atTemplate.edgeFromLastLoc("CheckTime",null, templateChanMap.get(atTemplate) + "?", null);
 
-        // Edge and location for starting at
-        Location startAt = template.addLocation("starAt");
+        // Edge and location for starting at (when atParam is ready)
+        Location startAt = atTemplate.addLocation("starAt");
         String guard = atStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0);
-        template.addEdge(template.getLocationList().get(1), startAt, guard, null, null);
+        atTemplate.addEdge(atTemplate.getLocationList().get(1), startAt, guard, null, null);
 
-        visitBlock(atStatementNode.getBlockNode());
+        visitBlock(atStatementNode.getBlockNode(), atTemplate);
 
         // Flush StringBuilder into property
-        template.setDeclaration();
+        atTemplate.setDeclaration();
     }
 
     private void visitBoundStatement(BoundStatementNode boundStatementNode) {
         // Create new template
         UPPTemplate template = system.createTemplate("Bound" + boundCount);
         templateChanMap.put(template, "begin_" + "Bound" + boundCount);
-        visitBlock(boundStatementNode.getBody());
+        visitBlock(boundStatementNode.getBody(), template);
 
         // Check for additional blocks
         if (boundStatementNode.getCatchBlock() != null) {
-            visitBlock(boundStatementNode.getCatchBlock());
+            //visitBlock(boundStatementNode.getCatchBlock()); TODO: new template or part of same?
         }
         if (boundStatementNode.getFinalBlock() != null) {
-            visitBlock(boundStatementNode.getFinalBlock());
+            //visitBlock(boundStatementNode.getFinalBlock()); TODO: new template or part of same?
         }
 
         // Flush StringBuilder into property
@@ -244,9 +262,14 @@ public class ModelGen {
         // Create new template
         UPPTemplate template = system.createTemplate(functionDeclarationNode.getFunctionName());
         templateChanMap.put(template, "begin_" + functionDeclarationNode.getFunctionName());
-        visitBlock(functionDeclarationNode.getBlockNode());
+        visitBlock(functionDeclarationNode.getBlockNode(), template);
 
         // Flush StringBuilder into property
         template.setDeclaration();
+    }
+
+    private void scopeTransition(UPPTemplate fromTemplate, UPPTemplate toTemplate, String sync) {
+        fromTemplate.addLocation("Enter_Scope");
+        toTemplate.addLocation("");
     }
 }
