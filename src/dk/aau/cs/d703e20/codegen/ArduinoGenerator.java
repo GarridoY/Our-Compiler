@@ -38,6 +38,8 @@ public class ArduinoGenerator {
         // Declare scheduled_ats array
         program.getVariableDeclarationNodes().add(new VariableDeclarationNode(Enums.DataType.INT_ARRAY, atStatements.size(), "scheduled_ats"));
 
+        program.getLoopNode().getBlockNode().getStatementNodes().add(0, new CommentNode(" LOOP CODE"));
+
         program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" AT STATEMENTS"));
         // handle all at statements
         for (int at = 0; at < atStatements.size(); at++) {
@@ -53,6 +55,7 @@ public class ArduinoGenerator {
             program.getLoopNode().getBlockNode().getStatementNodes().add(new BlockStatementNode(atBlock));
         }
 
+        program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" CLOCKS"));
         // increment all clocks
         for (String clockName : clockNames) {
             // create [clockName = clockName + 1;]
