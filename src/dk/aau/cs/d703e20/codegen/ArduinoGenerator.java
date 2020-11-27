@@ -45,6 +45,9 @@ public class ArduinoGenerator {
             BoolExpressionNode atBool = atStatements.get(at).getAtParamsNode().getBoolExpressionNode();
             BlockNode atBlock = atStatements.get(at).getBlockNode();
 
+            // decrement schedule count inside block
+            atBlock.getStatementNodes().add(0, new CodeNode("scheduled_ats[" + at +"]--;"));
+
             // insert at the end
             program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode("if (scheduled_ats[" + at + "] && " + atBool.prettyPrint(0) + ")"));
             program.getLoopNode().getBlockNode().getStatementNodes().add(new BlockStatementNode(atBlock));
