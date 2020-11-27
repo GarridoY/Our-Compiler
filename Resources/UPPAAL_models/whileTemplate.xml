@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+
+// clocks
+clock x;
+
+//chans
+chan sched1;
+chan sched1Done;
+chan kill;
+chan success;
+chan done;
+
+</declaration>
+	<template>
+		<name x="5" y="5">BoundWhile</name>
+		<declaration>// All functions simulate some code instances
+
+// The code in the bound that we want to have a max time limit on
+void runBoundCode(){
+    // something
+    // something
+}
+
+// A function that is run if the bound code doesnt exceed the boundary 
+void runSuccessBody(){
+   // something
+   // something
+}
+
+// A function that is run if the bound code exceeds the boundary (time limit)
+void runCatchBody(){
+    // something
+    // something
+}
+
+// A function that is always run
+void runFinalBody(){
+    // something
+    // something
+}
+
+</declaration>
+		<location id="id0" x="-78600" y="-78532">
+			<name x="-78643" y="-78575">Schedule1Start</name>
+			<urgent/>
+		</location>
+		<location id="id1" x="-78413" y="-78532">
+			<name x="-78447" y="-78574">BoundBodyStart</name>
+			<label kind="comments" x="-78465" y="-78634">Bound with time limit
+x &lt; 1000</label>
+			<urgent/>
+		</location>
+		<location id="id2" x="-78218" y="-78532">
+			<name x="-78252" y="-78575">WhileStart</name>
+			<label kind="comments" x="-78278" y="-78634">Checks while condition
+(is while done?)</label>
+		</location>
+		<location id="id3" x="-78014" y="-78532">
+			<name x="-78064" y="-78574">BoundBodyEnd</name>
+			<label kind="comments" x="-78108" y="-78634">Now we check if the
+bound execution has exceeded
+the time limit</label>
+			<urgent/>
+		</location>
+		<location id="id4" x="-78108" y="-78379">
+			<name x="-78107" y="-78421">WhileBody</name>
+		</location>
+		<location id="id5" x="-78310" y="-78378">
+			<name x="-78378" y="-78420">TimeCheck</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="-77809" y="-78311">
+			<name x="-77827" y="-78286">FailBoundBody</name>
+		</location>
+		<location id="id7" x="-77810" y="-78532">
+			<name x="-77826" y="-78574">SuccessBoundBody</name>
+		</location>
+		<location id="id8" x="-77622" y="-78438">
+			<name x="-77631" y="-78481">Final</name>
+		</location>
+		<location id="id9" x="-77435" y="-78438">
+			<name x="-77462" y="-78481">BoundExit</name>
+			<urgent/>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-78098" y="-78200">sched1Done!</label>
+			<nail x="-77435" y="-78208"/>
+			<nail x="-78599" y="-78208"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id9"/>
+			<label kind="assignment" x="-77571" y="-78430">runFinalBody()</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id8"/>
+			<label kind="assignment" x="-77741" y="-78353">runCatchBody()</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id8"/>
+			<label kind="assignment" x="-77810" y="-78473">runSuccessBody()</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="guard" x="-78175" y="-78302">x &gt;= 1000</label>
+			<label kind="synchronisation" x="-78167" y="-78337">kill!</label>
+			<nail x="-78311" y="-78311"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-77938" y="-78523">x &lt; 1000</label>
+			<label kind="synchronisation" x="-77938" y="-78558">success!</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id6"/>
+			<label kind="guard" x="-77980" y="-78421">x &gt;= 1000</label>
+			<label kind="synchronisation" x="-77963" y="-78447">kill!</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-78329" y="-78472">x &lt; 1000</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id4"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="assignment" x="-78184" y="-78532">runBoundCode()</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="assignment" x="-78371" y="-78532">runBoundCode()</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-78532" y="-78558">sched1?</label>
+		</transition>
+	</template>
+	<template>
+		<name>Controller</name>
+		<location id="id10" x="-2074" y="-527">
+			<name x="-2091" y="-578">Loop</name>
+		</location>
+		<location id="id11" x="-1564" y="-527">
+			<name x="-1581" y="-578">Done</name>
+			<urgent/>
+		</location>
+		<location id="id12" x="-1827" y="-527">
+			<name x="-1861" y="-578">Schedule1</name>
+		</location>
+		<init ref="id10"/>
+		<transition controllable="false">
+			<source ref="id11"/>
+			<target ref="id10"/>
+			<nail x="-1564" y="-442"/>
+			<nail x="-2074" y="-442"/>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="-1751" y="-552">sched1Done?</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="-1980" y="-552">sched1!</label>
+		</transition>
+	</template>
+	<template>
+		<name>State</name>
+		<location id="id13" x="-722" y="-93">
+			<name x="-748" y="-68">Pending</name>
+		</location>
+		<location id="id14" x="-561" y="-93">
+			<name x="-578" y="-68">Dead</name>
+			<urgent/>
+		</location>
+		<location id="id15" x="-884" y="-93">
+			<name x="-901" y="-76">Safe</name>
+			<urgent/>
+		</location>
+		<init ref="id13"/>
+		<transition controllable="false">
+			<source ref="id15"/>
+			<target ref="id13"/>
+			<nail x="-807" y="-34"/>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id15"/>
+			<label kind="synchronisation" x="-833" y="-187">success?</label>
+			<nail x="-807" y="-161"/>
+		</transition>
+		<transition controllable="false">
+			<source ref="id14"/>
+			<target ref="id13"/>
+			<nail x="-646" y="-34"/>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id14"/>
+			<label kind="synchronisation" x="-654" y="-187">kill?</label>
+			<nail x="-646" y="-161"/>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+// Process = Template();
+// List one or more processes to be composed into a system.
+system BoundWhile, Controller, State;
+    </system>
+	<queries>
+		<query>
+			<formula></formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>
