@@ -4,9 +4,11 @@ import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
+import dk.aau.cs.d703e20.codegen.arduino.code.BlockStatementNode;
+import dk.aau.cs.d703e20.codegen.arduino.code.CodeNode;
+import dk.aau.cs.d703e20.codegen.arduino.code.CommentNode;
 import dk.aau.cs.d703e20.codegen.arduino.code.Functions;
 import dk.aau.cs.d703e20.codegen.arduino.structure.*;
-import dk.aau.cs.d703e20.errorhandling.CompilerException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,18 +35,19 @@ public class ArduinoGenerator {
 
         ArduinoProgramNode program = visitProgram(ast);
 
+        // Declare scheduled_ats array
+        program.getVariableDeclarationNodes().add(new VariableDeclarationNode(Enums.DataType.INT_ARRAY, atStatements.size(), "scheduled_ats"));
+
+        program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" AT STATEMENTS"));
         // handle all at statements
-        for (AtStatementNode at : atStatements) {
+        for (int at = 0; at < atStatements.size(); at++) {
             // create if node from at node
-            IfStatementNode ifNode =
-                    new IfStatementNode(
-                        new ConditionalExpressionNode(at.getAtParamsNode().getBoolExpressionNode()),
-                        at.getBlockNode()
-                    );
-            IfElseStatementNode ifElseNode = new IfElseStatementNode(ifNode, new ArrayList<>(), null);
+            BoolExpressionNode atBool = atStatements.get(at).getAtParamsNode().getBoolExpressionNode();
+            BlockNode atBlock = atStatements.get(at).getBlockNode();
 
             // insert at the end
-            program.getLoopNode().getBlockNode().getStatementNodes().add(ifElseNode);
+            program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode("if (scheduled_ats[" + at + "] && " + atBool.prettyPrint(0) + ")"));
+            program.getLoopNode().getBlockNode().getStatementNodes().add(new BlockStatementNode(atBlock));
         }
 
         // increment all clocks
@@ -92,8 +95,7 @@ public class ArduinoGenerator {
             }
             else if (statementNode instanceof VariableDeclarationNode) {
                 VariableDeclarationNode varDeclNode = (VariableDeclarationNode)statementNode;
-                visitVariableDeclaration(varDeclNode);
-                globalVariables.add(varDeclNode);
+                globalVariables.add(visitVariableDeclaration(varDeclNode));
             }
             // else nothing. Only declarations allowed
         }
@@ -111,8 +113,7 @@ public class ArduinoGenerator {
         for (StatementNode statementNode : blockNode.getStatementNodes()) {
             if (statementNode instanceof VariableDeclarationNode) {
                 VariableDeclarationNode varDeclNode = (VariableDeclarationNode) statementNode;
-                visitVariableDeclaration(varDeclNode);
-                statementNodes.add(varDeclNode);
+                statementNodes.add(visitVariableDeclaration(varDeclNode));
             }
             else if (statementNode instanceof AssignmentNode) {
                 AssignmentNode assignmentNode = (AssignmentNode) statementNode;
@@ -122,7 +123,7 @@ public class ArduinoGenerator {
                 statementNodes.add(visitIfElseStatement((IfElseStatementNode) statementNode));
             }
             else if (statementNode instanceof AtStatementNode) {
-                visitAtStatement((AtStatementNode) statementNode);
+                statementNodes.add(visitAtStatement((AtStatementNode) statementNode));
             }
             else if (statementNode instanceof BoundStatementNode) {
                 visitBoundStatement((BoundStatementNode) statementNode);
@@ -152,9 +153,20 @@ public class ArduinoGenerator {
         return new FunctionCallNode("pinMode", functionArgNodes);
     }
 
-    private void visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
-        if (variableDeclarationNode.getDataType() == Enums.DataType.CLOCK)
-            clockNames.add(variableDeclarationNode.getVariableName());
+    private VariableDeclarationNode visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
+        // If variable is a clock, turn it into an int instead
+        if (variableDeclarationNode.getDataType() == Enums.DataType.CLOCK) {
+            AssignmentNode assignmentNode = variableDeclarationNode.getAssignmentNode();
+            String variableName = variableDeclarationNode.getVariableName();
+
+            clockNames.add(variableName);
+            if (assignmentNode != null)
+                return new VariableDeclarationNode(Enums.DataType.INT, assignmentNode);
+            else
+                return new VariableDeclarationNode(Enums.DataType.INT, variableName);
+        }
+        else
+            return variableDeclarationNode;
     }
 
     private StatementNode visitAssignment(AssignmentNode assignmentNode) {
@@ -234,8 +246,10 @@ public class ArduinoGenerator {
         return new ElseStatementNode(blockNode);
     }
 
-    private void visitAtStatement (AtStatementNode atStatementNode) {
+    private StatementNode visitAtStatement (AtStatementNode atStatementNode) {
+        int atIndex = atStatements.size();
         atStatements.add(atStatementNode);
+        return new CodeNode("scheduled_ats[" + atIndex + "]++;");
     }
 
     private void visitBoundStatement (BoundStatementNode boundStatementNode) {
