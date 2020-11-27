@@ -58,14 +58,8 @@ public class ArduinoGenerator {
         program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" CLOCKS"));
         // increment all clocks
         for (String clockName : clockNames) {
-            // create [clockName = clockName + 1;]
-            ArithExpressionNode variableName = new ArithExpressionNode(clockName, false);
-            ArithExpressionNode one = new ArithExpressionNode("1", true);
-            ArithExpressionNode clockPlusOne = new ArithExpressionNode(variableName, one, Enums.ArithOperator.ADD);
-            AssignmentNode clockIncrement = new AssignmentNode(clockName, clockPlusOne);
-
-            // insert at the end
-            program.getLoopNode().getBlockNode().getStatementNodes().add(clockIncrement);
+            // insert increment statement at the end
+            program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode(clockName + "++;"));
         }
 
         stringBuilder.append(program.prettyPrint(0));
