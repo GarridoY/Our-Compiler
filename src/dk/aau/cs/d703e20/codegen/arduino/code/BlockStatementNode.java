@@ -5,6 +5,7 @@ import dk.aau.cs.d703e20.ast.statements.StatementNode;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 
 public class BlockStatementNode extends StatementNode {
+    private CodeNode code;
     private BlockNode block;
 
     private CodePosition codePosition;
@@ -13,9 +14,17 @@ public class BlockStatementNode extends StatementNode {
         this.block = block;
     }
 
+    public BlockStatementNode (CodeNode code, BlockNode block) {
+        this.code = code;
+        this.block = block;
+    }
+
     @Override
     public String prettyPrint(int indentation) {
-        return block.prettyPrint(indentation);
+        if (code != null)
+            return code.prettyPrint(indentation) + block.prettyPrint(indentation);
+        else
+            return block.prettyPrint(indentation);
     }
 
     @Override

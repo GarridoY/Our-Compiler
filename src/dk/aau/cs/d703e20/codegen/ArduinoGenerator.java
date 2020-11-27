@@ -48,11 +48,15 @@ public class ArduinoGenerator {
             BlockNode atBlock = atStatements.get(at).getBlockNode();
 
             // decrement schedule count inside block
+            atBlock.getStatementNodes().add(0, new CommentNode(" code from at block:"));
             atBlock.getStatementNodes().add(0, new CodeNode("scheduled_ats[" + at +"]--;"));
+            atBlock.getStatementNodes().add(0, new CommentNode(" decrement schedule counter"));
 
             // insert at the end
-            program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode("if (scheduled_ats[" + at + "] && " + atBool.prettyPrint(0) + ")"));
-            program.getLoopNode().getBlockNode().getStatementNodes().add(new BlockStatementNode(atBlock));
+            program.getLoopNode().getBlockNode().getStatementNodes().add(
+                    new BlockStatementNode(
+                            new CodeNode("if (scheduled_ats[" + at + "] && " + atBool.prettyPrint(0) + ") "),
+                            atBlock));
         }
 
         program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" CLOCKS"));
