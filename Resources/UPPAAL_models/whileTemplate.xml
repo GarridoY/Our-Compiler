@@ -43,94 +43,96 @@ void runFinalBody(){
 }
 
 </declaration>
-		<location id="id0" x="-78600" y="-78532">
-			<name x="-78643" y="-78575">Schedule1Start</name>
+		<location id="id0" x="-78514" y="-78353">
+			<name x="-78557" y="-78396">Schedule1Start</name>
 			<urgent/>
 		</location>
-		<location id="id1" x="-78413" y="-78532">
-			<name x="-78447" y="-78574">BoundBodyStart</name>
-			<label kind="comments" x="-78465" y="-78634">Bound with time limit
+		<location id="id1" x="-78327" y="-78353">
+			<name x="-78361" y="-78395">BoundBodyStart</name>
+			<label kind="comments" x="-78379" y="-78455">Bound with time limit
 x &lt; 1000</label>
 			<urgent/>
 		</location>
-		<location id="id2" x="-78218" y="-78532">
-			<name x="-78252" y="-78575">WhileStart</name>
-			<label kind="comments" x="-78278" y="-78634">Checks while condition
+		<location id="id2" x="-78132" y="-78353">
+			<name x="-78166" y="-78396">WhileStart</name>
+			<label kind="comments" x="-78192" y="-78455">Checks while condition
 (is while done?)</label>
 		</location>
-		<location id="id3" x="-78014" y="-78532">
-			<name x="-78064" y="-78574">BoundBodyEnd</name>
-			<label kind="comments" x="-78108" y="-78634">Now we check if the
+		<location id="id3" x="-77724" y="-78353">
+			<name x="-77774" y="-78395">BoundBodyEnd</name>
+			<label kind="comments" x="-77818" y="-78455">Now we check if the
 bound execution has exceeded
 the time limit</label>
 			<urgent/>
 		</location>
-		<location id="id4" x="-78108" y="-78379">
-			<name x="-78107" y="-78421">WhileBody</name>
+		<location id="id4" x="-78022" y="-78200">
+			<name x="-78021" y="-78242">WhileBody</name>
 		</location>
-		<location id="id5" x="-78310" y="-78378">
-			<name x="-78378" y="-78420">TimeCheck</name>
+		<location id="id5" x="-78224" y="-78199">
+			<name x="-78292" y="-78241">TimeCheck</name>
 			<urgent/>
 		</location>
-		<location id="id6" x="-77809" y="-78311">
-			<name x="-77827" y="-78286">FailBoundBody</name>
+		<location id="id6" x="-77519" y="-78132">
+			<name x="-77537" y="-78107">FailBoundBody</name>
 		</location>
-		<location id="id7" x="-77810" y="-78532">
-			<name x="-77826" y="-78574">SuccessBoundBody</name>
+		<location id="id7" x="-77520" y="-78353">
+			<name x="-77536" y="-78395">SuccessBoundBody</name>
 		</location>
-		<location id="id8" x="-77622" y="-78438">
-			<name x="-77631" y="-78481">Final</name>
+		<location id="id8" x="-77332" y="-78259">
+			<name x="-77341" y="-78302">Final</name>
 		</location>
-		<location id="id9" x="-77435" y="-78438">
-			<name x="-77462" y="-78481">BoundExit</name>
+		<location id="id9" x="-77145" y="-78259">
+			<name x="-77172" y="-78302">BoundExit</name>
 			<urgent/>
 		</location>
 		<init ref="id0"/>
 		<transition>
 			<source ref="id9"/>
 			<target ref="id0"/>
-			<label kind="synchronisation" x="-78098" y="-78200">sched1Done!</label>
-			<nail x="-77435" y="-78208"/>
-			<nail x="-78599" y="-78208"/>
+			<label kind="synchronisation" x="-78012" y="-78021">sched1Done!</label>
+			<nail x="-77145" y="-78029"/>
+			<nail x="-78513" y="-78029"/>
 		</transition>
 		<transition>
 			<source ref="id8"/>
 			<target ref="id9"/>
-			<label kind="assignment" x="-77571" y="-78430">runFinalBody()</label>
+			<label kind="assignment" x="-77281" y="-78251">runFinalBody()</label>
 		</transition>
 		<transition>
 			<source ref="id6"/>
 			<target ref="id8"/>
-			<label kind="assignment" x="-77741" y="-78353">runCatchBody()</label>
+			<label kind="assignment" x="-77451" y="-78174">runCatchBody()</label>
 		</transition>
 		<transition>
 			<source ref="id7"/>
 			<target ref="id8"/>
-			<label kind="assignment" x="-77810" y="-78473">runSuccessBody()</label>
+			<label kind="assignment" x="-77520" y="-78294">runSuccessBody()</label>
 		</transition>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id6"/>
-			<label kind="guard" x="-78175" y="-78302">x &gt;= 1000</label>
-			<label kind="synchronisation" x="-78167" y="-78337">kill!</label>
-			<nail x="-78311" y="-78311"/>
+			<label kind="guard" x="-77944" y="-78123">x &gt;= 1000</label>
+			<label kind="synchronisation" x="-77918" y="-78157">kill!</label>
+			<label kind="comments" x="-78020" y="-78097">Bound was exceeded due to while</label>
+			<nail x="-78225" y="-78132"/>
 		</transition>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id7"/>
-			<label kind="guard" x="-77938" y="-78523">x &lt; 1000</label>
-			<label kind="synchronisation" x="-77938" y="-78558">success!</label>
+			<label kind="guard" x="-77648" y="-78344">x &lt; 1000</label>
+			<label kind="synchronisation" x="-77648" y="-78379">success!</label>
 		</transition>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id6"/>
-			<label kind="guard" x="-77980" y="-78421">x &gt;= 1000</label>
-			<label kind="synchronisation" x="-77963" y="-78447">kill!</label>
+			<label kind="guard" x="-77690" y="-78242">x &gt;= 1000</label>
+			<label kind="synchronisation" x="-77673" y="-78268">kill!</label>
+			<label kind="comments" x="-77884" y="-78208">Bound was exceeded due to code after while</label>
 		</transition>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id2"/>
-			<label kind="guard" x="-78329" y="-78472">x &lt; 1000</label>
+			<label kind="guard" x="-78243" y="-78293">x &lt; 1000</label>
 		</transition>
 		<transition>
 			<source ref="id4"/>
@@ -143,17 +145,17 @@ the time limit</label>
 		<transition>
 			<source ref="id2"/>
 			<target ref="id3"/>
-			<label kind="assignment" x="-78184" y="-78532">runBoundCode()</label>
+			<label kind="assignment" x="-78098" y="-78353">runBoundCode()</label>
 		</transition>
 		<transition>
 			<source ref="id1"/>
 			<target ref="id2"/>
-			<label kind="assignment" x="-78371" y="-78532">runBoundCode()</label>
+			<label kind="assignment" x="-78285" y="-78353">runBoundCode()</label>
 		</transition>
 		<transition>
 			<source ref="id0"/>
 			<target ref="id1"/>
-			<label kind="synchronisation" x="-78532" y="-78558">sched1?</label>
+			<label kind="synchronisation" x="-78446" y="-78379">sched1?</label>
 		</transition>
 	</template>
 	<template>
