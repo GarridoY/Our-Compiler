@@ -250,8 +250,11 @@ public class ArduinoGenerator {
     }
 
     private StatementNode visitAtStatement (AtStatementNode atStatementNode) {
+        BlockNode visitedBlock = visitBlockNode(atStatementNode.getBlockNode());
+        AtStatementNode visitedAt = new AtStatementNode(atStatementNode.getAtParamsNode(), visitedBlock);
+
         int atIndex = atStatements.size();
-        atStatements.add(atStatementNode);
+        atStatements.add(visitedAt);
         return new CodeNode("scheduled_ats[" + atIndex + "]++;");
     }
 
