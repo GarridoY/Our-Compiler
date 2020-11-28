@@ -6,6 +6,7 @@ import com.uppaal.model.core2.Location;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,5 +102,16 @@ public class UPPSystem extends Document {
         else
             globalDeclSB.append("chan ").append(id).append("[").append(arraySize).append("];\n");
 
+    }
+
+    // printing for debugging
+    public void toXML() {
+        // Save model for debugging
+        try {
+            String path = System.getProperty("user.dir");
+            this.save(path + "\\Resources\\output\\hej.xml");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

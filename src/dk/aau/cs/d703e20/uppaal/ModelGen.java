@@ -9,7 +9,6 @@ import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
 import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,25 +34,6 @@ public class ModelGen {
     String opinChanName = "out";
     String ipinChanName = "in";
 
-    // sample setup and debugging
-    void createExample() {
-        // Model requires at least 1 template
-        UPPTemplate t = system.createTemplate("exampleTemplate");
-        // Add location for new template t
-        Location l0 = t.addLocation("L0", 0, 0);
-        // Location is initial
-        l0.setProperty("init", true);
-        // add system declaration
-        system.setDeclaration();
-
-        // Save model for debugging
-        try {
-            String path = System.getProperty("user.dir");
-            system.save(path + "\\Resources\\output\\hej.xml");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     // Create template to handle world input/output
     //TODO: use with main arg
@@ -86,17 +66,20 @@ public class ModelGen {
      * @return UPPSystem for UPPAAL to compile
      */
     public UPPSystem visitProgram(ProgramNode programNode) {
+        // Functions -> Controller -> Global
         programNode.getFunctionDeclarationNodes().forEach(this::visitFuncDecl);
         visitLoop(programNode.getLoopNode());
         visitSetup(programNode.getSetupNode());
-        createExample(); //TODO: remove
+        // Set system declaration (processes)
+        system.setDeclaration();
+        system.toXML(); //TODO: remove
         return system;
     }
 
     private void visitLoop(LoopNode loopNode) {
         UPPTemplate template = system.createTemplate("controller");
         visitBlock(loopNode.getBlockNode(), template);
-        template.setDeclaration();
+        template.setLooping();
     }
 
     /**
@@ -105,8 +88,6 @@ public class ModelGen {
      * @param setupNode Source setup() from programNode
      */
     private void visitSetup(SetupNode setupNode) {
-        // visitBlock(setupNode.getBlockNode(), doc); TODO: figure out if setup needs more than variables
-
         // Find all declarations
         for (StatementNode statementNode : setupNode.getBlockNode().getStatementNodes()) {
             if (statementNode instanceof VariableDeclarationNode) {
@@ -122,6 +103,7 @@ public class ModelGen {
             system.addChan(ipinChanName, ipinCount, Enums.PinType.IPIN);
         // Add channel for each template
         templateChanMap.forEach(this::appendChanMapGlobal);
+        // Set all declarations as system properties
         system.setGlobalDecl();
     }
 
@@ -153,11 +135,11 @@ public class ModelGen {
             visitBoundStatement((BoundStatementNode) statementNode);
         else if (statementNode instanceof AssignmentNode)
             visitAssignment((AssignmentNode) statementNode, template);
+        else if (statementNode instanceof FunctionCallNode)
+            visitFunctionCall((FunctionCallNode) statementNode, template);
 
         /*
         TODO:
-          visitAssignment (only for clock and pins)
-          visitFunctionCall, begin_Function!
           visitIfElseStatement, create new template
           visitIterativeStatement, create new template
          */
@@ -167,12 +149,11 @@ public class ModelGen {
         // Is variable pin?
         if (pinChanMap.containsKey(assignmentNode.getVariableName())) {
             if (assignmentNode.getLiteralValue().equals("true")) {
-                // chan!
+                // chan! update pin to value 1
             } else if (assignmentNode.getLiteralValue().equals("false")) {
-                //TODO: figure out if there should be another chan!, I don't think we need it
+                // chan! update pin to value 0
             }
-            // TODO: introduce local variables
-            template.addEdge(template.getLocationList().get(template.getLocationList().size()), template.addLocation("Assigned", 0, 0), null, null, opinChanName.concat("[") + pinChanMap.get(assignmentNode.getVariableName()) + "]!");
+            template.edgeFromLastLoc("Assigned", null, null, opinChanName.concat("[") + pinChanMap.get(assignmentNode.getVariableName()) + "]!");
         } else if (clockList.contains(assignmentNode.getVariableName())) {
             // Update string
             String updateStmt = assignmentNode.getArithExpressionNode().prettyPrint(0);
@@ -184,6 +165,22 @@ public class ModelGen {
         }
     }
 
+
+    private void visitFunctionCall(FunctionCallNode functionCallNode, UPPTemplate currentTemplate) {
+        String name = functionCallNode.getFunctionName();
+        String functionChan;
+        UPPTemplate functionTemplate = null;
+
+        // Find template matching the function name
+        for (UPPTemplate uppTemplate : system.getTemplateList()) {
+            if (uppTemplate.getName().equals(name))
+                functionTemplate = uppTemplate;
+        }
+        // Get chan name for starting function template
+        functionChan = templateChanMap.get(functionTemplate);
+        // Add sync edge to current template, sync starts the function template
+        currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), null, functionChan + "!", null);
+    }
 
     /**
      * Add PinDeclaration as chan to template/global.
@@ -227,7 +224,7 @@ public class ModelGen {
         fromTemplate.edgeFromLastLoc("sched" + atTemplate.getName(), null, templateChanMap.get(atTemplate) + "!", null);
 
         // Create new location to check time and edge to sync at schedule
-        atTemplate.edgeFromLastLoc("CheckTime",null, templateChanMap.get(atTemplate) + "?", null);
+        atTemplate.edgeFromLastLoc("CheckTime", null, templateChanMap.get(atTemplate) + "?", null);
 
         // Edge and location for starting at (when atParam is ready)
         Location startAt = atTemplate.addLocation("starAt");
@@ -235,9 +232,7 @@ public class ModelGen {
         atTemplate.addEdge(atTemplate.getLocationList().get(1), startAt, guard, null, null);
 
         visitBlock(atStatementNode.getBlockNode(), atTemplate);
-
-        // Flush StringBuilder into property
-        atTemplate.setDeclaration();
+        atTemplate.setLooping();
     }
 
     private void visitBoundStatement(BoundStatementNode boundStatementNode) {
@@ -246,30 +241,20 @@ public class ModelGen {
         templateChanMap.put(template, "begin_" + "Bound" + boundCount);
         visitBlock(boundStatementNode.getBody(), template);
 
-        // Check for additional blocks
+        // Check for additional blocks, these are added to the current template
         if (boundStatementNode.getCatchBlock() != null) {
-            //visitBlock(boundStatementNode.getCatchBlock()); TODO: new template or part of same?
+            visitBlock(boundStatementNode.getCatchBlock(), template);
         }
         if (boundStatementNode.getFinalBlock() != null) {
-            //visitBlock(boundStatementNode.getFinalBlock()); TODO: new template or part of same?
+            visitBlock(boundStatementNode.getFinalBlock(), template);
         }
-
-        // Flush StringBuilder into property
-        template.setDeclaration();
     }
 
     private void visitFuncDecl(FunctionDeclarationNode functionDeclarationNode) {
         // Create new template
         UPPTemplate template = system.createTemplate(functionDeclarationNode.getFunctionName());
+        // Create channel to start new template
         templateChanMap.put(template, "begin_" + functionDeclarationNode.getFunctionName());
         visitBlock(functionDeclarationNode.getBlockNode(), template);
-
-        // Flush StringBuilder into property
-        template.setDeclaration();
-    }
-
-    private void scopeTransition(UPPTemplate fromTemplate, UPPTemplate toTemplate, String sync) {
-        fromTemplate.addLocation("Enter_Scope");
-        toTemplate.addLocation("");
     }
 }

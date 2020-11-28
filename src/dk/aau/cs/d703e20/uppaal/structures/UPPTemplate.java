@@ -6,37 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UPPTemplate extends Template {
-    String Name;
-    int locationX = 0;
-    int locationY = 0;
-    int locationCoordIncr = 1000;
-    // Store all local declarations before setting them
+    // Store all local declarations before setting them, TODO: consider using this for mutex
     private final StringBuilder declSB = new StringBuilder();
     // 0 is always start TODO: consider hashmap
     private final List<Location> locationList = new ArrayList<>();
+    String Name;
+    int locationX = 0;
+    int locationY = 0;
+    int locationCoordIncr = 50;
 
     public UPPTemplate(Element prototype) {
         super(prototype);
-    }
-
-    public List<Location> getLocationList() {
-        return locationList;
-    }
-
-
-    public String getName() {
-        return Name;
-    }
-
-    public void setName(String name) {
-        Name = name;
-    }
-
-    /**
-     * Flush StringBuilder into property for template. Required to set variable declarations.
-     */
-    public void setDeclaration() {
-        this.setProperty("declaration", declSB.toString());
     }
 
     public static void setNail(Edge e, int x, int y) {
@@ -75,6 +55,33 @@ public class UPPTemplate extends Template {
         Property p = l.getProperty(kind.name());
         p.setProperty("x", x);
         p.setProperty("y", y);
+    }
+
+    public List<Location> getLocationList() {
+        return locationList;
+    }
+
+    public String getName() {
+        return Name;
+    }
+
+    public void setName(String name) {
+        Name = name;
+    }
+
+    /**
+     * Flush StringBuilder into property for template. Required to set variable declarations.
+     */
+    public void setDeclaration() {
+        this.setProperty("declaration", declSB.toString());
+    }
+
+    public void setLooping() {
+        Location firstLoc = locationList.get(0);
+        Location lastLoc = locationList.get(locationList.size() - 1);
+        Edge e = addEdge(lastLoc, firstLoc, null, null, null);
+        setNail(e, lastLoc.getX(), lastLoc.getY() - 30);
+        setNail(e, firstLoc.getX(), firstLoc.getY() - 30);
     }
 
     /**
