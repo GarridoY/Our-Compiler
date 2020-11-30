@@ -13,7 +13,7 @@ public class UPPTemplate extends Template {
     String Name;
     int locationX = 0;
     int locationY = 0;
-    int locationCoordIncr = 50;
+    int locationCoordIncr = 100;
 
     public UPPTemplate(Element prototype) {
         super(prototype);
