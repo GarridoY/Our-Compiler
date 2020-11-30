@@ -3,7 +3,10 @@ package dk.aau.cs.d703e20.uppaal.structures;
 import com.uppaal.model.core2.Document;
 import com.uppaal.model.core2.Element;
 import com.uppaal.model.core2.Location;
+import dk.aau.cs.d703e20.ast.Enums;
+import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,15 +60,58 @@ public class UPPSystem extends Document {
             sb.append(" ").append(template.getName()).append(",");
         }
         // End with ; rather than ,
-        sb.setCharAt(sb.length()-1, ';');
+        sb.setCharAt(sb.length() - 1, ';');
         this.setProperty("system", (sb.toString()));
-    }
-
-    public StringBuilder getGlobalDeclSB() {
-        return globalDeclSB;
     }
 
     public List<UPPTemplate> getTemplateList() {
         return templateList;
+    }
+
+    public void addClockDecl(VariableDeclarationNode varDecl) {
+        globalDeclSB.append("clock ").append(varDecl.getVariableName()).append(";\n");
+    }
+
+
+    /**
+     * Set all global variables
+     */
+    public void setGlobalDecl() {
+        this.setProperty("declaration", globalDeclSB.toString());
+    }
+
+    /**
+     * Add channel declaration to global system
+     *
+     * @param id Name of channel
+     */
+    public void addChan(String id) {
+        globalDeclSB.append("chan ").append(id).append(";\n");
+    }
+
+    /**
+     * Add channel array to global system
+     *
+     * @param id        Name of channel array
+     * @param arraySize size of array
+     * @param pinType   type of pin
+     */
+    public void addChan(String id, int arraySize, Enums.PinType pinType) {
+        if (pinType == Enums.PinType.OPIN)
+            globalDeclSB.append("chan ").append(id).append("[").append(arraySize).append("];\n");
+        else
+            globalDeclSB.append("chan ").append(id).append("[").append(arraySize).append("];\n");
+
+    }
+
+    // printing for debugging
+    public void toXML() {
+        // Save model for debugging
+        try {
+            String path = System.getProperty("user.dir");
+            this.save(path + "/Resources/output/hej.xml");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
