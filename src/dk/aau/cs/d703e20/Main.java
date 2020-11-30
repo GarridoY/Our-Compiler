@@ -96,9 +96,11 @@ public class Main {
             }
 
             // VERIFY TIME IN UPPAAL
+            /*
             ModelChecker modelChecker = new ModelChecker();
             modelChecker.checkProgram(programNode);
             System.out.println("Time check finished.");
+            */
 
             System.exit(0);
         }
