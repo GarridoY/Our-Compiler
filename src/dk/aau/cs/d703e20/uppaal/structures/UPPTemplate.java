@@ -6,37 +6,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UPPTemplate extends Template {
-    String Name;
-    // Store all local declarations before setting them
+    // Store all local declarations before setting them, TODO: consider using this for mutex
     private final StringBuilder declSB = new StringBuilder();
-    // 0 is always start
+    // 0 is always start TODO: consider hashmap
     private final List<Location> locationList = new ArrayList<>();
+    String Name;
+    int locationX = 0;
+    int locationY = 0;
+    int locationCoordIncr = 100;
 
     public UPPTemplate(Element prototype) {
         super(prototype);
     }
 
-    public StringBuilder getDeclSB() {
-        return declSB;
-    }
-
-    public List<Location> getLocationList() {
-        return locationList;
-    }
-
-    public String getName() {
-        return Name;
-    }
-
-    public void setName(String name) {
-        Name = name;
-    }
-
-    /**
-     * Flush StringBuilder into property for template. Required to set variable declarations.
-     */
-    public void flushSB() {
-        this.setProperty("declaration", declSB.toString());
+    public static void setNail(Edge e, int x, int y) {
+        Nail nail = e.createNail();
+        nail.setProperty("x", x);
+        nail.setProperty("y", y);
     }
 
     /**
@@ -69,6 +55,33 @@ public class UPPTemplate extends Template {
         Property p = l.getProperty(kind.name());
         p.setProperty("x", x);
         p.setProperty("y", y);
+    }
+
+    public List<Location> getLocationList() {
+        return locationList;
+    }
+
+    public String getName() {
+        return Name;
+    }
+
+    public void setName(String name) {
+        Name = name;
+    }
+
+    /**
+     * Flush StringBuilder into property for template. Required to set variable declarations.
+     */
+    public void setDeclaration() {
+        this.setProperty("declaration", declSB.toString());
+    }
+
+    public void setLooping() {
+        Location firstLoc = locationList.get(0);
+        Location lastLoc = locationList.get(locationList.size() - 1);
+        Edge e = addEdge(lastLoc, firstLoc, null, null, null);
+        setNail(e, lastLoc.getX(), lastLoc.getY() - 30);
+        setNail(e, firstLoc.getX(), firstLoc.getY() - 30);
     }
 
     /**
@@ -116,7 +129,44 @@ public class UPPTemplate extends Template {
         if (name != null)
             setLabel(l, LKind.name, name, x, y - 28);
         locationList.add(l);
+
+        // Update placement of next location by input
+        locationX = x + locationCoordIncr;
+
         return l;
+    }
+
+    /**
+     * Wrapper for addLocation to avoid manual spacing. <P></P>
+     * Creates and adds Location to template with automatic spacing.
+     *
+     * @param name Name of location
+     * @return l the new Location
+     */
+    public Location addLocation(String name) {
+        Location l = addLocation(name, locationX, locationY);
+
+        //Increment x placement for next location
+        locationX += locationCoordIncr;
+
+        return l;
+    }
+
+
+    /**
+     * Adds new edge from last location to new location
+     *
+     * @param newLocName name of the new location
+     * @param guard      guard expression
+     * @param sync       sync expression
+     * @param update     update expression
+     */
+    public void edgeFromLastLoc(String newLocName, String guard, String sync, String update) {
+        // Save current last location of template
+        Location lastLoc = this.locationList.get(this.getLocationList().size() - 1);
+        // Add edge to new location
+        Location newLoc = this.addLocation(newLocName);
+        this.addEdge(lastLoc, newLoc, guard, sync, update);
     }
 
     /**

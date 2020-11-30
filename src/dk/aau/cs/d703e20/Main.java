@@ -23,7 +23,7 @@ public class Main {
         String inputFileName = null;
         boolean prettyPrint = false;
 
-        String outputDirPath = System.getProperty("user.dir") + "\\Resources\\output";
+        String outputDirPath = System.getProperty("user.dir") + "/Resources/output";
         File file = new File(outputDirPath);
 
         if (!file.isDirectory()) {
@@ -78,18 +78,10 @@ public class Main {
             semanticChecker.visitProgram(programNode);
             System.out.println("Semantics ok");
 
-            /*
-            // VERIFY TIME IN UPPAAL
-            ModelChecker modelChecker = new ModelChecker();
-            modelChecker.checkProgram(programNode);
-            System.out.println("Time check finished\n");
-            */
-
-            // Generate and print Arduino code
-            System.out.println("\nGenerated arduino sketch:\n");
+            // Generate Arduino code
+            System.out.println("Generating arduino code...");
             ArduinoGenerator arduinoGenerator = new ArduinoGenerator();
             String generatedCode = arduinoGenerator.GenerateArduino(programNode);
-            System.out.println(generatedCode);
 
             // Save generated code to file
             try {
@@ -97,10 +89,16 @@ public class Main {
                 FileWriter writer = new FileWriter(new File(path + "\\Resources\\output\\output.ino"));
                 writer.write(generatedCode);
                 writer.close();
+                System.out.println("Saved to output file.");
             }
             catch (IOException e) {
                 e.printStackTrace();
             }
+
+            // VERIFY TIME IN UPPAAL
+            ModelChecker modelChecker = new ModelChecker();
+            modelChecker.checkProgram(programNode);
+            System.out.println("Time check finished.");
 
             System.exit(0);
         }
