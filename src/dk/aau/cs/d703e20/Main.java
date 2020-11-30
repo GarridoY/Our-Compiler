@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class Main {
@@ -87,7 +88,19 @@ public class Main {
             // Generate and print Arduino code
             System.out.println("\nGenerated arduino sketch:\n");
             ArduinoGenerator arduinoGenerator = new ArduinoGenerator();
-            System.out.println(arduinoGenerator.GenerateArduino(programNode));
+            String generatedCode = arduinoGenerator.GenerateArduino(programNode);
+            System.out.println(generatedCode);
+
+            // Save generated code to file
+            try {
+                String path = System.getProperty("user.dir");
+                FileWriter writer = new FileWriter(new File(path + "\\Resources\\output\\output.ino"));
+                writer.write(generatedCode);
+                writer.close();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
 
             System.exit(0);
         }
