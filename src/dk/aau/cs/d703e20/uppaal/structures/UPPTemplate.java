@@ -69,6 +69,10 @@ public class UPPTemplate extends Template {
         Name = name;
     }
 
+    public void addVar(String varDecl) {
+        declSB.append(varDecl).append(";\n");
+    }
+
     /**
      * Flush StringBuilder into property for template. Required to set variable declarations.
      */

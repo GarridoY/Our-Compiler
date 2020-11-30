@@ -4,6 +4,7 @@ import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.Location;
 import com.uppaal.model.core2.PrototypeDocument;
 import dk.aau.cs.d703e20.ast.Enums;
+import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
@@ -25,6 +26,8 @@ public class ModelGen {
     HashMap<String, Integer> pinChanMap = new HashMap<>();
     // List of used clocks
     List<String> clockList = new ArrayList<>();
+    // Map of varName and values
+    HashMap<String, String> varValues = new HashMap<>();
 
     int atCount = 0;
     int boundCount = 0;
@@ -146,6 +149,9 @@ public class ModelGen {
     }
 
     private void visitAssignment(AssignmentNode assignmentNode, UPPTemplate template) {
+        // Store value of variable name
+        varValues.put(assignmentNode.getVariableName(), assignmentNode.getArithExpressionNode().prettyPrint(0));
+
         // Is variable pin?
         if (pinChanMap.containsKey(assignmentNode.getVariableName())) {
             if (assignmentNode.getLiteralValue().equals("true")) {
@@ -165,21 +171,41 @@ public class ModelGen {
         }
     }
 
-
     private void visitFunctionCall(FunctionCallNode functionCallNode, UPPTemplate currentTemplate) {
         String name = functionCallNode.getFunctionName();
         String functionChan;
         UPPTemplate functionTemplate = null;
 
-        // Find template matching the function name
-        for (UPPTemplate uppTemplate : system.getTemplateList()) {
-            if (uppTemplate.getName().equals(name))
-                functionTemplate = uppTemplate;
+        // Special delay function
+        if (name.equals("delay")) {
+            delayFunction(functionCallNode, currentTemplate);
+        } else {
+            // Find template matching the function name
+            for (UPPTemplate uppTemplate : system.getTemplateList()) {
+                if (uppTemplate.getName().equals(name))
+                    functionTemplate = uppTemplate;
+            }
+            // Get chan name for starting function template
+            functionChan = templateChanMap.get(functionTemplate);
+            // Add sync edge to current template, sync starts the function template
+            currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), null, functionChan + "!", null);
         }
-        // Get chan name for starting function template
-        functionChan = templateChanMap.get(functionTemplate);
-        // Add sync edge to current template, sync starts the function template
-        currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), null, functionChan + "!", null);
+    }
+
+    private void delayFunction(FunctionCallNode functionCallNode, UPPTemplate currentTemplate) {
+        String localClockName = "delayClock";
+        String delay;
+        if (functionCallNode.getFunctionArgNodes().get(0).getArithExpressionNode().getVariableName() != null) {
+            delay = varValues.get(functionCallNode.getFunctionArgNodes().get(0).getArithExpressionNode().getVariableName());
+        } else
+            delay = functionCallNode.getFunctionArgNodes().get(0).getArithExpressionNode().prettyPrint(0);
+        // Declare local clock
+        currentTemplate.addVar("clock " + localClockName);
+        // Edge to reset local clock
+        currentTemplate.edgeFromLastLoc("reset_local_clock", null, null, localClockName + " = 0");
+        // Guard template to wait the given amount
+        currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), localClockName + " > " + delay, null, null);
+        currentTemplate.setDeclaration();
     }
 
     /**
@@ -206,6 +232,9 @@ public class ModelGen {
      * @param varDeclNode Source StatementNode
      */
     private void visitVarDecl(VariableDeclarationNode varDeclNode) {
+        if (varDeclNode.getAssignmentNode() != null)
+            varValues.put(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode.getAssignmentNode().getArithExpressionNode().prettyPrint(0));
+
         // Only clock types are used in UPPAAL
         // All clocks are global due to scoping with templates
         if (varDeclNode.getDataType() == Enums.DataType.CLOCK) {

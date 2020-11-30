@@ -92,4 +92,18 @@ public class ModelGenTest {
 
         assertTrue(controller.getLocationList().stream().anyMatch(location -> location.getName().equals("called_func")));
     }
+
+    @Test
+    void testDelayCall() {
+        String program = "delay(4);";
+        UPPSystem system = parseProgramLoop(program);
+
+        UPPTemplate controller = system.getTemplateList().get(0);
+
+
+        assertAll(
+                () -> assertEquals("reset_local_clock", controller.getLocationList().get(1).getName()),
+                () -> assertEquals("called_delay", controller.getLocationList().get(2).getName())
+        );
+    }
 }

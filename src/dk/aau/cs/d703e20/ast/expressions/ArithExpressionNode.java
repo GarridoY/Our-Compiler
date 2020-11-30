@@ -113,7 +113,8 @@ public class ArithExpressionNode implements ASTNode {
         }
         else if (subscriptNode != null) {
             sb.append(subscriptNode.prettyPrint(indentation));
-        }
+        } else
+            sb.append(0);
 
         return sb.toString();
     }
