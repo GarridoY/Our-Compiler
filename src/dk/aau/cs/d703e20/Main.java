@@ -22,7 +22,7 @@ public class Main {
         String inputFileName = null;
         boolean prettyPrint = false;
 
-        String outputDirPath = System.getProperty("user.dir") + "\\Resources\\output";
+        String outputDirPath = System.getProperty("user.dir") + "/Resources/output";
         File file = new File(outputDirPath);
 
         if (!file.isDirectory()) {
