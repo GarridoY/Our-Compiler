@@ -190,6 +190,19 @@ public class Main {
     }
 
     static void printHelp() {
-        System.out.println("Use -help for help :)");
+        System.out.println(
+                "Running the compiler:\n" +
+                "If the first argument doesn't start with a \"-\", it will be used as the input file path.\n" +
+                "\n" +
+                "These flags should be followed by a path argument\n" +
+                "-uppaal, -upp, -u (UPPAAL directory)\n" +
+                "-input, -i (Input .our file)\n" +
+                "-output, -o (Outpul .ino file)\n" +
+                "\n" +
+                "These flags are standalone\n" +
+                "-prettyprint, -pp (Print out the parsed Our code)\n" +
+                "-check, -verify (Verify the generated UPPAAL model)\n" +
+                "-print, -p (Print the generated arduino code)\n" +
+                "-help, -h (Display help)");
     }
 }
