@@ -1,10 +1,15 @@
 package dk.aau.cs.d703e20.uppaal;
 
+import com.uppaal.model.core2.Edge;
+import com.uppaal.model.core2.Node;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
 import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static dk.aau.cs.d703e20.resources.Utilities.getNodeFromText;
 import static org.junit.jupiter.api.Assertions.*;
@@ -94,16 +99,50 @@ public class ModelGenTest {
     }
 
     @Test
-    void testDelayCall() {
+    void testDelayNumber() {
         String program = "delay(4);";
         UPPSystem system = parseProgramLoop(program);
 
         UPPTemplate controller = system.getTemplateList().get(0);
 
+        Edge delayEdge = getEdges(controller).get(1);
+
 
         assertAll(
+                () -> assertEquals("delayClock > (4)", delayEdge.getProperty("guard").getValue()),
                 () -> assertEquals("reset_local_clock", controller.getLocationList().get(1).getName()),
                 () -> assertEquals("called_delay", controller.getLocationList().get(2).getName())
         );
+    }
+
+    @Test
+    void testDelayFunctionCall() {
+        String program = "Setup {} Loop { delay(func()); } int func () { int value = 8; return value;}";
+        UPPSystem system = generateModelFromText(program);
+
+        UPPTemplate controller = system.getTemplateList().get(1);
+
+        List<Edge> edgeList = getEdges(controller);
+        Edge delayEdge = edgeList.get(1);
+
+        assertEquals("delayClock > (8)", delayEdge.getProperty("guard").getValue());
+    }
+
+
+    /**
+     * // Get a list of all edges in template
+     *
+     * @param inputNode UPPTemplate with edges to return
+     * @return edgeList list of all edges
+     */
+    private List<Edge> getEdges(Node inputNode) {
+        List<Edge> edgeList = new ArrayList<>();
+        Node node = inputNode.getFirst();
+        while (node.getNext() != null) {
+            if (node instanceof Edge)
+                edgeList.add((Edge) node);
+            node = node.getNext();
+        }
+        return edgeList;
     }
 }

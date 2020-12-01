@@ -26,7 +26,7 @@ public class ModelGen {
     HashMap<String, Integer> pinChanMap = new HashMap<>();
     // List of used clocks
     List<String> clockList = new ArrayList<>();
-    // Map of varName and values
+    // Map of varName and values, also stores return value of function
     HashMap<String, String> varValues = new HashMap<>();
 
     int atCount = 0;
@@ -194,17 +194,27 @@ public class ModelGen {
 
     private void delayFunction(FunctionCallNode functionCallNode, UPPTemplate currentTemplate) {
         String localClockName = "delayClock";
+        ArithExpressionNode argument = functionCallNode.getFunctionArgNodes().get(0).getArithExpressionNode();
         String delay;
-        if (functionCallNode.getFunctionArgNodes().get(0).getArithExpressionNode().getVariableName() != null) {
-            delay = varValues.get(functionCallNode.getFunctionArgNodes().get(0).getArithExpressionNode().getVariableName());
+
+        // If arg is a variable name, get its value from map
+        if (argument.getVariableName() != null) {
+            delay = varValues.get(argument.getVariableName());
+        }
+        // If arg is a function call get the value of its return
+        else if (argument.getFunctionCallNode() != null) {
+            delay = varValues.get(argument.getFunctionCallNode().getFunctionName());
         } else
-            delay = functionCallNode.getFunctionArgNodes().get(0).getArithExpressionNode().prettyPrint(0);
+            // TODO: Figure out what to do if arith is functionCall or subscript
+            delay = argument.prettyPrint(0);
+
+
         // Declare local clock
         currentTemplate.addVar("clock " + localClockName);
         // Edge to reset local clock
         currentTemplate.edgeFromLastLoc("reset_local_clock", null, null, localClockName + " = 0");
         // Guard template to wait the given amount
-        currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), localClockName + " > " + delay, null, null);
+        currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), localClockName + " > (" + delay + ")", null, null);
         currentTemplate.setDeclaration();
     }
 
@@ -232,6 +242,7 @@ public class ModelGen {
      * @param varDeclNode Source StatementNode
      */
     private void visitVarDecl(VariableDeclarationNode varDeclNode) {
+        // Save variable name and its value in map for later use
         if (varDeclNode.getAssignmentNode() != null)
             varValues.put(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode.getAssignmentNode().getArithExpressionNode().prettyPrint(0));
 
@@ -285,5 +296,21 @@ public class ModelGen {
         // Create channel to start new template
         templateChanMap.put(template, "begin_" + functionDeclarationNode.getFunctionName());
         visitBlock(functionDeclarationNode.getBlockNode(), template);
+
+        // Add function name and return value to map of varValues
+        findReturnValue(functionDeclarationNode);
+    }
+
+    // Finds value of return statement and adds it to map of values
+    private void findReturnValue(FunctionDeclarationNode function) {
+        for (StatementNode statement : function.getBlockNode().getStatementNodes()) {
+            if (statement instanceof ReturnStatementNode) {
+                ReturnStatementNode returnNode = (ReturnStatementNode) statement;
+                String functionName = function.getFunctionName();
+                String returnValue = varValues.get(returnNode.getVariableName());
+
+                varValues.put(functionName, returnValue);
+            }
+        }
     }
 }
