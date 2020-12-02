@@ -4,15 +4,14 @@ Setup {
 
     int a = 1;
     int b = 2;
-
-    //if (a == b) {
-    //    b = 3;
-    //}
-
-    //TestFunction();
 }
 
 Loop {
+    if (a == b) {
+        b = 3;
+        TestFunction();
+    }
+
     clock x;
     at (x == 10) {
         FuncTwo();
