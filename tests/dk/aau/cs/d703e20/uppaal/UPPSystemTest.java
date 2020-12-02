@@ -40,18 +40,26 @@ public class UPPSystemTest {
         assertEquals("system test01, test02;", system.getProperty("system").getValue().toString());
     }
 
-    @ParameterizedTest
-    @EnumSource(value = Enums.PinType.class)
-    void testAddChan(Enums.PinType pinType) {
+    @Test
+    void testAddChan() {
         // Add channels
         system.addChan("startTemp");
-        system.addChan("in", 3, pinType);
         // Set global declarations (Channels)
         system.setGlobalDecl();
 
         assertEquals("// Global declarations\n" +
-                        "chan startTemp;\n" +
-                        "chan in[3];\n",
+                     "chan startTemp;\n",
+                system.getProperty("declaration").getValue().toString());
+    }
+
+    @Test
+    void testAddDigitalPin() {
+        system.addDigitalPin("in", 3);
+        // Set global declarations (Channels)
+        system.setGlobalDecl();
+
+        assertEquals("// Global declarations\n" +
+                     "chan in[3][2];\n",
                 system.getProperty("declaration").getValue().toString());
     }
 
@@ -65,7 +73,7 @@ public class UPPSystemTest {
         system.setGlobalDecl();
 
         assertEquals("// Global declarations\n" +
-                        "clock x;\n",
+                     "clock x;\n",
                 system.getProperty("declaration").getValue().toString());
     }
 }

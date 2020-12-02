@@ -94,13 +94,10 @@ public class UPPSystem extends Document {
      *
      * @param id        Name of channel array
      * @param arraySize size of array
-     * @param pinType   type of pin
      */
-    public void addChan(String id, int arraySize, Enums.PinType pinType) {
-        if (pinType == Enums.PinType.OPIN)
-            globalDeclSB.append("chan ").append(id).append("[").append(arraySize).append("];\n");
-        else
-            globalDeclSB.append("chan ").append(id).append("[").append(arraySize).append("];\n");
+    public void addDigitalPin(String id, int arraySize) {
+        // chan *id*[size][2] - 2 as digital pins are either high or low
+        globalDeclSB.append("chan ").append(id).append("[").append(arraySize).append("][2];\n");
 
     }
 

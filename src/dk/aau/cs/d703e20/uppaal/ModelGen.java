@@ -37,8 +37,8 @@ public class ModelGen {
     // count the amount of channels needed
     int opinCount = 0;
     int ipinCount = 0;
-    String opinChanName = "out";
-    String ipinChanName = "in";
+    String opinChanName = "outPin";
+    String ipinChanName = "inPin";
 
 
     // Create template to handle world input/output
@@ -74,8 +74,9 @@ public class ModelGen {
     public UPPSystem visitProgram(ProgramNode programNode) {
         // Functions -> Controller -> Global
         programNode.getFunctionDeclarationNodes().forEach(this::visitFuncDecl);
-        visitLoop(programNode.getLoopNode());
         visitSetup(programNode.getSetupNode());
+        visitLoop(programNode.getLoopNode());
+        setSetupDecl();
         // Set system declaration (processes)
         system.setDeclaration();
         system.toXML(); //TODO: remove
@@ -97,16 +98,21 @@ public class ModelGen {
         // Find all declarations
         for (StatementNode statementNode : setupNode.getBlockNode().getStatementNodes()) {
             if (statementNode instanceof VariableDeclarationNode) {
+                // Declare clocks
                 visitVarDecl((VariableDeclarationNode) statementNode);
             } else if (statementNode instanceof PinDeclarationNode) {
+                // Declare pins
                 visitPinDecl((PinDeclarationNode) statementNode);
             }
         }
+    }
+
+    private void setSetupDecl() {
         // Add channel with size of ipin & opin counts
         if (opinCount > 0)
-            system.addChan(opinChanName, opinCount, Enums.PinType.OPIN);
+            system.addDigitalPin(opinChanName, opinCount);
         if (ipinCount > 0)
-            system.addChan(ipinChanName, ipinCount, Enums.PinType.IPIN);
+            system.addDigitalPin(ipinChanName, ipinCount);
         // Add channel for each template
         templateChanMap.forEach(this::appendChanMapGlobal);
         // Set all declarations as system properties
@@ -154,17 +160,21 @@ public class ModelGen {
 
     private void visitAssignment(AssignmentNode assignmentNode, UPPTemplate template) {
         // Store value of variable name
-        varValues.put(assignmentNode.getVariableName(), assignmentNode.getArithExpressionNode().prettyPrint(0));
+        if (assignmentNode.getArithExpressionNode() != null)
+            varValues.put(assignmentNode.getVariableName(), assignmentNode.getArithExpressionNode().prettyPrint(0));
 
         // Is variable pin?
         if (pinChanMap.containsKey(assignmentNode.getVariableName())) {
             if (assignmentNode.getLiteralValue().equals("true")) {
                 // chan! update pin to value 1
+                template.edgeFromLastLoc("pinHigh", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][1]!", null);
             } else if (assignmentNode.getLiteralValue().equals("false")) {
                 // chan! update pin to value 0
+                template.edgeFromLastLoc("pinLow", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][0]!", null);
             }
-            template.edgeFromLastLoc("Assigned", null, null, opinChanName.concat("[") + pinChanMap.get(assignmentNode.getVariableName()) + "]!");
-        } else if (clockList.contains(assignmentNode.getVariableName())) {
+        }
+        // Is variable clock?
+        else if (clockList.contains(assignmentNode.getVariableName())) {
             // Update string
             String updateStmt = assignmentNode.getArithExpressionNode().prettyPrint(0);
 

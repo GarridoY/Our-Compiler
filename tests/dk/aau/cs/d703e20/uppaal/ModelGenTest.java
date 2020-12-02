@@ -9,6 +9,7 @@ import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static dk.aau.cs.d703e20.resources.Utilities.getNodeFromText;
@@ -51,12 +52,17 @@ public class ModelGenTest {
      */
     private List<Edge> getEdges(Node inputNode) {
         List<Edge> edgeList = new ArrayList<>();
+        // Get first node of inputNode in XML
         Node node = inputNode.getFirst();
-        while (node.getNext() != null) {
+
+        // Go through XML elements/nodes top down and add edges to list
+        while (node != null) {
             if (node instanceof Edge)
                 edgeList.add((Edge) node);
             node = node.getNext();
         }
+        // Reverse list as it is built from last to first
+        Collections.reverse(edgeList);
         return edgeList;
     }
 
@@ -88,12 +94,14 @@ public class ModelGenTest {
     @Test
     void testSetup() {
         String setupString = "ipin input 3;\n" +
-                "    opin output 5;\n" +
-                "    int a = 1;\n" +
-                "    int b = 2;";
+                             "    opin output 5;\n" +
+                             "    int a = 1;\n" +
+                             "    int b = 2;";
         UPPSystem system = parseProgramSetup(setupString);
 
-        assertEquals("// Global declarations\n" + "chan out[1];\n" + "chan in[1];\n",
+        assertEquals("// Global declarations\n" +
+                     "chan outPin[1][2];\n" +
+                     "chan inPin[1][2];\n",
                 system.getProperty("declaration").getValue().toString());
     }
 
@@ -149,13 +157,20 @@ public class ModelGenTest {
     void testDelaySubscript() {
         String program = "int[3] myList = {1, 2, 3}; delay(myList[1]);";
         UPPSystem system = parseProgramLoop(program);
-
         UPPTemplate controller = system.getTemplateList().get(0);
-
-        List<Edge> edgeList = getEdges(controller);
-        Edge delayEdge = edgeList.get(1);
+        // Delay has 2 edges, second has the guard
+        Edge delayEdge = getEdges(controller).get(1);
 
         assertEquals("delayClock > (2)", delayEdge.getProperty("guard").getValue());
     }
 
+    @Test
+    void testPinAssignment() {
+        String program = "Setup {opin x 2;} Loop {x = true;}";
+        UPPSystem system = generateModelFromText(program);
+        UPPTemplate controller = system.getTemplateList().get(0);
+        Edge syncEdge = getEdges(controller).get(0);
+
+        assertEquals("outPin[0][1]!", syncEdge.getProperty("synchronisation").getValue());
+    }
 }
