@@ -75,13 +75,22 @@ public class ArduinoGenerator {
         return stringBuilder.toString();
     }
 
-
     private ArduinoProgramNode visitProgram(ProgramNode programNode) {
         ArduinoSetupNode setupNode = visitSetup(programNode.getSetupNode());
         ArduinoLoopNode loopNode = visitLoop(programNode.getLoopNode());
 
-        // TODO: visit function declarations
         ArrayList<FunctionDeclarationNode> functionDeclarationNodes = new ArrayList<>();
+        for (FunctionDeclarationNode fDecl : programNode.getFunctionDeclarationNodes()) {
+            Enums.DataType fType = fDecl.getDataType();
+            String fName = fDecl.getFunctionName();
+            List<FunctionParameterNode> fParams = fDecl.getFunctionParameterNodes();
+            BlockNode fBlock = visitBlockNode(fDecl.getBlockNode());
+
+            FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(fType, fName, fBlock, fParams);
+
+            functionDeclarationNodes.add(functionDeclaration);
+            functions.add(functionDeclaration);
+        }
 
         return new ArduinoProgramNode(globalVariables, setupNode, loopNode, functionDeclarationNodes);
     }
