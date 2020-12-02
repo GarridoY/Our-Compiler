@@ -7,7 +7,7 @@ import java.util.List;
 
 public class AssignArrayNode extends StatementNode {
     private final String variableName;
-    private List<ArrayParamNode> paramNodes;
+    private final List<ArrayParamNode> paramNodes;
 
     public AssignArrayNode(String variableName, List<ArrayParamNode> paramNodes) {
         this.variableName = variableName;

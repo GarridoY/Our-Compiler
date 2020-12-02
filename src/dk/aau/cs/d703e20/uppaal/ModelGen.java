@@ -5,6 +5,8 @@ import com.uppaal.model.core2.Location;
 import com.uppaal.model.core2.PrototypeDocument;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
+import dk.aau.cs.d703e20.ast.expressions.ArrayParamNode;
+import dk.aau.cs.d703e20.ast.expressions.SubscriptNode;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
@@ -28,6 +30,7 @@ public class ModelGen {
     List<String> clockList = new ArrayList<>();
     // Map of varName and values, also stores return value of function
     HashMap<String, String> varValues = new HashMap<>();
+    HashMap<String, List<ArrayParamNode>> arrayValues = new HashMap<>();
 
     int atCount = 0;
     int boundCount = 0;
@@ -122,10 +125,11 @@ public class ModelGen {
     }
 
     /**
-     * Select visitor based on type of statement.
+     * Select visitor based on type of statement. Adds statements as transitions to template.
      * Some of these visitors open new templates.
      *
      * @param statementNode Current statement in BlockNode
+     * @param template      template of current block
      */
     private void visitStatement(StatementNode statementNode, UPPTemplate template) {
         if (statementNode instanceof PinDeclarationNode)
@@ -195,19 +199,7 @@ public class ModelGen {
     private void delayFunction(FunctionCallNode functionCallNode, UPPTemplate currentTemplate) {
         String localClockName = "delayClock";
         ArithExpressionNode argument = functionCallNode.getFunctionArgNodes().get(0).getArithExpressionNode();
-        String delay;
-
-        // If arg is a variable name, get its value from map
-        if (argument.getVariableName() != null) {
-            delay = varValues.get(argument.getVariableName());
-        }
-        // If arg is a function call get the value of its return
-        else if (argument.getFunctionCallNode() != null) {
-            delay = varValues.get(argument.getFunctionCallNode().getFunctionName());
-        } else
-            // TODO: Figure out what to do if arith is functionCall or subscript
-            delay = argument.prettyPrint(0);
-
+        String delay = getValueArithExpr(argument);
 
         // Declare local clock
         currentTemplate.addVar("clock " + localClockName);
@@ -245,6 +237,8 @@ public class ModelGen {
         // Save variable name and its value in map for later use
         if (varDeclNode.getAssignmentNode() != null)
             varValues.put(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode.getAssignmentNode().getArithExpressionNode().prettyPrint(0));
+        else if (varDeclNode.getAssignArrayNode() != null)
+            arrayValues.put(varDeclNode.getAssignArrayNode().getVariableName(), varDeclNode.getAssignArrayNode().getParamNodes());
 
         // Only clock types are used in UPPAAL
         // All clocks are global due to scoping with templates
@@ -252,6 +246,33 @@ public class ModelGen {
             system.addClockDecl(varDeclNode);
             clockList.add(varDeclNode.getVariableName());
         }
+    }
+
+    // Returns the value of the index in the list
+    private String getValueSubscript(SubscriptNode subscriptNode) {
+        List<ArrayParamNode> arrayNodes = arrayValues.get(subscriptNode.getVariableName());
+
+        ArithExpressionNode arithNodeOfList = new ArithExpressionNode("0", true);
+        if (arrayNodes.get(subscriptNode.getIndex()).getArithExpressionNode() != null)
+            arithNodeOfList = arrayNodes.get(subscriptNode.getIndex()).getArithExpressionNode();
+
+        return getValueArithExpr(arithNodeOfList);
+    }
+
+    private String getValueArithExpr(ArithExpressionNode arithExpressionNode) {
+        String delay;
+        // If arg is a variable name, get its value from map
+        if (arithExpressionNode.getVariableName() != null) {
+            delay = varValues.get(arithExpressionNode.getVariableName());
+        }
+        // If arg is a function call get the value of its return
+        else if (arithExpressionNode.getFunctionCallNode() != null) {
+            delay = varValues.get(arithExpressionNode.getFunctionCallNode().getFunctionName());
+        } else if (arithExpressionNode.getSubscriptNode() != null)
+            delay = getValueSubscript(arithExpressionNode.getSubscriptNode());
+        else
+            delay = arithExpressionNode.prettyPrint(0);
+        return delay;
     }
 
     private void visitAtStatement(AtStatementNode atStatementNode, UPPTemplate fromTemplate) {

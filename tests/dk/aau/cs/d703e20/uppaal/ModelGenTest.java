@@ -43,6 +43,23 @@ public class ModelGenTest {
         return generateModelFromText(programText);
     }
 
+    /**
+     * // Get a list of all edges in template
+     *
+     * @param inputNode UPPTemplate with edges to return
+     * @return edgeList list of all edges
+     */
+    private List<Edge> getEdges(Node inputNode) {
+        List<Edge> edgeList = new ArrayList<>();
+        Node node = inputNode.getFirst();
+        while (node.getNext() != null) {
+            if (node instanceof Edge)
+                edgeList.add((Edge) node);
+            node = node.getNext();
+        }
+        return edgeList;
+    }
+
     @Test
     void testClockScope() {
         UPPSystem system = parseProgramLoop("clock x; at (x == 10) {}");
@@ -128,21 +145,17 @@ public class ModelGenTest {
         assertEquals("delayClock > (8)", delayEdge.getProperty("guard").getValue());
     }
 
+    @Test
+    void testDelaySubscript() {
+        String program = "int[3] myList = {1, 2, 3}; delay(myList[1]);";
+        UPPSystem system = parseProgramLoop(program);
 
-    /**
-     * // Get a list of all edges in template
-     *
-     * @param inputNode UPPTemplate with edges to return
-     * @return edgeList list of all edges
-     */
-    private List<Edge> getEdges(Node inputNode) {
-        List<Edge> edgeList = new ArrayList<>();
-        Node node = inputNode.getFirst();
-        while (node.getNext() != null) {
-            if (node instanceof Edge)
-                edgeList.add((Edge) node);
-            node = node.getNext();
-        }
-        return edgeList;
+        UPPTemplate controller = system.getTemplateList().get(0);
+
+        List<Edge> edgeList = getEdges(controller);
+        Edge delayEdge = edgeList.get(1);
+
+        assertEquals("delayClock > (2)", delayEdge.getProperty("guard").getValue());
     }
+
 }
