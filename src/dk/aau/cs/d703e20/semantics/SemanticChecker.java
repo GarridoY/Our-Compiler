@@ -255,13 +255,7 @@ public class SemanticChecker {
         }
         // Function call rule
         else if (arithExpressionNode.getFunctionCallNode() != null) {
-            ASTNode declaration = retrieveSymbol(arithExpressionNode.getFunctionCallNode().getFunctionName());
-            if (declaration != null)
-                return ((FunctionDeclarationNode) declaration).getDataType();
-            else
-                throw new UndeclaredFunctionException(
-                        arithExpressionNode.getFunctionCallNode().getFunctionName(),
-                        arithExpressionNode.getCodePosition());
+            return visitFunctionCall(arithExpressionNode.getFunctionCallNode());
         }
         // Expression Operand Expression rule
         else if (arithExpressionNode.getArithExpressionNode2() != null) {
@@ -323,7 +317,7 @@ public class SemanticChecker {
         if (declaration != null) {
             FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) declaration;
             List<FunctionParameterNode> functionParameterNodes = functionDeclarationNode.getFunctionParameterNodes();
-            //TODO: check if arguments/parameters match etc.
+            //check if arguments/parameters match etc.
             for (int i = 0; i < functionCallNode.getFunctionArgNodes().size(); i++) {
                 FunctionArgNode functionArgNode = functionCallNode.getFunctionArgNodes().get(i);
                 Enums.DataType functionArgNodeDataType = null;
