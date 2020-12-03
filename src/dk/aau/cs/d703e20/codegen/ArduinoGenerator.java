@@ -124,23 +124,22 @@ public class ArduinoGenerator {
     private BlockNode visitBlockNode(BlockNode blockNode) {
         List<StatementNode> statementNodes = new ArrayList<>();
         for (StatementNode statementNode : blockNode.getStatementNodes()) {
-            if (statementNode instanceof VariableDeclarationNode) {
-                VariableDeclarationNode varDeclNode = (VariableDeclarationNode) statementNode;
-                statementNodes.add(visitVariableDeclaration(varDeclNode));
-            }
-            else if (statementNode instanceof AssignmentNode) {
-                AssignmentNode assignmentNode = (AssignmentNode) statementNode;
-                statementNodes.add(visitAssignment(assignmentNode));
-            }
-            else if (statementNode instanceof IfElseStatementNode) {
+
+            if (statementNode instanceof VariableDeclarationNode)
+                statementNodes.add(visitVariableDeclaration((VariableDeclarationNode) statementNode));
+
+            else if (statementNode instanceof AssignmentNode)
+                statementNodes.add(visitAssignment((AssignmentNode) statementNode));
+
+            else if (statementNode instanceof IfElseStatementNode)
                 statementNodes.add(visitIfElseStatement((IfElseStatementNode) statementNode));
-            }
-            else if (statementNode instanceof AtStatementNode) {
+
+            else if (statementNode instanceof AtStatementNode)
                 statementNodes.add(visitAtStatement((AtStatementNode) statementNode));
-            }
-            else if (statementNode instanceof BoundStatementNode) {
+
+            else if (statementNode instanceof BoundStatementNode)
                 visitBoundStatement((BoundStatementNode) statementNode);
-            }
+
             // TODO: handle other statement node types with visitors
             else
                 statementNodes.add(statementNode);
