@@ -298,11 +298,15 @@ public class ModelGen {
         atTemplate.edgeFromLastLoc("CheckTime", null, templateChanMap.get(atTemplate) + "?", null);
 
         // Edge and location for starting at (when atParam is ready)
-        Location startAt = atTemplate.addLocation("starAt");
+        Location startAt = atTemplate.addLocation("startAt");
         String guard = atStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0);
         atTemplate.addEdge(atTemplate.getLocationList().get(1), startAt, guard, null, null);
 
         visitBlock(atStatementNode.getBlockNode(), atTemplate);
+
+        // Edge and location for ending 'at' for model verification.
+        atTemplate.edgeFromLastLoc("endAt", null, null, null);
+
         atTemplate.setLooping();
     }
 
