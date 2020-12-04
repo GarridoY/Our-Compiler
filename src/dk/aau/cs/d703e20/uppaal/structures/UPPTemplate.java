@@ -11,9 +11,9 @@ public class UPPTemplate extends Template {
     // 0 is always start TODO: consider hashmap
     private final List<Location> locationList = new ArrayList<>();
     String Name;
-    int locationX = 0;
+    int locationX = 75;
     int locationY = 0;
-    int locationCoordIncr = 100;
+    int locationCoordIncr = 75;
 
     public UPPTemplate(Element prototype) {
         super(prototype);
@@ -169,7 +169,7 @@ public class UPPTemplate extends Template {
         // Save current last location of template
         Location lastLoc = this.locationList.get(this.getLocationList().size() - 1);
         // Add edge to new location
-        Location newLoc = this.addLocation(newLocName);
+        Location newLoc = this.addLocation(newLocName, lastLoc.getX() + locationCoordIncr, lastLoc.getY());
         this.addEdge(lastLoc, newLoc, guard, sync, update);
     }
 

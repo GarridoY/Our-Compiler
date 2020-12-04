@@ -32,8 +32,11 @@ public class ModelGen {
     HashMap<String, String> varValues = new HashMap<>();
     HashMap<String, List<ArrayParamNode>> arrayValues = new HashMap<>();
 
+    // Keep count of templates
     int atCount = 0;
     int boundCount = 0;
+    int ifCount = 0;
+    int elseIfCount = 0;
     // count the amount of channels needed
     int opinCount = 0;
     int ipinCount = 0;
@@ -47,16 +50,37 @@ public class ModelGen {
         UPPTemplate template = system.createTemplate("Naive_World");
 
         // New edge from/to init for input chan
-        Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "in[i]!", null);
-        UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + opinCount + "]", 0, 0);
-        setNail(outputHandler, -10, -5);
-        setNail(outputHandler, -10, 5);
+        Edge inputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "in[i][1]!", null);
+        UPPTemplate.setLabel(inputHandler, UPPTemplate.EKind.select, "i : int[0," + opinCount + "]", 0, 0);
+        setNail(inputHandler, -10, -5);
+        setNail(inputHandler, -10, 5);
 
         // New edge from/to init for output
-        Edge inputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "out[i]?", null);
-        UPPTemplate.setLabel(inputHandler, UPPTemplate.EKind.select, "i : int[0," + ipinCount + "]", 0, 0);
-        setNail(inputHandler, 10, -5);
-        setNail(inputHandler, 10, 5);
+        Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "out[i][1]?", null);
+        UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + ipinCount + "]", 0, 0);
+        setNail(outputHandler, 10, -5);
+        setNail(outputHandler, 10, 5);
+        return template;
+    }
+
+    /**
+     * Create a new template and sync it with the previous template.
+     *
+     * @param templateName name of the new template (should be name and count)
+     * @param prevTemplate template where this statement is called
+     * @return the new template
+     */
+    private UPPTemplate newSyncedTemplate(String templateName, UPPTemplate prevTemplate) {
+        // Create new template
+        UPPTemplate template = system.createTemplate(templateName);
+
+        // Create channel for synchronisation
+        String chan = "begin_" + templateName;
+        templateChanMap.put(template, chan);
+
+        // Add edge to sync previous template into new one
+        prevTemplate.edgeFromLastLoc("called_" + template.getName(), null, chan + "!", null);
+
         return template;
     }
 
@@ -86,6 +110,7 @@ public class ModelGen {
     private void visitLoop(LoopNode loopNode) {
         UPPTemplate template = system.createTemplate("controller");
         visitBlock(loopNode.getBlockNode(), template);
+        template.edgeFromLastLoc("End_controller", null, null, null);
         template.setLooping();
     }
 
@@ -145,17 +170,77 @@ public class ModelGen {
         else if (statementNode instanceof AtStatementNode)
             visitAtStatement((AtStatementNode) statementNode, template);
         else if (statementNode instanceof BoundStatementNode)
-            visitBoundStatement((BoundStatementNode) statementNode);
+            visitBoundStatement((BoundStatementNode) statementNode, template);
         else if (statementNode instanceof AssignmentNode)
             visitAssignment((AssignmentNode) statementNode, template);
         else if (statementNode instanceof FunctionCallNode)
             visitFunctionCall((FunctionCallNode) statementNode, template);
+        else if (statementNode instanceof IfElseStatementNode)
+            visitIfElseStatement((IfElseStatementNode) statementNode, template);
 
         /*
         TODO:
-          visitIfElseStatement, create new template
           visitIterativeStatement, create new template
          */
+    }
+
+    private void visitIfElseStatement(IfElseStatementNode ifElseStatementNode, UPPTemplate prevTemplate) {
+        final int locationCoord = 75;
+        // Create new template and sync with previous
+        UPPTemplate ifTemplate = newSyncedTemplate("If" + ifCount, prevTemplate);
+        ifCount++;
+
+        // Save location to start each if/elseIf/else
+        Location startLoc = ifTemplate.getLocationList().get(ifTemplate.getLocationList().size() - 1);
+        // Location for If start
+        Location ifLoc = ifTemplate.addLocation("Start_If");
+        
+        // Set uncontrollable edge and let UPPAAL do whitebox testing
+        ifTemplate.addEdge(startLoc, ifLoc, null, null, null).setProperty("controllable", false);
+        // Add block statements to if branch
+        visitBlock(ifElseStatementNode.getIfStatementNode().getBlockNode(), ifTemplate);
+
+        // Create location to end all if statements
+        Location endLoc = ifTemplate.addLocation("If_end");
+        // Set looping manual as endLoc is not last in list
+        ifTemplate.addEdge(endLoc, startLoc, null, null, null);
+        // Create edge from last location of if to endLoc
+        ifTemplate.addEdge(ifTemplate.getLocationList().get(ifTemplate.getLocationList().size() - 2), endLoc, null, null, null);
+
+        // Handle Else If statements
+        if (!ifElseStatementNode.getElseIfStatementNodes().isEmpty())
+            // New location branch for each else if
+            ifElseStatementNode.getElseIfStatementNodes().forEach(elseIfStatementNode -> visitElseIf(elseIfStatementNode, ifTemplate, startLoc, endLoc, locationCoord));
+
+        // Handle else statement
+        if (ifElseStatementNode.getElseStatement() != null) {
+            // Create location beneath else if's
+            Location elseLoc = ifTemplate.addLocation("Start_Else", startLoc.getX() + locationCoord, locationCoord + locationCoord * elseIfCount);
+
+            // Set uncontrollable edge and let UPPAAL do whitebox testing
+            ifTemplate.addEdge(startLoc, elseLoc, null, null, null).setProperty("controllable", false);
+            // Add block statements to else branch
+            visitBlock(ifElseStatementNode.getElseStatement().getBlockNode(), ifTemplate);
+            // Create edge from last location of else to endLoc
+            ifTemplate.addEdge(ifTemplate.getLocationList().get(ifTemplate.getLocationList().size() - 1), endLoc, null, null, null);
+        }
+
+        // Reset count for next if statements
+        elseIfCount = 0;
+    }
+
+    private void visitElseIf(ElseIfStatementNode elseIfNode, UPPTemplate ifTemplate, Location startLoc, Location endLoc, int locationCoord) {
+        // Create locations, locationCoord makes sure they do not stack
+        Location elseIfLoc = ifTemplate.addLocation("Start_ElseIf" + elseIfCount, startLoc.getX() + locationCoord, locationCoord + locationCoord * elseIfCount);
+
+        // Set uncontrollable edge and let UPPAAL do whitebox testing
+        ifTemplate.addEdge(startLoc, elseIfLoc, null, null, null).setProperty("controllable", false);
+        // Add block statements to else if branch
+        visitBlock(elseIfNode.getBlockNode(), ifTemplate);
+        // Create edge from last location of else if to endLoc
+        ifTemplate.addEdge(ifTemplate.getLocationList().get(ifTemplate.getLocationList().size() - 1), endLoc, null, null, null);
+
+        elseIfCount++;
     }
 
     private void visitAssignment(AssignmentNode assignmentNode, UPPTemplate template) {
@@ -285,14 +370,10 @@ public class ModelGen {
         return delay;
     }
 
-    private void visitAtStatement(AtStatementNode atStatementNode, UPPTemplate fromTemplate) {
-        // Create new template
-        UPPTemplate atTemplate = system.createTemplate("At" + atCount);
-        // Create channel for synchronisation
-        templateChanMap.put(atTemplate, "begin_" + "AT" + atCount);
-
-        // Add edge to sync previous template into new one
-        fromTemplate.edgeFromLastLoc("sched" + atTemplate.getName(), null, templateChanMap.get(atTemplate) + "!", null);
+    private void visitAtStatement(AtStatementNode atStatementNode, UPPTemplate prevTemplate) {
+        // Create new template and sync with previous
+        UPPTemplate atTemplate = newSyncedTemplate("At" + atCount, prevTemplate);
+        atCount++;
 
         // Create new location to check time and edge to sync at schedule
         atTemplate.edgeFromLastLoc("CheckTime", null, templateChanMap.get(atTemplate) + "?", null);
@@ -310,18 +391,19 @@ public class ModelGen {
         atTemplate.setLooping();
     }
 
-    private void visitBoundStatement(BoundStatementNode boundStatementNode) {
-        // Create new template
-        UPPTemplate template = system.createTemplate("Bound" + boundCount);
-        templateChanMap.put(template, "begin_" + "Bound" + boundCount);
-        visitBlock(boundStatementNode.getBody(), template);
+    private void visitBoundStatement(BoundStatementNode boundStatementNode, UPPTemplate prevTemplate) {
+        // Create new template and sync with previous
+        UPPTemplate boundTemplate = newSyncedTemplate("Bound" + boundCount, prevTemplate);
+        boundCount++;
+
+        visitBlock(boundStatementNode.getBody(), boundTemplate);
 
         // Check for additional blocks, these are added to the current template
         if (boundStatementNode.getCatchBlock() != null) {
-            visitBlock(boundStatementNode.getCatchBlock(), template);
+            visitBlock(boundStatementNode.getCatchBlock(), boundTemplate);
         }
         if (boundStatementNode.getFinalBlock() != null) {
-            visitBlock(boundStatementNode.getFinalBlock(), template);
+            visitBlock(boundStatementNode.getFinalBlock(), boundTemplate);
         }
     }
 
@@ -331,6 +413,8 @@ public class ModelGen {
         // Create channel to start new template
         templateChanMap.put(template, "begin_" + functionDeclarationNode.getFunctionName());
         visitBlock(functionDeclarationNode.getBlockNode(), template);
+        template.edgeFromLastLoc("End_" + functionDeclarationNode.getFunctionName(), null, null, null);
+        template.setLooping();
 
         // Add function name and return value to map of varValues
         findReturnValue(functionDeclarationNode);

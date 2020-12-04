@@ -17,6 +17,16 @@ Loop {
     at (x == 10) {
         FuncTwo();
     }
+
+    if (a == b) {
+        b = 3;
+    }
+    else if (a != b) {
+        output = true;
+    }
+    else {
+        output = false;
+    }
 }
 
 int TestFunction () {

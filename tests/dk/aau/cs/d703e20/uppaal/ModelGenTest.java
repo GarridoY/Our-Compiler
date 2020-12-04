@@ -78,14 +78,14 @@ public class ModelGenTest {
 
     @Test
     void testAtTemplate() {
-        UPPSystem system = parseProgramLoop("clock x; at (x < 35) {}");
+        UPPSystem system = parseProgramLoop("clock x; at (x < 35) {} at(x == 1) {}");
 
         UPPTemplate controller = system.getTemplateList().get(0);
         UPPTemplate at0 = system.getTemplateList().get(1);
 
         // Controller template contains a location for having scheduled the at
         assertAll(
-                () -> assertTrue(controller.getLocationList().stream().anyMatch(location -> location.getName().equals("schedAt0"))),
+                () -> assertTrue(controller.getLocationList().stream().anyMatch(location -> location.getName().equals("called_At0"))),
                 () -> assertEquals("At0", at0.getName()),
                 () -> assertEquals("CheckTime", at0.getLocationList().get(1).getName())
         );
