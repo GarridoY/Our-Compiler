@@ -4,10 +4,7 @@ import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
-import dk.aau.cs.d703e20.codegen.arduino.code.BlockStatementNode;
-import dk.aau.cs.d703e20.codegen.arduino.code.CodeNode;
-import dk.aau.cs.d703e20.codegen.arduino.code.CommentNode;
-import dk.aau.cs.d703e20.codegen.arduino.code.Functions;
+import dk.aau.cs.d703e20.codegen.arduino.code.*;
 import dk.aau.cs.d703e20.codegen.arduino.structure.*;
 
 import java.util.ArrayList;
@@ -36,7 +33,7 @@ public class ArduinoGenerator {
         ArduinoProgramNode program = visitProgram(ast);
 
         // Declare scheduled_ats array
-        program.getVariableDeclarationNodes().add(new VariableDeclarationNode(Enums.DataType.INT_ARRAY, atStatements.size(), "scheduled_ats"));
+        program.getVariableDeclarationNodes().add(new ArduinoVarDecl(Enums.DataType.INT_ARRAY, atStatements.size(), "scheduled_ats"));
 
         program.getLoopNode().getBlockNode().getStatementNodes().add(0, new CommentNode(" LOOP CODE"));
 
