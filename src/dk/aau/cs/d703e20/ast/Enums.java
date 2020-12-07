@@ -15,7 +15,8 @@ public class Enums {
 
     public enum PinType {
         IPIN,
-        OPIN
+        OPIN,
+        IPPIN
     }
 
     public enum ArithOperator {
@@ -81,6 +82,7 @@ public class Enums {
         switch (pinType) {
             case IPIN: return "ipin";
             case OPIN: return "opin";
+            case IPPIN: return "ippin";
             default:   return "UNKNOWN BOOL OPERATOR";
         }
     }

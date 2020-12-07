@@ -1,6 +1,7 @@
 package dk.aau.cs.d703e20.codegen;
 
 import dk.aau.cs.d703e20.ast.Enums;
+import dk.aau.cs.d703e20.ast.Enums.PinType;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
@@ -157,7 +158,15 @@ public class ArduinoGenerator {
         // pinMode(pinName, INPUT/OUTPUT);
         List<FunctionArgNode> functionArgNodes = new ArrayList<>();
         functionArgNodes.add(new FunctionArgNode(new ArithExpressionNode(varName, false)));
-        String io = pinType == Enums.PinType.IPIN ? "INPUT" : "OUTPUT";
+        String io = "";
+        switch (pinType) {
+            case IPIN: io = "INPUT";
+                break;
+            case OPIN: io = "OUTPUT";
+                break;
+            case IPPIN: io = "INPUT_PULLUP";
+                break;
+        }
         functionArgNodes.add(new FunctionArgNode(new ArithExpressionNode(io, false)));
         return new FunctionCallNode("pinMode", functionArgNodes);
     }
@@ -192,7 +201,7 @@ public class ArduinoGenerator {
             // arg 2: value
             FunctionArgNode argValue;
             if (assignmentNode.getArithExpressionNode() != null)
-                argValue = new FunctionArgNode(assignmentNode.getArithExpressionNode());
+                argValue = new FunctionArgNode(visitArithExpression(assignmentNode.getArithExpressionNode()));
             else {
                 String value = assignmentNode.getLiteralValue();
 
@@ -220,8 +229,69 @@ public class ArduinoGenerator {
 
             return new FunctionCallNode(pinDecl.isAnalog() ? "analogWrite" : "dWrite", functionArgNodes);
         }
+        else {
+            if (assignmentNode.getArithExpressionNode() != null) {
+                return new AssignmentNode(
+                        assignmentNode.getVariableName(),
+                        visitArithExpression(assignmentNode.getArithExpressionNode()));
+            }
+            else
+                return assignmentNode;
+        }
+    }
+
+    private ArithExpressionNode visitArithExpression(ArithExpressionNode arithExpressionNode) {
+        ArithExpressionNode leftArith = arithExpressionNode.getArithExpressionNode1();
+        ArithExpressionNode rightArith = arithExpressionNode.getArithExpressionNode2();
+        String number = arithExpressionNode.getNumber();
+        String variableName = arithExpressionNode.getVariableName();
+        FunctionCallNode functionCallNode = arithExpressionNode.getFunctionCallNode();
+
+        ArithExpressionNode newArithExpression;
+
+        if (leftArith != null) {
+            if (rightArith != null)
+                newArithExpression = new ArithExpressionNode(
+                        visitArithExpression(leftArith),
+                        visitArithExpression(rightArith),
+                        arithExpressionNode.getArithExpressionOperator());
+            else
+                newArithExpression = new ArithExpressionNode(
+                        visitArithExpression(leftArith),
+                        arithExpressionNode.getOptionalNot());
+        }
+        else if (number != null)
+            newArithExpression = new ArithExpressionNode(number, true);
+
+        else if (variableName != null) {
+            if (pins.containsKey(variableName)) {
+                List<FunctionArgNode> fArgs = new ArrayList<>();
+                fArgs.add(new FunctionArgNode(new ArithExpressionNode(variableName, false)));
+                FunctionCallNode readCall = new FunctionCallNode("digitalRead", fArgs);
+
+                newArithExpression = new ArithExpressionNode(readCall);
+            }
+            else
+                newArithExpression = arithExpressionNode;
+        }
+
+        else if (functionCallNode != null) {
+            List<FunctionArgNode> functionArgNodes = new ArrayList<>();
+            for (FunctionArgNode arg : functionCallNode.getFunctionArgNodes()) {
+                ArithExpressionNode argArith = arg.getArithExpressionNode();
+
+                if (argArith != null)
+                    functionArgNodes.add(new FunctionArgNode(visitArithExpression(argArith)));
+                else
+                    functionArgNodes.add(arg);
+            }
+            FunctionCallNode newFuncCall = new FunctionCallNode(functionCallNode.getFunctionName(), functionArgNodes);
+            newArithExpression = new ArithExpressionNode(newFuncCall);
+        }
         else
-            return assignmentNode;
+            newArithExpression = arithExpressionNode;
+
+        return newArithExpression;
     }
 
     private IfElseStatementNode visitIfElseStatement(IfElseStatementNode ifElseStatementNode) {
