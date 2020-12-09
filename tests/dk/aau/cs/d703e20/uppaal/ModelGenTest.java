@@ -87,7 +87,7 @@ public class ModelGenTest {
         assertAll(
                 () -> assertTrue(controller.getLocationList().stream().anyMatch(location -> location.getName().equals("called_At0"))),
                 () -> assertEquals("At0", at0.getName()),
-                () -> assertEquals("CheckTime", at0.getLocationList().get(1).getName())
+                () -> assertEquals("Sync_done", at0.getLocationList().get(1).getName())
         );
     }
 
@@ -172,5 +172,22 @@ public class ModelGenTest {
         Edge syncEdge = getEdges(controller).get(0);
 
         assertEquals("outPin[0][1]!", syncEdge.getProperty("synchronisation").getValue());
+    }
+
+    @Test
+    void testForLoop() {
+        UPPSystem system = parseProgramLoop("for (0 to 10) {}");
+        // Get forLoop template
+        UPPTemplate forTemplate = system.getTemplateList().get(1);
+        List<Edge> edgeList = getEdges(forTemplate);
+
+        assertAll(
+                () -> assertEquals("loop", forTemplate.getLocationList().get(2).getName()),
+                () -> assertEquals("loopIndex = 0", edgeList.get(1).getProperty("assignment").getValue()),
+                () -> assertEquals("loopIndex != 10", edgeList.get(2).getProperty("guard").getValue()),
+                () -> assertEquals("loopIndex ++", edgeList.get(3).getProperty("assignment").getValue()),
+                () -> assertEquals("loopIndex == 10", edgeList.get(4).getProperty("guard").getValue()),
+                () -> assertEquals("int loopIndex = 0;\n", forTemplate.getProperty("declaration").getValue())
+        );
     }
 }

@@ -37,6 +37,8 @@ public class ModelGen {
     int boundCount = 0;
     int ifCount = 0;
     int elseIfCount = 0;
+    int forCount = 0;
+    int whileCount = 0;
     // count the amount of channels needed
     int opinCount = 0;
     int ipinCount = 0;
@@ -77,6 +79,9 @@ public class ModelGen {
         // Create channel for synchronisation
         String chan = "begin_" + templateName;
         templateChanMap.put(template, chan);
+
+        // Add edge to sync into new template
+        template.edgeFromLastLoc("Sync_done", null, chan + "?", null);
 
         // Add edge to sync previous template into new one
         prevTemplate.edgeFromLastLoc("called_" + template.getName(), null, chan + "!", null);
@@ -177,11 +182,52 @@ public class ModelGen {
             visitFunctionCall((FunctionCallNode) statementNode, template);
         else if (statementNode instanceof IfElseStatementNode)
             visitIfElseStatement((IfElseStatementNode) statementNode, template);
+        else if (statementNode instanceof ForStatementNode)
+            visitForStatement((ForStatementNode) statementNode, template);
+        else if (statementNode instanceof WhileStatementNode)
+            visitWhileStatement((WhileStatementNode) statementNode);
 
         /*
         TODO:
           visitIterativeStatement, create new template
+          Bound :(
          */
+    }
+
+    private void visitForStatement(ForStatementNode forLoopNode, UPPTemplate prevTemplate) {
+        UPPTemplate forTemplate = newSyncedTemplate("For" + forCount, prevTemplate);
+        forCount++;
+
+        // Loop location, requires var
+        String loopVar = "loopIndex";
+        forTemplate.addVar("int " + loopVar + " = 0");
+        // initialize loop template by setting loopVar, TODO: consider checking for livelock if forloop is endless
+        forTemplate.edgeFromLastLoc("loop", null, null, loopVar + " = " + getValueArithExpr(forLoopNode.getArithExpressionNode1()));
+        // Get the location of main loop node
+        Location loopLoc = forTemplate.getLocationList().get(forTemplate.getLocationList().size() - 1);
+        // TODO: consider making loop location urgent
+
+        // First location of loop iteration
+        forTemplate.edgeFromLastLoc("iterate", loopVar + " != " + getValueArithExpr(forLoopNode.getArithExpressionNode2()), null, null);
+
+        // Add body of loop to template
+        visitBlock(forLoopNode.getBlockNode(), forTemplate);
+        // Get the last location in the loop
+        Location lastLocInLoop = forTemplate.getLocationList().get(forTemplate.getLocationList().size() - 1);
+
+        // Last edge for incrementing loopVar
+        forTemplate.addEdge(lastLocInLoop, loopLoc,null, null, loopVar + " ++");
+
+        // Add exit case for loop location
+        Location endFor = forTemplate.addLocation("end_for");
+        forTemplate.addEdge(loopLoc, endFor, loopVar + " == " + getValueArithExpr(forLoopNode.getArithExpressionNode2()), null, null);
+        forTemplate.setLooping();
+        forTemplate.setDeclaration();
+
+    }
+
+    private void visitWhileStatement(WhileStatementNode whileStatementNode) {
+        //TODO:
     }
 
     private void visitIfElseStatement(IfElseStatementNode ifElseStatementNode, UPPTemplate prevTemplate) {
@@ -194,7 +240,7 @@ public class ModelGen {
         Location startLoc = ifTemplate.getLocationList().get(ifTemplate.getLocationList().size() - 1);
         // Location for If start
         Location ifLoc = ifTemplate.addLocation("Start_If");
-        
+
         // Set uncontrollable edge and let UPPAAL do whitebox testing
         ifTemplate.addEdge(startLoc, ifLoc, null, null, null).setProperty("controllable", false);
         // Add block statements to if branch
@@ -375,8 +421,7 @@ public class ModelGen {
         UPPTemplate atTemplate = newSyncedTemplate("At" + atCount, prevTemplate);
         atCount++;
 
-        // Create new location to check time and edge to sync at schedule
-        atTemplate.edgeFromLastLoc("CheckTime", null, templateChanMap.get(atTemplate) + "?", null);
+        //TODO: add invariant
 
         // Edge and location for starting at (when atParam is ready)
         Location startAt = atTemplate.addLocation("startAt");
