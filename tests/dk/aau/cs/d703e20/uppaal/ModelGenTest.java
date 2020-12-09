@@ -190,4 +190,29 @@ public class ModelGenTest {
                 () -> assertEquals("int loopIndex = 0;\n", forTemplate.getProperty("declaration").getValue())
         );
     }
+
+    @Test
+    void testSync() {
+        UPPSystem system = parseProgramLoop("clock x; for (0 to 10) {} at (x > 10) {} if (true) {}");
+        UPPTemplate controller = system.getTemplateList().get(0);
+        UPPTemplate forTemplate = system.getTemplateList().get(1);
+        UPPTemplate atTemplate = system.getTemplateList().get(2);
+        UPPTemplate ifTemplate = system.getTemplateList().get(3);
+
+        List<Edge> ctrlEdges = getEdges(controller);
+        Edge syncFor = getEdges(forTemplate).get(0);
+        Edge syncAt = getEdges(atTemplate).get(0);
+        Edge syncIf = getEdges(ifTemplate).get(0);
+
+        assertAll(
+                () -> assertEquals("begin_At0?", syncAt.getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_For0?", syncFor.getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_If0?", syncIf.getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_For0!", ctrlEdges.get(0).getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_At0!", ctrlEdges.get(1).getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_If0!", ctrlEdges.get(2).getProperty("synchronisation").getValue())
+        );
+
+
+    }
 }

@@ -3,7 +3,6 @@ package dk.aau.cs.d703e20.uppaal.structures;
 import com.uppaal.model.core2.Document;
 import com.uppaal.model.core2.Element;
 import com.uppaal.model.core2.Location;
-import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 
 import java.io.IOException;
