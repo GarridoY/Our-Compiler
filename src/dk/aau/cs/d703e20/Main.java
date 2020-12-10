@@ -122,6 +122,10 @@ public class Main {
 
         try {
             System.out.println("Compiling: " + inputFileName);
+            File uppaalFile = new File(inputFileName);
+            String uppaalFileName = uppaalFile.getName();
+            uppaalFileName = uppaalFileName.substring(0, uppaalFileName.lastIndexOf('.'));
+            System.out.println(uppaalFileName);
 
             // LEXER
             OurLexer lexer = new OurLexer(CharStreams.fromFileName(inputFileName));
@@ -152,7 +156,7 @@ public class Main {
             // VERIFY TIME IN UPPAAL
             if (checkModel) {
                 ModelChecker modelChecker = new ModelChecker();
-                modelChecker.checkProgram(programNode);
+                modelChecker.checkProgram(programNode, uppaalFileName);
                 System.out.println("Time check finished.");
             }
 

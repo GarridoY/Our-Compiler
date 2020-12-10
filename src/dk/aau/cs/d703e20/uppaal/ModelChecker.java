@@ -40,7 +40,7 @@ public class ModelChecker {
             + "modest 0\n"
             + "statistical 0.01 0.01 0.05 0.05 0.05 0.9 1.1 0.0 0.0 1280.0 0.01";
 
-    public void checkProgram(ProgramNode programNode) {
+    public void checkProgram(ProgramNode programNode, String fileName) {
 
         Feedback feedback = new Feedback();
 
@@ -53,7 +53,8 @@ public class ModelChecker {
             String outputDir = System.getProperty("user.dir") + "\\Resources\\output"; 
 
             // save the model into a file:
-            doc.save(outputDir + "/output_model.xml");
+            //doc.save(outputDir + "/output_model.xml");
+            doc.save(outputDir + "/" + fileName +  ".xml");
 
             System.out.println("\nVerifying UPPAAL model:\n");
 
