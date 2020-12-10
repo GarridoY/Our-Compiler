@@ -204,7 +204,7 @@ public class ModelGen {
         // initialize loop template by setting loopVar, TODO: consider checking for livelock if forloop is endless
         forTemplate.edgeFromLastLoc("loop", null, null, loopVar + " = " + getValueArithExpr(forLoopNode.getArithExpressionNode1()));
         // Get the location of main loop node
-        Location loopLoc = forTemplate.getLocationList().get(forTemplate.getLocationList().size() - 1);
+        Location loopLoc = getLast(forTemplate.getLocationList());
         // TODO: consider making loop location urgent
 
         // First location of loop iteration
@@ -213,10 +213,10 @@ public class ModelGen {
         // Add body of loop to template
         visitBlock(forLoopNode.getBlockNode(), forTemplate);
         // Get the last location in the loop
-        Location lastLocInLoop = forTemplate.getLocationList().get(forTemplate.getLocationList().size() - 1);
+        Location lastLocInLoop = getLast(forTemplate.getLocationList());
 
         // Last edge for incrementing loopVar
-        forTemplate.addEdge(lastLocInLoop, loopLoc,null, null, loopVar + " ++");
+        forTemplate.addEdge(lastLocInLoop, loopLoc, null, null, loopVar + " ++");
 
         // Add exit case for loop location
         Location endFor = forTemplate.addLocation("end_for");
@@ -237,7 +237,7 @@ public class ModelGen {
         ifCount++;
 
         // Save location to start each if/elseIf/else
-        Location startLoc = ifTemplate.getLocationList().get(ifTemplate.getLocationList().size() - 1);
+        Location startLoc = getLast(ifTemplate.getLocationList());
         // Location for If start
         Location ifLoc = ifTemplate.addLocation("Start_If");
 
@@ -268,7 +268,7 @@ public class ModelGen {
             // Add block statements to else branch
             visitBlock(ifElseStatementNode.getElseStatement().getBlockNode(), ifTemplate);
             // Create edge from last location of else to endLoc
-            ifTemplate.addEdge(ifTemplate.getLocationList().get(ifTemplate.getLocationList().size() - 1), endLoc, null, null, null);
+            ifTemplate.addEdge(getLast(ifTemplate.getLocationList()), endLoc, null, null, null);
         }
 
         // Reset count for next if statements
@@ -284,7 +284,7 @@ public class ModelGen {
         // Add block statements to else if branch
         visitBlock(elseIfNode.getBlockNode(), ifTemplate);
         // Create edge from last location of else if to endLoc
-        ifTemplate.addEdge(ifTemplate.getLocationList().get(ifTemplate.getLocationList().size() - 1), endLoc, null, null, null);
+        ifTemplate.addEdge(getLast(ifTemplate.getLocationList()), endLoc, null, null, null);
 
         elseIfCount++;
     }
@@ -310,7 +310,7 @@ public class ModelGen {
             String updateStmt = assignmentNode.getArithExpressionNode().prettyPrint(0);
 
             // New location for update edge
-            Location prevLoc = template.getLocationList().get(template.getLocationList().size() - 1);
+            Location prevLoc = getLast(template.getLocationList());
             Location newLoc = template.addLocation("");
             template.addEdge(prevLoc, newLoc, null, null, updateStmt);
         }
@@ -436,17 +436,41 @@ public class ModelGen {
         atTemplate.setLooping();
     }
 
+    // Run body, check if time is exceeded, then run catch and final or just final
     private void visitBoundStatement(BoundStatementNode boundStatementNode, UPPTemplate prevTemplate) {
         // Create new template and sync with previous
         UPPTemplate boundTemplate = newSyncedTemplate("Bound" + boundCount, prevTemplate);
         boundCount++;
 
         visitBlock(boundStatementNode.getBody(), boundTemplate);
+        boundTemplate.edgeFromLastLoc("body_end", null, null, null);
+        // save the location for body end, as we branch out
+        Location bodyEndLoc = getLast(boundTemplate.getLocationList());
 
-        // Check for additional blocks, these are added to the current template
+        // Check if blocking
+        if (boundStatementNode.getBoolLiteral() != null && boundStatementNode.getBoolLiteral().equals("true")) {
+            // Bound param, where '<' is changed to '=='
+            String guard = boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0).replaceAll("(<=|<)", "==");
+            boundTemplate.edgeFromLastLoc("Time_OK", guard, null, null);
+        } else
+            boundTemplate.edgeFromLastLoc("Time_OK", boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0), null, null);
+        Location timeOKLoc = getLast(boundTemplate.getLocationList());
+
+        Location timeExceedLoc = boundTemplate.addLocation("Time_exceeded", getLast(boundTemplate.getLocationList()).getX(), 75);
+        // Add edge with guard for exceeding time
+        boundTemplate.addEdge(bodyEndLoc, timeExceedLoc, boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0).replaceAll("(<=|<)", ">"), null, null);
+
+        // Add CatchBlock to follow Time_exceeded
         if (boundStatementNode.getCatchBlock() != null) {
             visitBlock(boundStatementNode.getCatchBlock(), boundTemplate);
         }
+
+        // Create location for starting final block
+        boundTemplate.edgeFromLastLoc("Start_Final", null, null, null);
+        // Add edge from Time_OK to Start_Final
+        boundTemplate.addEdge(timeOKLoc, getLast(boundTemplate.getLocationList()), null, null, null);
+
+        // Add FinalBlock to follow Start_Final
         if (boundStatementNode.getFinalBlock() != null) {
             visitBlock(boundStatementNode.getFinalBlock(), boundTemplate);
         }
@@ -476,5 +500,15 @@ public class ModelGen {
                 varValues.put(functionName, returnValue);
             }
         }
+    }
+
+    /**
+     * Returns last element of a list
+     *
+     * @param list list containing the element
+     * @return last element in list
+     */
+    private <T> T getLast(List<T> list) {
+        return list.get(list.size() - 1);
     }
 }
