@@ -10,7 +10,8 @@ public class Enums {
         INT_ARRAY,
         DOUBLE_ARRAY,
         BOOL_ARRAY,
-        VOID
+        VOID,
+        ARDUINO_UNSIGNED_LONG
     }
 
     public enum PinType {

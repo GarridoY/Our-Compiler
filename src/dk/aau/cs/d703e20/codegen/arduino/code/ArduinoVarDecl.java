@@ -50,6 +50,7 @@ public class ArduinoVarDecl extends VariableDeclarationNode {
             case INT: case INT_ARRAY:       return "int";
             case BOOL: case BOOL_ARRAY:     return "bool";
             case DOUBLE: case DOUBLE_ARRAY: return "double";
+            case ARDUINO_UNSIGNED_LONG:     return "unsigned long";
             default:                        return Enums.stringFromDataType(dataType, allocatedSize);
         }
     }

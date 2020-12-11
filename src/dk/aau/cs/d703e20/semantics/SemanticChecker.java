@@ -40,6 +40,42 @@ public class SemanticChecker {
                         new BlockNode(new ArrayList<>()),
                         new ArrayList<>()
                 ));
+        enterFunction(
+                new FunctionDeclarationNode(
+                        Enums.DataType.INT,
+                        "Seconds",
+                        new BlockNode(new ArrayList<>()),
+                        new ArrayList<>(Collections.singletonList(
+                                new FunctionParameterNode(Enums.DataType.DOUBLE, "seconds")
+                        ))
+                ));
+        enterFunction(
+                new FunctionDeclarationNode(
+                        Enums.DataType.INT,
+                        "Minutes",
+                        new BlockNode(new ArrayList<>()),
+                        new ArrayList<>(Collections.singletonList(
+                                new FunctionParameterNode(Enums.DataType.DOUBLE, "minutes")
+                        ))
+                ));
+        enterFunction(
+                new FunctionDeclarationNode(
+                        Enums.DataType.INT,
+                        "Hours",
+                        new BlockNode(new ArrayList<>()),
+                        new ArrayList<>(Collections.singletonList(
+                                new FunctionParameterNode(Enums.DataType.DOUBLE, "hours")
+                        ))
+                ));
+        enterFunction(
+                new FunctionDeclarationNode(
+                        Enums.DataType.INT,
+                        "Days",
+                        new BlockNode(new ArrayList<>()),
+                        new ArrayList<>(Collections.singletonList(
+                                new FunctionParameterNode(Enums.DataType.DOUBLE, "days")
+                        ))
+                ));
 
         // Add arduino constants to symbol table
         enterSymbol("LED_BUILTIN", new VariableDeclarationNode(Enums.DataType.INT, "LED_BUILTIN"));

@@ -1,7 +1,6 @@
 package dk.aau.cs.d703e20.codegen;
 
 import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.Enums.PinType;
 import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
 public class ArduinoGenerator {
 
     private ArrayList<VariableDeclarationNode> globalVariables;
@@ -22,6 +20,10 @@ public class ArduinoGenerator {
     private ArrayList<FunctionDeclarationNode> functions;
 
     private boolean digitalWriteUsed;
+    private boolean secondsFuncUsed;
+    private boolean minutesFuncUsed;
+    private boolean hoursFuncUsed;
+    private boolean daysFuncUsed;
 
     public String GenerateArduino(ProgramNode ast) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -33,8 +35,15 @@ public class ArduinoGenerator {
 
         ArduinoProgramNode program = visitProgram(ast);
 
+        // Declare previous millis and delta time
+        program.getVariableDeclarationNodes().add(
+                new ArduinoVarDecl(Enums.DataType.ARDUINO_UNSIGNED_LONG,"prevMillis"));
+        program.getVariableDeclarationNodes().add(
+                new ArduinoVarDecl(Enums.DataType.ARDUINO_UNSIGNED_LONG,"delta"));
+
         // Declare scheduled_ats array
-        program.getVariableDeclarationNodes().add(new ArduinoVarDecl(Enums.DataType.INT_ARRAY, atStatements.size(), "scheduled_ats"));
+        program.getVariableDeclarationNodes().add(
+                new ArduinoVarDecl(Enums.DataType.INT_ARRAY, atStatements.size(), "scheduled_ats"));
 
         program.getLoopNode().getBlockNode().getStatementNodes().add(0, new CommentNode(" LOOP CODE"));
 
@@ -57,18 +66,38 @@ public class ArduinoGenerator {
                             atBlock));
         }
 
-        program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" CLOCKS"));
+        program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" DELTA TIME AND CLOCKS"));
+        // get new millis
+        program.getLoopNode().getBlockNode().getStatementNodes().add(
+                new CodeNode("unsigned long newMillis = millis();"));
+        // update delta time and previous millis
+        program.getLoopNode().getBlockNode().getStatementNodes().add(
+                new CodeNode("delta = newMillis - prevMillis;"));
+        program.getLoopNode().getBlockNode().getStatementNodes().add(
+                new CodeNode("prevMillis = newMillis;"));
         // increment all clocks
         for (String clockName : clockNames) {
             // insert increment statement at the end
-            program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode(clockName + "++;"));
+            program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode(clockName + " += delta;"));
         }
 
         stringBuilder.append(program.prettyPrint(0));
 
-        // add custom write functions to end of program
+        // add custom functions to end of program
         if (digitalWriteUsed)
             stringBuilder.append(Functions.dWrite);
+
+        if (secondsFuncUsed)
+            stringBuilder.append(Functions.Seconds);
+
+        if (minutesFuncUsed)
+            stringBuilder.append(Functions.Minutes);
+
+        if (hoursFuncUsed)
+            stringBuilder.append(Functions.Hours);
+
+        if (daysFuncUsed)
+            stringBuilder.append(Functions.Days);
 
         return stringBuilder.toString();
     }
@@ -172,19 +201,26 @@ public class ArduinoGenerator {
     }
 
     private VariableDeclarationNode visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
-        // If variable is a clock, turn it into an int instead
-        if (variableDeclarationNode.getDataType() == Enums.DataType.CLOCK) {
-            AssignmentNode assignmentNode = variableDeclarationNode.getAssignmentNode();
+        Enums.DataType dataType = variableDeclarationNode.getDataType();
+        AssignmentNode assignmentNode = variableDeclarationNode.getAssignmentNode();
+
+        // If variable is a clock, turn it into an unsigned long instead
+        if (dataType == Enums.DataType.CLOCK) {
             String variableName = variableDeclarationNode.getVariableName();
 
             clockNames.add(variableName);
             if (assignmentNode != null)
-                return new VariableDeclarationNode(Enums.DataType.INT, assignmentNode);
+                return new ArduinoVarDecl(Enums.DataType.ARDUINO_UNSIGNED_LONG, (AssignmentNode)visitAssignment(assignmentNode));
             else
-                return new VariableDeclarationNode(Enums.DataType.INT, variableName);
+                return new ArduinoVarDecl(Enums.DataType.ARDUINO_UNSIGNED_LONG, variableName);
         }
+        else {
+
+        if (assignmentNode != null)
+            return new VariableDeclarationNode(dataType, (AssignmentNode) visitAssignment(assignmentNode));
         else
             return variableDeclarationNode;
+        }
     }
 
     private StatementNode visitAssignment(AssignmentNode assignmentNode) {
@@ -195,7 +231,8 @@ public class ArduinoGenerator {
             List<FunctionArgNode> functionArgNodes = new ArrayList<>();
 
             // arg 1: pin number
-            FunctionArgNode argName = new FunctionArgNode(new ArithExpressionNode(assignmentNode.getVariableName(), false));
+            FunctionArgNode argName = new FunctionArgNode(
+                    new ArithExpressionNode(assignmentNode.getVariableName(), false));
             functionArgNodes.add(argName);
 
             // arg 2: value
@@ -204,22 +241,6 @@ public class ArduinoGenerator {
                 argValue = new FunctionArgNode(visitArithExpression(assignmentNode.getArithExpressionNode()));
             else {
                 String value = assignmentNode.getLiteralValue();
-
-                /*
-                if (pinDecl.isAnalog())
-                    value = assignmentNode.getLiteralValue();
-                else {
-                    switch (assignmentNode.getLiteralValue()) {
-                        case "true": value = "HIGH";
-                            break;
-                        case "false": value = "LOW";
-                            break;
-                        default:
-                            throw new CompilerException("ERROR: assignment to pin failed, expected true or false. Got " + assignmentNode.getLiteralValue());
-                    }
-                }
-                */
-
                 argValue = new FunctionArgNode(new ArithExpressionNode(value, true));
             }
             functionArgNodes.add(argValue);
@@ -276,6 +297,14 @@ public class ArduinoGenerator {
         }
 
         else if (functionCallNode != null) {
+            String functionName = functionCallNode.getFunctionName();
+            switch (functionName) {
+                case "Seconds": secondsFuncUsed = true; break;
+                case "Minutes": minutesFuncUsed = true; break;
+                case "Hours": hoursFuncUsed = true; break;
+                case "Days": daysFuncUsed = true; break;
+            }
+
             List<FunctionArgNode> functionArgNodes = new ArrayList<>();
             for (FunctionArgNode arg : functionCallNode.getFunctionArgNodes()) {
                 ArithExpressionNode argArith = arg.getArithExpressionNode();
@@ -285,7 +314,7 @@ public class ArduinoGenerator {
                 else
                     functionArgNodes.add(arg);
             }
-            FunctionCallNode newFuncCall = new FunctionCallNode(functionCallNode.getFunctionName(), functionArgNodes);
+            FunctionCallNode newFuncCall = new FunctionCallNode(functionName, functionArgNodes);
             newArithExpression = new ArithExpressionNode(newFuncCall);
         }
         else
