@@ -10,12 +10,14 @@ public class Enums {
         INT_ARRAY,
         DOUBLE_ARRAY,
         BOOL_ARRAY,
-        VOID
+        VOID,
+        ARDUINO_UNSIGNED_LONG
     }
 
     public enum PinType {
         IPIN,
-        OPIN
+        OPIN,
+        IPPIN
     }
 
     public enum ArithOperator {
@@ -81,6 +83,7 @@ public class Enums {
         switch (pinType) {
             case IPIN: return "ipin";
             case OPIN: return "opin";
+            case IPPIN: return "ippin";
             default:   return "UNKNOWN BOOL OPERATOR";
         }
     }

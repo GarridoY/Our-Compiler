@@ -141,7 +141,8 @@ functionName
 
 pinType
     : IPIN
-    | OPIN;
+    | OPIN
+    | IPPIN;
 
 dataType
     : INT

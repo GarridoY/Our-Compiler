@@ -5,14 +5,14 @@ import dk.aau.cs.d703e20.ast.Enums;
 
 public class VariableDeclarationNode extends StatementNode {
 
-    private final Enums.DataType dataType;
-    private int allocatedSize;
+    protected final Enums.DataType dataType;
+    protected int allocatedSize;
 
-    private String variableName;
-    private AssignmentNode assignmentNode;
-    private AssignArrayNode assignArrayNode;
+    protected String variableName;
+    protected AssignmentNode assignmentNode;
+    protected AssignArrayNode assignArrayNode;
 
-    private CodePosition codePosition;
+    protected CodePosition codePosition;
 
     public VariableDeclarationNode(Enums.DataType dataType, AssignmentNode assignmentNode) {
         this.dataType = dataType;
