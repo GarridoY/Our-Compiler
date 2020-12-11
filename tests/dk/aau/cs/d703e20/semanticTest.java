@@ -245,7 +245,7 @@ public class semanticTest {
     }
 
     @Test
-    void testIllegalAtStatement02() { //This also goes for boundStatement
+    void testIllegalAtStatement02() {
         BlockNode blockNode = getNodeFromText(
                 "{int a = 10; at(a && 2) {}}",
                 BlockNode.class,
@@ -253,6 +253,32 @@ public class semanticTest {
                 "block"
         );
         assertThrows(IllegalAtExpressionException.class,
+                ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
+
+    @Test
+    void testIllegalBoundStatement01(){
+        BlockNode blockNode = getNodeFromText(
+                "{clock a = 10; bound(a > 2) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block"
+        );
+        assertThrows(IllegalBoundStatementException.class,
+                ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
+
+    @Test
+    void testIllegalBoundStatement02(){
+        BlockNode blockNode = getNodeFromText(
+                "{clock a; bound(a < 6) {}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block"
+        );
+        assertDoesNotThrow(
                 ()-> semanticChecker.visitBlock(blockNode)
         );
     }

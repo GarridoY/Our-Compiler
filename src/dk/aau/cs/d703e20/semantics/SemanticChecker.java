@@ -412,7 +412,7 @@ public class SemanticChecker {
     }
 
     public void visitAtStatement(AtStatementNode atStatementNode) {
-        visitAtParams(atStatementNode.getAtParamsNode().getBoolExpressionNode());
+        visitAtParams(atStatementNode.getAtParamsNode().getBoolExpressionNode(), false);
         visitBlock(atStatementNode.getBlockNode());
     }
 
@@ -420,7 +420,7 @@ public class SemanticChecker {
         // Enter bound scope
         boundScope.push(true);
 
-        visitAtParams(boundStatementNode.getAtParamsNode().getBoolExpressionNode());
+        visitAtParams(boundStatementNode.getAtParamsNode().getBoolExpressionNode(), true);
         visitBlock(boundStatementNode.getBody());
 
         if (boundStatementNode.getCatchBlock() != null)
@@ -433,7 +433,7 @@ public class SemanticChecker {
         boundScope.pop();
     }
 
-    private void visitAtParams(BoolExpressionNode boolExpressionNode) {
+    private void visitAtParams(BoolExpressionNode boolExpressionNode, boolean isBoundParentNode) {
         if (boolExpressionNode.getBoolExpressionOperators() != null) {
             for (int i = 0; i < boolExpressionNode.getBoolExpressionOperators().size(); i++) {
                 Enums.BoolOperator operator = boolExpressionNode.getBoolExpressionOperators().get(i);
@@ -480,6 +480,21 @@ public class SemanticChecker {
 
                         if (leftType != Enums.DataType.CLOCK && rightType != Enums.DataType.CLOCK)
                             throw new IllegalAtExpressionException(boolExpressionNode.getCodePosition());
+                    }
+
+                    if (isBoundParentNode) {
+                        switch (operator){
+                            case LESS_OR_EQUAL:
+                            case LESS_THAN:
+                                if (rightType == Enums.DataType.CLOCK)
+                                    throw new IllegalBoundStatementException(boolExpressionNode.getCodePosition());
+                                break;
+                            case GREATER_THAN:
+                            case GREATER_OR_EQUAL:
+                                if (leftType == Enums.DataType.CLOCK)
+                                    throw new IllegalBoundStatementException(boolExpressionNode.getCodePosition());
+                                break;
+                        }
                     }
                 }
             }
