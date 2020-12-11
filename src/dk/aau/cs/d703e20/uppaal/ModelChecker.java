@@ -11,18 +11,18 @@ import com.uppaal.model.system.symbolic.SymbolicState;
 import com.uppaal.model.system.symbolic.SymbolicTransition;
 import dk.aau.cs.d703e20.Main;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
-import dk.aau.cs.d703e20.errorhandling.CompilerException;
+import dk.aau.cs.d703e20.errorhandling.ConsoleColors;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
 import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public class ModelChecker {
     private final ModelGen modelGen;
+    private boolean queryFailed = false;
 
     public ModelChecker() {
         modelGen = new ModelGen();
@@ -40,7 +40,7 @@ public class ModelChecker {
             + "modest 0\n"
             + "statistical 0.01 0.01 0.05 0.05 0.05 0.9 1.1 0.0 0.0 1280.0 0.01";
 
-    public void checkProgram(ProgramNode programNode, String fileName) {
+    public void checkProgram(ProgramNode programNode, String fileName, String userQueryFileName) {
 
         Feedback feedback = new Feedback();
 
@@ -50,18 +50,16 @@ public class ModelChecker {
             UPPSystem system = (UPPSystem) doc;
 
             // Get output directory
-            String outputDir = System.getProperty("user.dir") + "\\Resources\\output"; 
-
-            // save the model into a file:
-            //doc.save(outputDir + "/output_model.xml");
+            String outputDir = System.getProperty("user.dir") + "\\Resources\\output";
+            // Save the model into a file:
             doc.save(outputDir + "/" + fileName +  ".xml");
 
             System.out.println("\nVerifying UPPAAL model:\n");
 
-            // connect to the engine server:
+            // Connect to the engine server:
             Engine engine = connectToEngine();
 
-            // create a link to a local Uppaal process:
+            // Create a link to a local Uppaal process:
             UppaalSystem sys = compile(engine, doc);
 
             // perform a random symbolic simulation and get a trace:
@@ -73,7 +71,11 @@ public class ModelChecker {
             //saveXTRFile(trace, outputDir + "/output_trace.xtr");
 
             // Model-checking:
+            System.out.println("===== Query verifier =====");
             List<Query> queryList = new ArrayList<>();
+
+            Query deadlockQuery = new Query("A[] not deadlock", "");
+            queryList.add(deadlockQuery);
 
             // Create queries and put them in a list to be run.
             for (UPPTemplate template : system.getTemplateList()) {
@@ -81,8 +83,6 @@ public class ModelChecker {
 
                 // Every 'at' template should have Reachability tests.
                 if (templateName.contains("At")) {
-                    System.out.println("Name: " + templateName);
-
                     List<Location> locationList = template.getLocationList();
 
                     // Find the last At location
@@ -96,85 +96,74 @@ public class ModelChecker {
                     // Reachability
                     // Can we reach the end state in the template?
                     if (lastAtLocation != null) {
-                        Query query = new Query("E<> " + templateName + "." + lastAtLocation.getName(), "");
+                        Query query = new Query("A[] " + templateName + "." + lastAtLocation.getName(), "");
                         queryList.add(query);
                     }
                 }
             }
 
-            System.out.println("===== Query verifier =====");
-            Query deadlockQuery = new Query("A[] not deadlock", "Deadlock?");
-            queryList.add(deadlockQuery);
-            /*
-            Query query1 = new Query("E<> At0.starAt", "");
-            queryList.add(query1);
-            */
+            // Add user queries
+            if (userQueryFileName != null) {
+                List<Query> userQueryList = getUserQueries(userQueryFileName);
+                if (userQueryList != null && !userQueryList.isEmpty()) {
+                    queryList.addAll(userQueryList);
+                    System.out.println("[INFO] Added user queries.");
+                }
+            }
 
             // Run all queries
             for (Query query : queryList) {
-                System.out.println("Query: " + query);
-
+                // Verify query
+                QueryResult queryResult = engine.query(sys, options, query, feedback);
                 // Check if query succeeded
-                if ("OK".equals(engine.query(sys, options, query, feedback).getStatusString())) {
-                    System.out.println("QUERY OK");
+                if ("OK".equals(queryResult.getStatusString())) {
+                    System.out.println(ConsoleColors.GREEN + "[SUCCESS] " + query + " === OK" + ConsoleColors.RESET);
                 } else {
-                    System.out.println("QUERY FAILED");
-                    // TODO Add this back in when we hand in the project.
-                    // throw new CompilerException("Verification failed");
+                    queryFailed = true;
+                    System.out.println(ConsoleColors.RED + "[WARNING] " + query + " === FAILED" + ConsoleColors.RESET);
                 }
             }
 
-            /* Useless model-checking?
-            //// SMC model-checking:
-            //Query smcq = new Query("Pr[<=30](<> Exp1.Final)", "what is the probability of finishing?");
-            //System.out.println("===== SMC check =====");
-            //System.out.println("Result: "
-            //        + engine.query(sys, options, smcq, feedback));
+            System.out.println("[INFO] Queries verified.\n");
 
-            // Model-checking with customized initial state:
-            SymbolicState state = engine.getInitialState(sys);
-            int vi = -1; // variable v index
-            for (int i = 0; i < sys.getNoOfVariables(); i++) {
-                if ("v".equals(sys.getVariableName(i))) {
-                    vi = i;
-                    break;
-                }
-            }
+            if (queryFailed)
+                System.out.println(
+                        ConsoleColors.RED +
+                        "[WARNING] One or more queries could not be satisfied. Thus time safety cannot be guaranteed.\n\n" +
+                        ConsoleColors.RESET);
 
-            // Verification with custom initial state:
-            int[] vars = state.getVariableValues();
-            if (vi < 0 || vi >= vars.length) {
-                System.err.println("Variable v was not found");
-                return;
-            }
-
-            // set variable v to value 2:
-            state.getVariableValues()[vi] = 2;
-            // add constrain "x-0<=5":
-            state.getPolyhedron().addNonStrictConstraint(1, 0, 5);
-            // add constrain "0-x<=-5" (equivalent to "x>=5"):
-            state.getPolyhedron().addNonStrictConstraint(0, 1, -5);
-            // Notice that all other clocks will be constrained too,
-            // because of other (initial) constrains like: x==y, y==z
-
-            //System.out.println("===== Custom check ===== ");
-            //System.out.println("Result: "
-            //        + engine.query(sys, state, options, query, feedback));
-            //
-            //System.out.println("===== Custom SMC ===== ");
-            //System.out.println("Result: "
-            //        + engine.query(sys, state, options, smcq, feedback));
-            //
-            //Query smcsim = new Query("simulate 1 [<=30] { v, x, y }", "get simulation trajectories");
-            //System.out.println("===== Custom Concrete Simulation ===== ");
-            //System.out.println("Result: "
-            //        + engine.query(sys, state, options, smcsim, feedback));
-            */
             engine.disconnect();
         } catch (EngineException | IOException ex) {
             ex.printStackTrace(System.err);
             System.exit(1);
         }
+    }
+
+    public List<Query> getUserQueries(String filepath) {
+        File file = new File(filepath);
+        List<Query> queryList = new ArrayList<>();
+        // Check if file extension is a .q as they are special UPPAAL query files containing special characters.
+        boolean qFile = "q".equals(file.getName().split("\\.")[1]);
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+
+            String line = reader.readLine();
+            while (line != null) {
+                if (qFile) {
+                    if (line.isEmpty() || line.startsWith("//") || line.startsWith("/*") || line.startsWith("*/")) {
+                        line = reader.readLine();
+                        continue;
+                    }
+                }
+
+                queryList.add(new Query(line, ""));
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return queryList;
     }
 
     private Engine connectToEngine() throws EngineException, IOException {
@@ -197,7 +186,7 @@ public class ModelChecker {
         return engine;
     }
 
-    private UppaalSystem compile(Engine engine, Document doc) throws EngineException, IOException {
+    private UppaalSystem compile(Engine engine, Document doc) throws EngineException {
         // compile the model into system:
         ArrayList<Problem> problems = new ArrayList<>();
         UppaalSystem sys = engine.getSystem(doc, problems);
@@ -218,7 +207,7 @@ public class ModelChecker {
     }
 
     private ArrayList<SymbolicTransition> symbolicSimulation(Engine engine, UppaalSystem sys)
-            throws EngineException, IOException, CannotEvaluateException {
+            throws EngineException, CannotEvaluateException {
         ArrayList<SymbolicTransition> trace = new ArrayList<>();
         // compute the initial state:
         SymbolicState state = engine.getInitialState(sys);

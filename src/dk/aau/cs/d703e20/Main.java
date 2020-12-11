@@ -8,7 +8,6 @@ import dk.aau.cs.d703e20.parser.OurLexer;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.semantics.SemanticChecker;
 import dk.aau.cs.d703e20.uppaal.ModelChecker;
-import dk.aau.cs.d703e20.uppaal.ModelGen;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -23,12 +22,14 @@ public class Main {
         Flag,
         InputFile,
         UPPAALfolder,
-        OutputFile
+        OutputFile,
+        QueryFile
     }
 
     public static void main(String[] args) {
         String inputFileName = null;
         String outputFileName = null;
+        String userQueryFileName = null;
         boolean prettyPrint = false;
         boolean checkModel = false;
         boolean printGeneratedCode = false;
@@ -73,6 +74,9 @@ public class Main {
                             nextArg = ArgumentType.OutputFile;
                             break;
 
+                        case "-query":
+                            nextArg = ArgumentType.QueryFile;
+
                         case "-prettyprint":
                         case "-pp":
                             prettyPrint = true;
@@ -109,6 +113,10 @@ public class Main {
                     outputFileName = arg;
                     nextArg = ArgumentType.Flag;
                     break;
+
+                case QueryFile:
+                    userQueryFileName = arg;
+                    nextArg = ArgumentType.Flag;
             }
         }
 
@@ -125,7 +133,6 @@ public class Main {
             File uppaalFile = new File(inputFileName);
             String uppaalFileName = uppaalFile.getName();
             uppaalFileName = uppaalFileName.substring(0, uppaalFileName.lastIndexOf('.'));
-            System.out.println(uppaalFileName);
 
             // LEXER
             OurLexer lexer = new OurLexer(CharStreams.fromFileName(inputFileName));
@@ -156,7 +163,7 @@ public class Main {
             // VERIFY TIME IN UPPAAL
             if (checkModel) {
                 ModelChecker modelChecker = new ModelChecker();
-                modelChecker.checkProgram(programNode, uppaalFileName);
+                modelChecker.checkProgram(programNode, uppaalFileName, userQueryFileName);
                 System.out.println("Time check finished.");
             }
 
@@ -206,6 +213,7 @@ public class Main {
                 "These flags are standalone\n" +
                 "-prettyprint, -pp (Print out the parsed Our code)\n" +
                 "-check, -verify (Verify the generated UPPAAL model)\n" +
+                "-query (Custom queries .q file)\n" +
                 "-print, -p (Print the generated arduino code)\n" +
                 "-help, -h (Display help)");
     }
