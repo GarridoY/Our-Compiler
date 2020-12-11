@@ -1,0 +1,9 @@
+Setup {
+    ippin button 7;
+    opin led 3;
+    bool buttonState = false;
+}
+Loop {
+    buttonState = button;
+    led = !(buttonState);
+}

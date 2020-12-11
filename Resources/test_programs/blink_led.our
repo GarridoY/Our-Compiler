@@ -1,6 +1,6 @@
 Setup {
     clock t;
-    int interval = 1000;
+    int interval = Seconds(0.5);
     bool scheduled = false;
     bool ledState = false;
     opin ledPin LED_BUILTIN;
@@ -8,7 +8,7 @@ Setup {
 
 Loop {
     if (!scheduled) {
-        at (t == interval) {
+        at (t > interval) {
             t = 0;
 
             // if the LED is off turn it on and vice-versa:

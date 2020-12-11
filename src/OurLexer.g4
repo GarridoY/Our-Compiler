@@ -14,6 +14,7 @@ VOID: 'void';
 // Pin Types
 IPIN: 'ipin';
 OPIN: 'opin';
+IPPIN: 'ippin';
 
 // Analog pin
 ANALOGPIN: 'A' DIGIT;

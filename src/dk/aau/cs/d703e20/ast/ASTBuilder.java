@@ -592,6 +592,8 @@ public class ASTBuilder extends OurParserBaseVisitor<ASTNode> {
             pinType = Enums.PinType.IPIN;
         else if (ctx.OPIN() != null)
             pinType = Enums.PinType.OPIN;
+        else if (ctx.IPPIN() != null)
+            pinType = Enums.PinType.IPPIN;
         else
             throw new CompilerException("Invalid pin type", getCodePosition(ctx));
 
