@@ -166,6 +166,8 @@ public class UPPTemplate extends Template {
      * @param update     update expression
      */
     public void edgeFromLastLoc(String newLocName, String guard, String sync, String update) {
+        //TODO: This should prop return new location
+
         // Save current last location of template
         Location lastLoc = this.locationList.get(this.getLocationList().size() - 1);
         // Add edge to new location
@@ -184,6 +186,6 @@ public class UPPTemplate extends Template {
      * Valid kinds of labels on edges.
      */
     public enum EKind {
-        select, guard, synchronisation, assignment, comments
+        select, guard, synchronisation, assignment, comments, controllable
     }
 }

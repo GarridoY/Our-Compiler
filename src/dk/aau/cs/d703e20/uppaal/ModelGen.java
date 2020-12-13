@@ -151,9 +151,9 @@ public class ModelGen {
 
     /**
      * Visit new block.
-     * Pass StringBuilder of new template.
      *
      * @param blockNode Block of current node
+     * @param template  template of node containing the block
      */
     private void visitBlock(BlockNode blockNode, UPPTemplate template) {
         // Visit each statement in block
@@ -185,13 +185,7 @@ public class ModelGen {
         else if (statementNode instanceof ForStatementNode)
             visitForStatement((ForStatementNode) statementNode, template);
         else if (statementNode instanceof WhileStatementNode)
-            visitWhileStatement((WhileStatementNode) statementNode);
-
-        /*
-        TODO:
-          visitIterativeStatement, create new template
-          Bound :(
-         */
+            visitWhileStatement((WhileStatementNode) statementNode, template);
     }
 
     private void visitForStatement(ForStatementNode forLoopNode, UPPTemplate prevTemplate) {
@@ -201,7 +195,7 @@ public class ModelGen {
         // Loop location, requires var
         String loopVar = "loopIndex";
         forTemplate.addVar("int " + loopVar + " = 0");
-        // initialize loop template by setting loopVar, TODO: consider checking for livelock if forloop is endless
+        // initialize loop template by setting loopVar
         forTemplate.edgeFromLastLoc("loop", null, null, loopVar + " = " + getValueArithExpr(forLoopNode.getArithExpressionNode1()));
         // Get the location of main loop node
         Location loopLoc = getLast(forTemplate.getLocationList());
@@ -226,8 +220,25 @@ public class ModelGen {
 
     }
 
-    private void visitWhileStatement(WhileStatementNode whileStatementNode) {
-        //TODO:
+    private void visitWhileStatement(WhileStatementNode whileStatementNode, UPPTemplate prevTemplate) {
+        UPPTemplate whileTemplate = newSyncedTemplate("While" + whileCount, prevTemplate);
+        whileCount++;
+
+        // Setup start loop location for looping
+        Location startLoop = whileTemplate.addLocation("Start_loop");
+        // Edge from sync_done to starting loop
+        whileTemplate.addEdge(whileTemplate.getLocationList().get(1), startLoop, null, null, null);
+
+        // Add block
+        visitBlock(whileStatementNode.getBlockNode(), whileTemplate);
+
+        // Add end location
+        whileTemplate.edgeFromLastLoc("End_loop", null, null, null);
+        // Add uncontrollable edge from "End_loop" to "Start_loop" locations, used to simulate the while loop
+        whileTemplate.addEdge(getLast(whileTemplate.getLocationList()), startLoop, null, null, null).setProperty("controllable", false);
+
+        whileTemplate.edgeFromLastLoc("While_end", null, null, null);
+        whileTemplate.setLooping();
     }
 
     private void visitIfElseStatement(IfElseStatementNode ifElseStatementNode, UPPTemplate prevTemplate) {
@@ -443,7 +454,7 @@ public class ModelGen {
         boundCount++;
 
         visitBlock(boundStatementNode.getBody(), boundTemplate);
-        boundTemplate.edgeFromLastLoc("body_end", null, null, null);
+        boundTemplate.edgeFromLastLoc("body_done", null, null, null);
         // save the location for body end, as we branch out
         Location bodyEndLoc = getLast(boundTemplate.getLocationList());
 
@@ -460,20 +471,63 @@ public class ModelGen {
         // Add edge with guard for exceeding time
         boundTemplate.addEdge(bodyEndLoc, timeExceedLoc, boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0).replaceAll("(<=|<)", ">"), null, null);
 
-        // Add CatchBlock to follow Time_exceeded
+        // Create end location and set template to loop
+        Location boundDone = boundTemplate.addLocation("Bound_done", 150, -150);
+        boundTemplate.setLooping();
+
+        // Add blocks if any
+        handleBoundBlocks(boundStatementNode, boundTemplate, timeExceedLoc, timeOKLoc, boundDone);
+    }
+
+    private void handleBoundBlocks(BoundStatementNode boundStatementNode, UPPTemplate boundTemplate, Location timeExceedLoc, Location timeOKLoc, Location endLocation) {
+        Location startCatch = null;
+        Location endCatch = null;
+        Location startFinal = null;
+        // visit Catch
         if (boundStatementNode.getCatchBlock() != null) {
-            visitBlock(boundStatementNode.getCatchBlock(), boundTemplate);
+            startCatch = visitBoundBlock(boundStatementNode.getCatchBlock(), boundTemplate, "Catch", timeExceedLoc, endLocation);
+            endCatch = getLast(boundTemplate.getLocationList());
         }
-
-        // Create location for starting final block
-        boundTemplate.edgeFromLastLoc("Start_Final", null, null, null);
-        // Add edge from Time_OK to Start_Final
-        boundTemplate.addEdge(timeOKLoc, getLast(boundTemplate.getLocationList()), null, null, null);
-
-        // Add FinalBlock to follow Start_Final
+        // visit Final
         if (boundStatementNode.getFinalBlock() != null) {
-            visitBlock(boundStatementNode.getFinalBlock(), boundTemplate);
+            startFinal = visitBoundBlock(boundStatementNode.getFinalBlock(), boundTemplate, "Final", timeOKLoc, endLocation);
+            // Last location in final goes to end of bound
+            boundTemplate.addEdge(getLast(boundTemplate.getLocationList()), endLocation, null, null, null);
         }
+
+        // Make sure all end locations to to next block or end of bound
+        if (startFinal != null && startCatch != null)
+            // Catch goes into final block if both exists
+            boundTemplate.addEdge(endCatch, startFinal, null, null, null);
+        else if (startCatch != null) {
+            // If no final block, go straight to end of bound
+            boundTemplate.addEdge(endCatch, endLocation, null, null, null);
+            boundTemplate.addEdge(timeOKLoc, endLocation, null, null, null);
+        } else if (startFinal != null) {
+            // If no catch block
+            boundTemplate.addEdge(timeExceedLoc, endLocation, null, null, null);
+        } else {
+            boundTemplate.addEdge(timeOKLoc, endLocation, null, null, null);
+            boundTemplate.addEdge(timeExceedLoc, endLocation, null, null, null);
+        }
+    }
+
+    // Returns location for starting block
+    private Location visitBoundBlock(BlockNode block, UPPTemplate template, String name, Location prevLocation, Location endLocation) {
+
+        // Create location for starting block
+        Location startBlock = template.addLocation("Start_" + name, prevLocation.getX() + 75, prevLocation.getY());
+        template.addEdge(prevLocation, startBlock, null, null, null);
+
+        // Add edge from previous location to new start
+        template.addEdge(prevLocation, getLast(template.getLocationList()), null, null, null);
+
+        // visit block
+        visitBlock(block, template);
+        // End location for block
+        template.edgeFromLastLoc(name + "_done", null, null, null);
+
+        return startBlock;
     }
 
     private void visitFuncDecl(FunctionDeclarationNode functionDeclarationNode) {
