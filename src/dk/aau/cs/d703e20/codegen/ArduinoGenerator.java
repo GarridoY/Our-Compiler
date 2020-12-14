@@ -165,7 +165,7 @@ public class ArduinoGenerator {
                 statementNodes.add(visitAtStatement((AtStatementNode) statementNode));
 
             else if (statementNode instanceof BoundStatementNode)
-                visitBoundStatement((BoundStatementNode) statementNode);
+                statementNodes.add(visitBoundStatement((BoundStatementNode) statementNode));
 
             // TODO: handle other statement node types with visitors
             else
@@ -363,8 +363,37 @@ public class ArduinoGenerator {
         return new CodeNode("scheduled_ats[" + atIndex + "]++;");
     }
 
-    private void visitBoundStatement (BoundStatementNode boundStatementNode) {
+    private BlockStatementNode visitBoundStatement (BoundStatementNode boundStatementNode) {
+        List<StatementNode> statementNodes = new ArrayList<>();
+        List<StatementNode> catchBlockStatements = new ArrayList<>();
 
+        String boundParam = boundStatementNode.getAtParamsNode().prettyPrint(0);
+        String boundComment = "/* bound (" + boundParam + ") */";
+
+        // body
+        statementNodes.addAll(boundStatementNode.getBody().getStatementNodes());
+
+        // catch
+        statementNodes.add(new CommentNode(" catch"));
+
+        if (boundStatementNode.getBoolLiteral()) {
+            catchBlockStatements.add(new CommentNode(" execution is blocked"));
+            catchBlockStatements.add(new CodeNode("while (" + boundParam + ") delay(0);"));
+        }
+        else {
+            catchBlockStatements.add(new CommentNode(" don't block execution"));
+        }
+
+        statementNodes.add(new BlockStatementNode(
+                new CodeNode("if (" + boundParam + ") "), new BlockNode(catchBlockStatements)));
+
+        statementNodes.add(new BlockStatementNode(
+                new CodeNode("else "), boundStatementNode.getCatchBlock()));
+
+        // final
+        statementNodes.add(new BlockStatementNode(new CodeNode("/* final */"), boundStatementNode.getFinalBlock()));
+
+        return new BlockStatementNode(new CodeNode(boundComment), new BlockNode(statementNodes));
     }
 
 }

@@ -5,7 +5,7 @@ import dk.aau.cs.d703e20.ast.structure.BlockNode;
 
 public class BoundStatementNode extends StatementNode {
     private AtParamsNode atParamsNode;
-    private String boolLiteral;
+    private boolean boolLiteral;
     private BlockNode body;
     private BlockNode catchBlock;
     private BlockNode finalBlock;
@@ -19,7 +19,7 @@ public class BoundStatementNode extends StatementNode {
     // atParam COMMA BOOL_LITERAL block
     public BoundStatementNode(AtParamsNode atParamsNode, String boolLiteral, BlockNode body) {
         this.atParamsNode = atParamsNode;
-        this.boolLiteral = boolLiteral;
+        this.boolLiteral = boolLiteral.equals("true");
         this.body = body;
     }
 
@@ -38,7 +38,7 @@ public class BoundStatementNode extends StatementNode {
     // atParam COMMA BOOL_LITERAL block keyword block
     public BoundStatementNode(AtParamsNode atParamsNode, String boolLiteral, BlockNode body, BlockNode finalOrCatchBlock, boolean catchBlock) {
         this.atParamsNode = atParamsNode;
-        this.boolLiteral = boolLiteral;
+        this.boolLiteral = boolLiteral.equals("true");
         this.body = body;
         // Evade same type erasure of constructors
         if (catchBlock)
@@ -56,7 +56,7 @@ public class BoundStatementNode extends StatementNode {
 
     public BoundStatementNode(AtParamsNode atParamsNode, String boolLiteral, BlockNode body, BlockNode catchBlock, BlockNode finalBlock) {
         this.atParamsNode = atParamsNode;
-        this.boolLiteral = boolLiteral;
+        this.boolLiteral = boolLiteral.equals("true");
         this.body = body;
         this.catchBlock = catchBlock;
         this.finalBlock = finalBlock;
@@ -70,7 +70,7 @@ public class BoundStatementNode extends StatementNode {
         return catchBlock;
     }
 
-    public String getBoolLiteral() {
+    public boolean getBoolLiteral() {
         return boolLiteral;
     }
 
@@ -88,10 +88,8 @@ public class BoundStatementNode extends StatementNode {
 
         sb.append("bound (");
         sb.append(atParamsNode.prettyPrint(indentation));
-        if (boolLiteral != null) {
-            sb.append(", ");
-            sb.append(boolLiteral);
-        }
+        sb.append(", ");
+        sb.append(boolLiteral);
         sb.append(") ");
         sb.append(body.prettyPrint(indentation));
 
