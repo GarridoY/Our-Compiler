@@ -568,8 +568,16 @@ public class SemanticChecker {
                     rightType = Enums.DataType.BOOL;
 
                 // Make sure left and right operand are same type
-                if (leftType != rightType)
-                    throw new IllegalOperandException(boolExpressionNode.getCodePosition());
+                if (leftType != rightType) {
+                    if (leftType != Enums.DataType.CLOCK && leftType != Enums.DataType.INT)
+                        throw new IllegalOperandException(boolExpressionNode.getCodePosition());
+
+                    if (rightType != Enums.DataType.CLOCK && rightType != Enums.DataType.INT)
+                        throw new IllegalOperandException(boolExpressionNode.getCodePosition());
+
+                    if (leftType != Enums.DataType.CLOCK && rightType != Enums.DataType.CLOCK)
+                        throw new IllegalOperandException(boolExpressionNode.getCodePosition());
+                }
 
                 // Typechecking operators (Only bools can &&, ||. Bools cannot <, >)
                 switch (operator) {
