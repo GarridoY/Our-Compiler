@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+
+clock time;
+clock popTime;
+
+bool detector;
+bool waveON;
+bool greenLight;
+bool redLight;
+bool yellowLight;</declaration>
+	<template>
+		<name x="5" y="5">Popcorn</name>
+		<declaration>// Place local declarations here.</declaration>
+		<location id="id0" x="0" y="-654">
+			<name x="17" y="-688">Loop_Start</name>
+		</location>
+		<location id="id1" x="0" y="-127">
+			<name x="17" y="-161">While_PopChecker</name>
+		</location>
+		<location id="id2" x="0" y="867">
+			<name x="17" y="833">Done</name>
+		</location>
+		<location id="id3" x="0" y="-501">
+			<name x="17" y="-535">At_MicroWaveStarted</name>
+		</location>
+		<location id="id4" x="0" y="-314">
+			<name x="-93" y="-340">Bound_start</name>
+		</location>
+		<location id="id5" x="229" y="382">
+			<name x="246" y="348">Catch_start</name>
+		</location>
+		<location id="id6" x="0" y="552">
+			<name x="17" y="518">Final_start</name>
+		</location>
+		<location id="id7" x="0" y="161">
+			<name x="-85" y="136">Bound_end</name>
+		</location>
+		<location id="id8" x="-178" y="-255">
+		</location>
+		<location id="id9" x="-178" y="-127">
+			<name x="-238" y="-153">If_else</name>
+		</location>
+		<location id="id10" x="-178" y="0">
+		</location>
+		<location id="id11" x="229" y="552">
+			<name x="246" y="518">Catch_end</name>
+		</location>
+		<location id="id12" x="0" y="697">
+			<name x="17" y="663">Final_end</name>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id2"/>
+			<label kind="assignment" x="8" y="731">waveON = false,
+greenLight = true,
+redLight = false</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id6"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id6"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id1"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id1"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="guard" x="-297" y="-76">detector == false</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id9"/>
+			<label kind="guard" x="-136" y="-153">popTime &lt; 3</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id12"/>
+			<label kind="assignment" x="8" y="603">greenLight = true</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id5"/>
+			<label kind="guard" x="85" y="221">time &gt;= 240</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id5"/>
+			<label kind="guard" x="238" y="93">time &gt;= 240</label>
+			<nail x="229" y="-127"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id11"/>
+			<label kind="assignment" x="246" y="476">yellowLight = true</label>
+			<label kind="comments" x="263" y="391">kept registering pops within the 3 sec interval.
+Stopped for safety reasons
+was stopped due to passed Time limit (240)
+show yellow light</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id1"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-289" y="-212">detector == true</label>
+			<label kind="assignment" x="-289" y="-195">popTime = 0</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="guard" x="17" y="-433">time &gt; 120</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id3"/>
+			<label kind="assignment" x="42" y="-612">waveON = true,
+redLight = true</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-119" y="8">popTime &gt;= 3</label>
+			<label kind="assignment" x="-119" y="34">waveON = false,
+redLight = false,
+greenLight = true</label>
+			<label kind="comments" x="-450" y="51">worked as expected
+stopped registering pops within the 3 sec interval.
+show green light</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+//Process = Template();
+// List one or more processes to be composed into a system.
+system Popcorn;
+    </system>
+	<queries>
+		<query>
+			<formula>E&lt;&gt; Popcorn.Done</formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>
