@@ -11,7 +11,10 @@ import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
 import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,21 +51,20 @@ public class ModelGen {
 
     // Create template to handle world input/output
     //TODO: use with main arg
-    UPPTemplate createNaiveWorldModel() {
+    private void createNaiveWorldModel() {
         UPPTemplate template = system.createTemplate("Naive_World");
 
         // New edge from/to init for input chan
-        Edge inputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "in[i][1]!", null);
+        Edge inputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "inPin[i][1]!", null);
         UPPTemplate.setLabel(inputHandler, UPPTemplate.EKind.select, "i : int[0," + opinCount + "]", 0, 0);
         setNail(inputHandler, -10, -5);
         setNail(inputHandler, -10, 5);
 
         // New edge from/to init for output
-        Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "out[i][1]?", null);
+        Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "outPin[i][1]?", null);
         UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + ipinCount + "]", 0, 0);
         setNail(outputHandler, 10, -5);
         setNail(outputHandler, 10, 5);
-        return template;
     }
 
     /**
@@ -100,12 +102,26 @@ public class ModelGen {
      * @param programNode Top node of program AST
      * @return UPPSystem for UPPAAL to compile
      */
-    public UPPSystem visitProgram(ProgramNode programNode) {
+    public UPPSystem visitProgram(ProgramNode programNode, String userModelFileName) {
         // Functions -> Controller -> Global
         programNode.getFunctionDeclarationNodes().forEach(this::visitFuncDecl);
         visitSetup(programNode.getSetupNode());
         visitLoop(programNode.getLoopNode());
         setSetupDecl();
+
+        // If a model is given, it will use that one as the IO model of the world.
+        // Else use the naive one.
+        if (userModelFileName != null) {
+            UserModelTranslator userModelTranslator = new UserModelTranslator(system);
+            try {
+                userModelTranslator.createTemplateFromUserModel(userModelFileName);
+            } catch (ParserConfigurationException | IOException | SAXException e) {
+                e.printStackTrace();
+            }
+        } else {
+            createNaiveWorldModel();
+        }
+
         // Set system declaration (processes)
         system.setDeclaration();
         system.toXML(); //TODO: remove

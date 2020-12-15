@@ -26,7 +26,7 @@ public class ModelGenTest {
                 ProgramNode.class,
                 OurParser.ProgramContext.class,
                 "program");
-        return modelGen.visitProgram(program);
+        return modelGen.visitProgram(program, null);
     }
 
     private UPPSystem parseProgramLoop(String loopBody) {

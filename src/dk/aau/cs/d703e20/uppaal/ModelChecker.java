@@ -40,13 +40,13 @@ public class ModelChecker {
             + "modest 0\n"
             + "statistical 0.01 0.01 0.05 0.05 0.05 0.9 1.1 0.0 0.0 1280.0 0.01";
 
-    public void checkProgram(ProgramNode programNode, String fileName, String userQueryFileName) {
+    public void checkProgram(ProgramNode programNode, String fileName, String userQueryFileName, String userModelFileName) {
 
         Feedback feedback = new Feedback();
 
         try {
             System.out.println("\nGenerating UPPAAL model...\n");
-            Document doc = modelGen.visitProgram(programNode);
+            Document doc = modelGen.visitProgram(programNode, userModelFileName);
             UPPSystem system = (UPPSystem) doc;
 
             // Get output directory

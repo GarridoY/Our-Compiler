@@ -23,13 +23,15 @@ public class Main {
         InputFile,
         UPPAALfolder,
         OutputFile,
-        QueryFile
+        QueryFile,
+        ModelFile
     }
 
     public static void main(String[] args) {
         String inputFileName = null;
         String outputFileName = null;
         String userQueryFileName = null;
+        String userModelFileName = null;
         boolean prettyPrint = false;
         boolean checkModel = false;
         boolean printGeneratedCode = false;
@@ -76,6 +78,11 @@ public class Main {
 
                         case "-query":
                             nextArg = ArgumentType.QueryFile;
+                            break;
+
+                        case "-model":
+                            nextArg = ArgumentType.ModelFile;
+                            break;
 
                         case "-prettyprint":
                         case "-pp":
@@ -117,6 +124,12 @@ public class Main {
                 case QueryFile:
                     userQueryFileName = arg;
                     nextArg = ArgumentType.Flag;
+                    break;
+
+                case ModelFile:
+                    userModelFileName = arg;
+                    nextArg = ArgumentType.Flag;
+                    break;
             }
         }
 
@@ -163,7 +176,7 @@ public class Main {
             // VERIFY TIME IN UPPAAL
             if (checkModel) {
                 ModelChecker modelChecker = new ModelChecker();
-                modelChecker.checkProgram(programNode, uppaalFileName, userQueryFileName);
+                modelChecker.checkProgram(programNode, uppaalFileName, userQueryFileName, userModelFileName);
                 System.out.println("Time check finished.");
             }
 
@@ -214,6 +227,7 @@ public class Main {
                 "-prettyprint, -pp (Print out the parsed Our code)\n" +
                 "-check, -verify (Verify the generated UPPAAL model)\n" +
                 "-query (Custom queries .q file)\n" +
+                "-model (Custom model of I/O as UPPAAL .xml file)\n" +
                 "-print, -p (Print the generated arduino code)\n" +
                 "-help, -h (Display help)");
     }

@@ -42,6 +42,14 @@ public class UPPTemplate extends Template {
     }
 
     /**
+     * Sets controllable value on an edge.
+     */
+    public static void setLabel(Edge e, EKind kind, Boolean value) {
+        e.setProperty(kind.name(), value);
+        e.getProperty(kind.name());
+    }
+
+    /**
      * Sets a label on a location.
      *
      * @param l     the location on which the label is going to be attached
