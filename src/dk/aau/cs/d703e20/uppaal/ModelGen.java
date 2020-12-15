@@ -56,21 +56,24 @@ public class ModelGen {
 
 
     // Create template to handle world input/output
-    //TODO: use with main arg
     private void createNaiveWorldModel() {
         UPPTemplate template = system.createTemplate("Naive_World");
 
         // New edge from/to init for input chan
-        Edge inputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "inPin[i][1]!", null);
-        UPPTemplate.setLabel(inputHandler, UPPTemplate.EKind.select, "i : int[0," + opinCount + "]", 0, 0);
-        setNail(inputHandler, -10, -5);
-        setNail(inputHandler, -10, 5);
+        if (ipinCount > 0) {
+            Edge inputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "inPin[i][1]!", null);
+            UPPTemplate.setLabel(inputHandler, UPPTemplate.EKind.select, "i : int[0," + (ipinCount-1) + "]", 0, 0);
+            setNail(inputHandler, -10, -5);
+            setNail(inputHandler, -10, 5);
+        }
 
         // New edge from/to init for output
-        Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "outPin[i][1]?", null);
-        UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + ipinCount + "]", 0, 0);
-        setNail(outputHandler, 10, -5);
-        setNail(outputHandler, 10, 5);
+        if (opinCount > 0) {
+            Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "outPin[i][1]?", null);
+            UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + (opinCount-1) + "]", 0, 0);
+            setNail(outputHandler, 10, -5);
+            setNail(outputHandler, 10, 5);
+        }
     }
 
     /**

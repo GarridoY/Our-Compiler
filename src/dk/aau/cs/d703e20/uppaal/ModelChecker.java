@@ -46,8 +46,7 @@ public class ModelChecker {
 
         try {
             System.out.println("\nGenerating UPPAAL model...\n");
-            Document doc = modelGen.visitProgram(programNode, userModelFileName);
-            UPPSystem system = (UPPSystem) doc;
+            UPPSystem doc = modelGen.visitProgram(programNode, userModelFileName);
 
             // Get output directory
             String outputDir = System.getProperty("user.dir") + "\\Resources\\output";
@@ -76,29 +75,17 @@ public class ModelChecker {
 
             Query deadlockQuery = new Query("A[] not deadlock", "");
             queryList.add(deadlockQuery);
+            Query livenessQuery = new Query("controller.start --> controller.End_controller", "");
+            queryList.add(livenessQuery);
 
             // Create queries and put them in a list to be run.
-            for (UPPTemplate template : system.getTemplateList()) {
+            for (UPPTemplate template : doc.getTemplateList()) {
                 String templateName = template.getName();
 
-                // Every 'at' template should have Reachability tests.
-                if (templateName.contains("At")) {
-                    List<Location> locationList = template.getLocationList();
-
-                    // Find the last At location
-                    Location lastAtLocation = null;
-                    for (Location location : locationList) {
-                        if ("endAt".equals(location.getName())) {
-                            lastAtLocation = location;
-                        }
-                    }
-
-                    // Reachability
-                    // Can we reach the end state in the template?
-                    if (lastAtLocation != null) {
-                        Query query = new Query("A[] " + templateName + "." + lastAtLocation.getName(), "");
-                        queryList.add(query);
-                    }
+                if (templateName.contains("Bound")) {
+                    queryList.addAll(getQueryFromTemplate(template, "Bound_done"));
+                } else if (templateName.contains("At")) {
+                    queryList.addAll(getQueryFromTemplate(template, "endAt"));
                 }
             }
 
@@ -137,6 +124,31 @@ public class ModelChecker {
             ex.printStackTrace(System.err);
             System.exit(1);
         }
+    }
+
+    private List<Query> getQueryFromTemplate(UPPTemplate template, String endStateName) {
+        List<Query> queryList = new ArrayList<>();
+        String templateName = template.getName();
+
+        // Every timed construct should have Reachability tests.
+        List<Location> locationList = template.getLocationList();
+
+        // Find the last location
+        Location lastLocation = null;
+        for (Location location : locationList) {
+            if (endStateName.equals(location.getName())) {
+                lastLocation = location;
+            }
+        }
+
+        // Reachability
+        // Can we reach the end state in the template?
+        if (lastLocation != null) {
+            Query query = new Query("A[] " + templateName + "." + lastLocation.getName(), "");
+            queryList.add(query);
+        }
+
+        return queryList;
     }
 
     public List<Query> getUserQueries(String filepath) {
