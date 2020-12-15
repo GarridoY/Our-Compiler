@@ -348,6 +348,9 @@ public class SemanticChecker {
     }
 
     public Enums.DataType visitFunctionCall(FunctionCallNode functionCallNode) {
+        // Annotate if in bound scope
+        annotateBounded(functionCallNode);
+
         ASTNode declaration = retrieveSymbol(functionCallNode.getFunctionName());
         if (declaration != null) {
             FunctionDeclarationNode functionDeclarationNode = (FunctionDeclarationNode) declaration;
@@ -373,6 +376,9 @@ public class SemanticChecker {
     }
 
     private void visitIfElseStatement(IfElseStatementNode ifElseStatementNode) {
+        // Annotate if in bound scope
+        annotateBounded(ifElseStatementNode);
+
         IfStatementNode ifStatement = ifElseStatementNode.getIfStatementNode();
         List<ElseIfStatementNode> elseIfStatements = ifElseStatementNode.getElseIfStatementNodes();
         ElseStatementNode elseStatement = ifElseStatementNode.getElseStatement();
@@ -412,6 +418,9 @@ public class SemanticChecker {
     }
 
     private void visitForStatement(ForStatementNode forStatementNode) {
+        // Annotate if in bound scope
+        annotateBounded(forStatementNode);
+
         // Not inside bound scope? throw exception
         if (!boundScope.peek())
             throw new IllegalIterativeStatementException(forStatementNode.getCodePosition());
@@ -431,6 +440,9 @@ public class SemanticChecker {
     }
 
     private void visitWhileStatement(WhileStatementNode whileStatementNode) {
+        // Annotate if in bound scope
+        annotateBounded(whileStatementNode);
+
         // Not inside bound scope? throw exception
         if (!boundScope.peek())
             throw new IllegalIterativeStatementException(whileStatementNode.getCodePosition());
@@ -448,6 +460,9 @@ public class SemanticChecker {
     }
 
     public void visitAtStatement(AtStatementNode atStatementNode) {
+        // Annotate if in bound scope
+        annotateBounded(atStatementNode);
+
         visitAtParams(atStatementNode.getAtParamsNode().getBoolExpressionNode(), false);
         visitBlock(atStatementNode.getBlockNode());
     }
@@ -459,14 +474,14 @@ public class SemanticChecker {
         visitAtParams(boundStatementNode.getAtParamsNode().getBoolExpressionNode(), true);
         visitBlock(boundStatementNode.getBody());
 
+        // Leave bound scope
+        boundScope.pop();
+
         if (boundStatementNode.getCatchBlock() != null)
             visitBlock(boundStatementNode.getCatchBlock());
 
         if (boundStatementNode.getFinalBlock() != null)
             visitBlock(boundStatementNode.getFinalBlock());
-
-        // Leave bound scope
-        boundScope.pop();
     }
 
     private void visitAtParams(BoolExpressionNode boolExpressionNode, boolean isBoundParentNode) {
@@ -674,5 +689,15 @@ public class SemanticChecker {
             return dataType;
         else
             throw new UndeclaredVariableException(name);
+    }
+
+    /**
+     * Chekc if statement is in bound, if then annotate node
+     *
+     * @param statementNode the currently visited node
+     */
+    private void annotateBounded(StatementNode statementNode) {
+        if (boundScope.peek())
+            statementNode.setBounded(true);
     }
 }

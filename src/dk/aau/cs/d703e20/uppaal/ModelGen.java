@@ -3,6 +3,7 @@ package dk.aau.cs.d703e20.uppaal;
 import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.Location;
 import com.uppaal.model.core2.PrototypeDocument;
+import dk.aau.cs.d703e20.Pair;
 import dk.aau.cs.d703e20.ast.Enums;
 import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
 import dk.aau.cs.d703e20.ast.expressions.ArrayParamNode;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.setNail;
 
@@ -27,6 +29,7 @@ public class ModelGen {
     UPPSystem system = new UPPSystem(new PrototypeDocument());
     // Map of channels to start templates from loop
     HashMap<UPPTemplate, String> templateChanMap = new HashMap<>();
+    List<String> utilChan = new ArrayList<>();
     // Map of io pins (name, number)
     HashMap<String, Integer> pinChanMap = new HashMap<>();
     // List of used clocks
@@ -34,6 +37,9 @@ public class ModelGen {
     // Map of varName and values, also stores return value of function
     HashMap<String, String> varValues = new HashMap<>();
     HashMap<String, List<ArrayParamNode>> arrayValues = new HashMap<>();
+
+    // Stack of (guard, sync) used to check time after each statement and return to bound
+    Stack<Pair<String, String>> boundGuardKillSync = new Stack<>();
 
     // Keep count of templates
     int atCount = 0;
@@ -94,6 +100,32 @@ public class ModelGen {
     // Adds declaration from pair to global scope
     private void appendChanMapGlobal(UPPTemplate key, String value) {
         system.addChan(value);
+    }
+
+    /**
+     * Function to kill current statement outside boundTemplate and return to bound.
+     *
+     * @param statementNode current statement node
+     * @param template      current template corresponding to the node
+     */
+    // TODO: non sync edge for statements inside boundTemplate, if bounded addEdge() for every location from itself to time_eceeded, get locations of boundtemplate
+    private void setBoundBreakEdges(StatementNode statementNode, UPPTemplate template) {
+        if (statementNode.isBounded()) {
+            Location boundKill = template.addLocation("bound_kill", 50, 100);
+            // Make sure template can be reset
+            template.setLooping();
+            // Add an extra edge for every location, to break out of template
+            template.getLocationList().subList(0, template.getLocationList().size() -2).forEach(location -> template.addEdge(location, boundKill, boundGuardKillSync.peek().getFirst(), boundGuardKillSync.peek().getSecond() + "!", null));
+        }
+    }
+
+    private void setBoundBreakEdges(StatementNode statementNode, UPPTemplate template, Location boundKill) {
+        if (statementNode.isBounded()) {
+            // Make sure template can be reset
+            template.setLooping();
+            // Add an extra edge for every location, to break out of template
+            template.getLocationList().subList(0, template.getLocationList().size() -2).forEach(location -> template.addEdge(location, boundKill, boundGuardKillSync.peek().getFirst(), boundGuardKillSync.peek().getSecond() + "!", null));
+        }
     }
 
     /**
@@ -161,6 +193,8 @@ public class ModelGen {
             system.addDigitalPin(ipinChanName, ipinCount);
         // Add channel for each template
         templateChanMap.forEach(this::appendChanMapGlobal);
+        // Add all utility channels (kill channels)
+        utilChan.forEach(s -> system.addChan(s));
         // Set all declarations as system properties
         system.setGlobalDecl();
     }
@@ -234,6 +268,7 @@ public class ModelGen {
         forTemplate.setLooping();
         forTemplate.setDeclaration();
 
+        setBoundBreakEdges(forLoopNode, forTemplate);
     }
 
     private void visitWhileStatement(WhileStatementNode whileStatementNode, UPPTemplate prevTemplate) {
@@ -255,6 +290,8 @@ public class ModelGen {
 
         whileTemplate.edgeFromLastLoc("While_end", null, null, null);
         whileTemplate.setLooping();
+
+        setBoundBreakEdges(whileStatementNode, whileTemplate);
     }
 
     private void visitIfElseStatement(IfElseStatementNode ifElseStatementNode, UPPTemplate prevTemplate) {
@@ -300,6 +337,8 @@ public class ModelGen {
 
         // Reset count for next if statements
         elseIfCount = 0;
+
+        setBoundBreakEdges(ifElseStatementNode, ifTemplate);
     }
 
     private void visitElseIf(ElseIfStatementNode elseIfNode, UPPTemplate ifTemplate, Location startLoc, Location endLoc, int locationCoord) {
@@ -361,6 +400,10 @@ public class ModelGen {
             functionChan = templateChanMap.get(functionTemplate);
             // Add sync edge to current template, sync starts the function template
             currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), null, functionChan + "!", null);
+
+            // Set the function template to be able to break bound
+            assert functionTemplate != null;
+            setBoundBreakEdges(functionCallNode, functionTemplate, getLast(functionTemplate.getLocationList()));
         }
     }
 
@@ -461,6 +504,8 @@ public class ModelGen {
         atTemplate.edgeFromLastLoc("endAt", null, null, null);
 
         atTemplate.setLooping();
+
+        setBoundBreakEdges(atStatementNode, atTemplate);
     }
 
     // Run body, check if time is exceeded, then run catch and final or just final
@@ -469,7 +514,21 @@ public class ModelGen {
         UPPTemplate boundTemplate = newSyncedTemplate("Bound" + boundCount, prevTemplate);
         boundCount++;
 
+        // Add guard and sync to stack used to kill statements within bound scope
+        String exceedGuard = boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0).replaceAll("(<=|<)", ">");
+        String killSync = "kill" + boundCount;
+        utilChan.add(killSync);
+        boundGuardKillSync.push(new Pair<>(exceedGuard, killSync));
+
+        // Visit block
         visitBlock(boundStatementNode.getBody(), boundTemplate);
+
+        // Save list of all body locations, used to add time exceptions
+        final List<Location> bodyStatements = new ArrayList<>(boundTemplate.getLocationList().subList(2, boundTemplate.getLocationList().size()));
+        // Pop stack as we exit bound body
+        boundGuardKillSync.pop();
+
+        // Done location
         boundTemplate.edgeFromLastLoc("body_done", null, null, null);
         // save the location for body end, as we branch out
         Location bodyEndLoc = getLast(boundTemplate.getLocationList());
@@ -481,11 +540,12 @@ public class ModelGen {
             boundTemplate.edgeFromLastLoc("Time_OK", guard, null, null);
         } else
             boundTemplate.edgeFromLastLoc("Time_OK", boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0), null, null);
-        Location timeOKLoc = getLast(boundTemplate.getLocationList());
 
+        // TODO: create variable before, and set it to return of edgefromlastloc
+        Location timeOKLoc = getLast(boundTemplate.getLocationList());
         Location timeExceedLoc = boundTemplate.addLocation("Time_exceeded", getLast(boundTemplate.getLocationList()).getX(), 75);
         // Add edge with guard for exceeding time
-        boundTemplate.addEdge(bodyEndLoc, timeExceedLoc, boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0).replaceAll("(<=|<)", ">"), null, null);
+        boundTemplate.addEdge(bodyEndLoc, timeExceedLoc, exceedGuard, null, null);
 
         // Create end location and set template to loop
         Location boundDone = boundTemplate.addLocation("Bound_done", 150, -150);
@@ -493,6 +553,19 @@ public class ModelGen {
 
         // Add blocks if any
         handleBoundBlocks(boundStatementNode, boundTemplate, timeExceedLoc, timeOKLoc, boundDone);
+
+        // Create break edges
+        bodyStatements.forEach(location -> breakBoundStmt(location, boundTemplate, timeExceedLoc, exceedGuard, killSync));
+    }
+
+    // Add edge for every statement in bound template to break if body if time is exceeded
+    private void breakBoundStmt(Location location, UPPTemplate template, Location timeExceedLoc, String exceedGuard, String killSync) {
+        if (location.getName().startsWith("called_")) {
+            // Bound entered new scope, need to handle a break from sync. Guard is checked inside scope
+            template.addEdge(location, timeExceedLoc, null, killSync + "?", null);
+        } else {
+            template.addEdge(location, timeExceedLoc, exceedGuard, null, null);
+        }
     }
 
     private void handleBoundBlocks(BoundStatementNode boundStatementNode, UPPTemplate boundTemplate, Location timeExceedLoc, Location timeOKLoc, Location endLocation) {
@@ -554,6 +627,9 @@ public class ModelGen {
         visitBlock(functionDeclarationNode.getBlockNode(), template);
         template.edgeFromLastLoc("End_" + functionDeclarationNode.getFunctionName(), null, null, null);
         template.setLooping();
+
+        //Setup location for breaking bounds as last location in list, might not be used
+        Location boundKill = template.addLocation("bound_kill",75, -100);
 
         // Add function name and return value to map of varValues
         findReturnValue(functionDeclarationNode);
