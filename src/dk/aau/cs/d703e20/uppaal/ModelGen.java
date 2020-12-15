@@ -69,8 +69,8 @@ public class ModelGen {
 
         // New edge from/to init for output
         if (opinCount > 0) {
-            Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "outPin[i][1]?", null);
-            UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + (opinCount-1) + "]", 0, 0);
+            Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "outPin[i][j]?", null);
+            UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + (opinCount-1) + "], j : int[0,1]", 0, 0);
             setNail(outputHandler, 10, -5);
             setNail(outputHandler, 10, 5);
         }
