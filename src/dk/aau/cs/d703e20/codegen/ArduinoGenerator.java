@@ -167,6 +167,9 @@ public class ArduinoGenerator {
             else if (statementNode instanceof BoundStatementNode)
                 statementNodes.add(visitBoundStatement((BoundStatementNode) statementNode));
 
+            else if (statementNode instanceof WhileStatementNode)
+                statementNodes.add(visitWhileStatement((WhileStatementNode) statementNode));
+
             // TODO: handle other statement node types with visitors
             else
                 statementNodes.add(statementNode);
@@ -352,6 +355,11 @@ public class ArduinoGenerator {
     private ElseStatementNode visitElseStatement(ElseStatementNode elseStatementNode) {
         BlockNode blockNode = visitBlockNode(elseStatementNode.getBlockNode());
         return new ElseStatementNode(blockNode);
+    }
+
+    private WhileStatementNode visitWhileStatement(WhileStatementNode whileStatementNode) {
+        BlockNode visitedBlock = visitBlockNode(whileStatementNode.getBlockNode());
+        return new WhileStatementNode(whileStatementNode.getBoolExpressionNode(), visitedBlock);
     }
 
     private StatementNode visitAtStatement (AtStatementNode atStatementNode) {
