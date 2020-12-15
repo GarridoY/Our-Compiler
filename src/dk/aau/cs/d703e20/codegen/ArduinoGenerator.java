@@ -25,6 +25,8 @@ public class ArduinoGenerator {
     private boolean hoursFuncUsed;
     private boolean daysFuncUsed;
 
+    private int forLoopCount;
+
     public String GenerateArduino(ProgramNode ast) {
         StringBuilder stringBuilder = new StringBuilder();
         globalVariables = new ArrayList<>();
@@ -169,6 +171,9 @@ public class ArduinoGenerator {
 
             else if (statementNode instanceof WhileStatementNode)
                 statementNodes.add(visitWhileStatement((WhileStatementNode) statementNode));
+
+            else if (statementNode instanceof ForStatementNode)
+                statementNodes.add(visitForStatement((ForStatementNode) statementNode));
 
             // TODO: handle other statement node types with visitors
             else
@@ -362,6 +367,18 @@ public class ArduinoGenerator {
         return new WhileStatementNode(whileStatementNode.getBoolExpressionNode(), visitedBlock);
     }
 
+    private BlockStatementNode visitForStatement(ForStatementNode forStatementNode) {
+        BlockNode visitedBlock = visitBlockNode(forStatementNode.getBlockNode());
+
+        String varName = "ourFor" + forLoopCount++;
+        String varInit = varName + " = " + forStatementNode.getArithExpressionNode1().prettyPrint(0);
+        String cond = varName + " <= " + forStatementNode.getArithExpressionNode2().prettyPrint(0);
+        String incr = varName + "++";
+        String forStr = "for (" + varInit + "; " + cond + "; " + incr + ") ";
+
+        return new BlockStatementNode(new CodeNode(forStr), visitedBlock);
+    }
+
     private StatementNode visitAtStatement (AtStatementNode atStatementNode) {
         BlockNode visitedBlock = visitBlockNode(atStatementNode.getBlockNode());
         AtStatementNode visitedAt = new AtStatementNode(atStatementNode.getAtParamsNode(), visitedBlock);
@@ -379,7 +396,7 @@ public class ArduinoGenerator {
         String boundComment = "/* bound (" + boundParam + ") */";
 
         // body
-        statementNodes.addAll(boundStatementNode.getBody().getStatementNodes());
+        statementNodes.addAll(visitBlockNode(boundStatementNode.getBody()).getStatementNodes());
 
         // catch
         statementNodes.add(new CommentNode(" catch"));
@@ -396,10 +413,11 @@ public class ArduinoGenerator {
                 new CodeNode("if (" + boundParam + ") "), new BlockNode(catchBlockStatements)));
 
         statementNodes.add(new BlockStatementNode(
-                new CodeNode("else "), boundStatementNode.getCatchBlock()));
+                new CodeNode("else "), visitBlockNode(boundStatementNode.getCatchBlock())));
 
         // final
-        statementNodes.add(new BlockStatementNode(new CodeNode("/* final */"), boundStatementNode.getFinalBlock()));
+        statementNodes.add(new BlockStatementNode(
+                new CodeNode("/* final */"), visitBlockNode(boundStatementNode.getFinalBlock())));
 
         return new BlockStatementNode(new CodeNode(boundComment), new BlockNode(statementNodes));
     }
