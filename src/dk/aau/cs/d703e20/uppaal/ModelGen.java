@@ -16,10 +16,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.setNail;
 
@@ -37,6 +34,8 @@ public class ModelGen {
     // Map of varName and values, also stores return value of function
     HashMap<String, String> varValues = new HashMap<>();
     HashMap<String, List<ArrayParamNode>> arrayValues = new HashMap<>();
+
+    Set<String> functionSyncSet = new HashSet<>();
 
     // Stack of (guard, sync) used to check time after each statement and return to bound
     Stack<Pair<String, String>> boundGuardKillSync = new Stack<>();
@@ -62,7 +61,7 @@ public class ModelGen {
         // New edge from/to init for input chan
         if (ipinCount > 0) {
             Edge inputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "inPin[i][1]!", null);
-            UPPTemplate.setLabel(inputHandler, UPPTemplate.EKind.select, "i : int[0," + (ipinCount-1) + "]", 0, 0);
+            UPPTemplate.setLabel(inputHandler, UPPTemplate.EKind.select, "i : int[0," + (ipinCount - 1) + "]", 0, 0);
             setNail(inputHandler, -10, -5);
             setNail(inputHandler, -10, 5);
         }
@@ -70,7 +69,7 @@ public class ModelGen {
         // New edge from/to init for output
         if (opinCount > 0) {
             Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "outPin[i][j]?", null);
-            UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + (opinCount-1) + "], j : int[0,1]", 0, 0);
+            UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + (opinCount - 1) + "], j : int[0,1]", 0, 0);
             setNail(outputHandler, 10, -5);
             setNail(outputHandler, 10, 5);
         }
@@ -118,7 +117,7 @@ public class ModelGen {
             // Make sure template can be reset
             template.setLooping();
             // Add an extra edge for every location, to break out of template
-            template.getLocationList().subList(0, template.getLocationList().size() -2).forEach(location -> template.addEdge(location, boundKill, boundGuardKillSync.peek().getFirst(), boundGuardKillSync.peek().getSecond() + "!", null));
+            template.getLocationList().subList(0, template.getLocationList().size() - 2).forEach(location -> template.addEdge(location, boundKill, boundGuardKillSync.peek().getFirst(), boundGuardKillSync.peek().getSecond() + "!", null));
         }
     }
 
@@ -127,7 +126,7 @@ public class ModelGen {
             // Make sure template can be reset
             template.setLooping();
             // Add an extra edge for every location, to break out of template
-            template.getLocationList().subList(0, template.getLocationList().size() -2).forEach(location -> template.addEdge(location, boundKill, boundGuardKillSync.peek().getFirst(), boundGuardKillSync.peek().getSecond() + "!", null));
+            template.getLocationList().subList(0, template.getLocationList().size() - 2).forEach(location -> template.addEdge(location, boundKill, boundGuardKillSync.peek().getFirst(), boundGuardKillSync.peek().getSecond() + "!", null));
         }
     }
 
@@ -367,10 +366,10 @@ public class ModelGen {
         if (pinChanMap.containsKey(assignmentNode.getVariableName())) {
             if (assignmentNode.getLiteralValue().equals("true")) {
                 // chan! update pin to value 1
-                template.edgeFromLastLoc("pinHigh", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][1]!", null);
+                template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][1]!", null);
             } else if (assignmentNode.getLiteralValue().equals("false")) {
                 // chan! update pin to value 0
-                template.edgeFromLastLoc("pinLow", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][0]!", null);
+                template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][0]!", null);
             }
         }
         // Is variable clock?
@@ -399,13 +398,18 @@ public class ModelGen {
                 if (uppTemplate.getName().equals(name))
                     functionTemplate = uppTemplate;
             }
+
+            assert functionTemplate != null;
+
             // Get chan name for starting function template
             functionChan = templateChanMap.get(functionTemplate);
             // Add sync edge to current template, sync starts the function template
             currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), null, functionChan + "!", null);
+            // Add sync edge to function template to receive sync from the call
+            if (functionSyncSet.add(functionChan))
+                functionTemplate.addEdge(functionTemplate.getLocationList().get(0), functionTemplate.getLocationList().get(1), null, functionChan + "?", null);
 
             // Set the function template to be able to break bound
-            assert functionTemplate != null;
             setBoundBreakEdges(functionCallNode, functionTemplate, getLast(functionTemplate.getLocationList()));
         }
     }
@@ -627,12 +631,15 @@ public class ModelGen {
         UPPTemplate template = system.createTemplate(functionDeclarationNode.getFunctionName());
         // Create channel to start new template
         templateChanMap.put(template, "begin_" + functionDeclarationNode.getFunctionName());
+        // New location for starting body, functionCall will join this location with the initial one
+        template.addLocation("sync_done");
+
         visitBlock(functionDeclarationNode.getBlockNode(), template);
         template.edgeFromLastLoc("End_" + functionDeclarationNode.getFunctionName(), null, null, null);
         template.setLooping();
 
         //Setup location for breaking bounds as last location in list, might not be used
-        Location boundKill = template.addLocation("bound_kill",75, -100);
+        Location boundKill = template.addLocation("bound_kill", 75, -100);
 
         // Add function name and return value to map of varValues
         findReturnValue(functionDeclarationNode);
