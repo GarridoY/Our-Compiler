@@ -6,6 +6,7 @@ import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.codegen.arduino.code.*;
 import dk.aau.cs.d703e20.codegen.arduino.structure.*;
+import on.B;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,19 +70,26 @@ public class ArduinoGenerator {
         }
 
         program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" DELTA TIME AND CLOCKS"));
+        program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode("ourClockUpdate();"));
+
+        // CLOCK UPDATE FUNCTION
+        List<StatementNode> clockUpdateStatements = new ArrayList<>();
+
         // get new millis
-        program.getLoopNode().getBlockNode().getStatementNodes().add(
-                new CodeNode("unsigned long newMillis = millis();"));
+        clockUpdateStatements.add(new CodeNode("unsigned long newMillis = millis();"));
         // update delta time and previous millis
-        program.getLoopNode().getBlockNode().getStatementNodes().add(
-                new CodeNode("delta = newMillis - prevMillis;"));
-        program.getLoopNode().getBlockNode().getStatementNodes().add(
-                new CodeNode("prevMillis = newMillis;"));
+        clockUpdateStatements.add(new CodeNode("delta = newMillis - prevMillis;"));
+        clockUpdateStatements.add(new CodeNode("prevMillis = newMillis;"));
         // increment all clocks
         for (String clockName : clockNames) {
             // insert increment statement at the end
-            program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode(clockName + " += delta;"));
+            clockUpdateStatements.add(new CodeNode(clockName + " += delta;"));
         }
+
+        FunctionDeclarationNode clockUpdateFunction = new FunctionDeclarationNode(
+                Enums.DataType.VOID, "ourClockUpdate",
+                new BlockNode(clockUpdateStatements), new ArrayList<>());
+        program.getFunctionDeclarationNodes().add(clockUpdateFunction);
 
         stringBuilder.append(program.prettyPrint(0));
 
@@ -403,7 +411,7 @@ public class ArduinoGenerator {
 
         if (boundStatementNode.getBoolLiteral()) {
             catchBlockStatements.add(new CommentNode(" execution is blocked"));
-            catchBlockStatements.add(new CodeNode("while (" + boundParam + ") delay(0);"));
+            catchBlockStatements.add(new CodeNode("while (" + boundParam + ") ourClockUpdate();"));
         }
         else {
             catchBlockStatements.add(new CommentNode(" don't block execution"));
