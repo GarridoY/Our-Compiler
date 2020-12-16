@@ -332,7 +332,7 @@ public class semanticTest {
     }
 
     @Test
-    void testWhileLoop(){
+    void testWhileLoop01(){
         BlockNode blockNode = getNodeFromText(
                 "{clock x; int leet = 1337; bound (x < leet) { while (leet == true) {}}}",
                 BlockNode.class,
@@ -340,6 +340,19 @@ public class semanticTest {
                 "block"
         );
         assertThrows(IllegalOperandException.class,
+                ()-> semanticChecker.visitBlock(blockNode)
+        );
+    }
+
+    @Test
+    void testWhileLoop02(){
+        BlockNode blockNode = getNodeFromText(
+                "{clock x; int leet = 1337; bound (x < leet) { while (leet < x) {}}}",
+                BlockNode.class,
+                OurParser.BlockContext.class,
+                "block"
+        );
+        assertDoesNotThrow(
                 ()-> semanticChecker.visitBlock(blockNode)
         );
     }

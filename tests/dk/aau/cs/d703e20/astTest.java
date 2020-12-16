@@ -213,7 +213,7 @@ public class astTest {
                                 .getArithExpressionNode()
                                 .getNumber()),
 
-                () -> assertEquals("true", boundNode.getBoolLiteral()),
+                () -> assertTrue(boundNode.getBoolLiteral()),
                 () -> assertNotNull(boundNode.getBody()),
                 () -> assertNotNull(boundNode.getFinalBlock())
         );
@@ -293,7 +293,7 @@ public class astTest {
                                 .getArithExpressionNode()
                                 .getNumber()),
 
-                () -> assertEquals("false", boundNode.getBoolLiteral()),
+                () -> assertFalse(boundNode.getBoolLiteral()),
                 () -> assertNotNull(boundNode.getBody()),
                 () -> assertNotNull(boundNode.getCatchBlock()),
                 () -> assertNotNull(boundNode.getFinalBlock())

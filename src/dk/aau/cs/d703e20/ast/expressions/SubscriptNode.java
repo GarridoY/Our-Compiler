@@ -7,12 +7,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SubscriptNode implements ASTNode {
-    private String variableName;
-    private int index;
+    private final String variableName;
+    private final int index;
 
     private CodePosition codePosition;
 
-    public SubscriptNode (String text) {
+    public SubscriptNode(String text) {
         Pattern pattern = Pattern.compile("(.+?)\\[(.+?)\\]", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(text);
         matcher.matches();

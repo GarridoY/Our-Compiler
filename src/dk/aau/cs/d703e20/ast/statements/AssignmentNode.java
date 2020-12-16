@@ -9,7 +9,7 @@ public class AssignmentNode extends StatementNode {
     private String literalValue;
     private ArithExpressionNode arithExpressionNode;
 
-    private  CodePosition codePosition;
+    private CodePosition codePosition;
 
     public AssignmentNode(String variableName, ArithExpressionNode arithExpressionNode) {
         this.variableName = variableName;
@@ -21,9 +21,13 @@ public class AssignmentNode extends StatementNode {
         this.literalValue = literalValue;
     }
 
-    public String getVariableName() { return variableName; }
+    public String getVariableName() {
+        return variableName;
+    }
 
-    public ArithExpressionNode getArithExpressionNode() { return arithExpressionNode; }
+    public ArithExpressionNode getArithExpressionNode() {
+        return arithExpressionNode;
+    }
 
     public String getLiteralValue() {
         return literalValue;
@@ -45,8 +49,12 @@ public class AssignmentNode extends StatementNode {
     }
 
     @Override
-    public void setCodePosition(CodePosition codePosition) { this.codePosition = codePosition; }
+    public void setCodePosition(CodePosition codePosition) {
+        this.codePosition = codePosition;
+    }
 
     @Override
-    public CodePosition getCodePosition() { return codePosition; }
+    public CodePosition getCodePosition() {
+        return codePosition;
+    }
 }

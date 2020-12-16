@@ -1,0 +1,32 @@
+// program to create popcorn based on sensor input
+Setup{
+    clock time = 0;
+    clock popTime = 0;
+
+    ipin detector 0;
+    opin waveON 1;
+    opin greenLight 2;
+    opin redLight 3;
+    opin yellowLight 4;
+
+}
+
+Loop{                                   // we need to wait till the popcorn are popping (2min)
+    redLight = true;
+    at (time > 120){                    // after 2 min we want to start check the time between pops
+        bound(time < 240) {
+            while (popTime < 3){
+                if (detector == true){
+                    popTime = 0;        // everytime we hear pop we reset popTime
+                }
+            }
+        }
+        catch{                          // if the microwave doesn't stop based on the detector we stop based on fixed time (4 min)
+            yellowLight = true;         // yellow light on to show that microwave was stopped due time exceeded
+        }
+        final{                          // if we don't hear a pop within 3 sec after last pop, we finish
+            redLight = false;
+            greenLight = true;
+        }
+    }
+}

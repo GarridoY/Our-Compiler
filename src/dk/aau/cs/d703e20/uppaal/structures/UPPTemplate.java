@@ -11,9 +11,9 @@ public class UPPTemplate extends Template {
     // 0 is always start TODO: consider hashmap
     private final List<Location> locationList = new ArrayList<>();
     String Name;
-    int locationX = 0;
+    int locationX = 75;
     int locationY = 0;
-    int locationCoordIncr = 100;
+    int locationCoordIncr = 75;
 
     public UPPTemplate(Element prototype) {
         super(prototype);
@@ -42,6 +42,14 @@ public class UPPTemplate extends Template {
     }
 
     /**
+     * Sets controllable value on an edge.
+     */
+    public static void setLabel(Edge e, EKind kind, Boolean value) {
+        e.setProperty(kind.name(), value);
+        e.getProperty(kind.name());
+    }
+
+    /**
      * Sets a label on a location.
      *
      * @param l     the location on which the label is going to be attached
@@ -67,6 +75,10 @@ public class UPPTemplate extends Template {
 
     public void setName(String name) {
         Name = name;
+    }
+
+    public void addVar(String varDecl) {
+        declSB.append(varDecl).append(";\n");
     }
 
     /**
@@ -162,10 +174,12 @@ public class UPPTemplate extends Template {
      * @param update     update expression
      */
     public void edgeFromLastLoc(String newLocName, String guard, String sync, String update) {
+        //TODO: This should prop return new location
+
         // Save current last location of template
         Location lastLoc = this.locationList.get(this.getLocationList().size() - 1);
         // Add edge to new location
-        Location newLoc = this.addLocation(newLocName);
+        Location newLoc = this.addLocation(newLocName, lastLoc.getX() + locationCoordIncr, lastLoc.getY());
         this.addEdge(lastLoc, newLoc, guard, sync, update);
     }
 
@@ -180,6 +194,6 @@ public class UPPTemplate extends Template {
      * Valid kinds of labels on edges.
      */
     public enum EKind {
-        select, guard, synchronisation, assignment, comments
+        select, guard, synchronisation, assignment, comments, controllable
     }
 }

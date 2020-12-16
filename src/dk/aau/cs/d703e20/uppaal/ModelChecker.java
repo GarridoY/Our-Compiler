@@ -2,6 +2,7 @@ package dk.aau.cs.d703e20.uppaal;
 
 import com.uppaal.engine.*;
 import com.uppaal.model.core2.Document;
+import com.uppaal.model.core2.Location;
 import com.uppaal.model.core2.Query;
 import com.uppaal.model.system.SystemEdge;
 import com.uppaal.model.system.SystemLocation;
@@ -10,15 +11,18 @@ import com.uppaal.model.system.symbolic.SymbolicState;
 import com.uppaal.model.system.symbolic.SymbolicTransition;
 import dk.aau.cs.d703e20.Main;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
+import dk.aau.cs.d703e20.errorhandling.ConsoleColors;
+import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
+import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public class ModelChecker {
-    private ModelGen modelGen;
+    private final ModelGen modelGen;
+    private boolean queryFailed = false;
 
     public ModelChecker() {
         modelGen = new ModelGen();
@@ -36,106 +40,155 @@ public class ModelChecker {
             + "modest 0\n"
             + "statistical 0.01 0.01 0.05 0.05 0.05 0.9 1.1 0.0 0.0 1280.0 0.01";
 
-    public void checkProgram(ProgramNode programNode) {
+    public void checkProgram(ProgramNode programNode, String fileName, String userQueryFileName, String userModelFileName) {
 
         Feedback feedback = new Feedback();
 
         try {
-            Document doc = null;
-
             System.out.println("\nGenerating UPPAAL model...\n");
-            doc = modelGen.visitProgram(programNode);
+            UPPSystem doc = modelGen.visitProgram(programNode, userModelFileName);
 
             // Get output directory
-            String outputDir = System.getProperty("user.dir") + "\\Resources\\output"; 
-
-            // save the model into a file:
-            doc.save(outputDir + "/output_model.xml");
+            String outputDir = System.getProperty("user.dir") + "\\Resources\\output";
+            // Save the model into a file:
+            doc.save(outputDir + "/" + fileName +  ".xml");
 
             System.out.println("\nVerifying UPPAAL model:\n");
 
-            // connect to the engine server:
+            // Connect to the engine server:
             Engine engine = connectToEngine();
 
-            // create a link to a local Uppaal process:
+            // Create a link to a local Uppaal process:
             UppaalSystem sys = compile(engine, doc);
 
             // perform a random symbolic simulation and get a trace:
-            ArrayList<SymbolicTransition> trace = symbolicSimulation(engine, sys);
+            // TODO Is there a need to make a trace? We probably just want the queries.
+            //ArrayList<SymbolicTransition> trace = symbolicSimulation(engine, sys);
 
             // save the trace to an XTR file:
-            saveXTRFile(trace, outputDir + "/output_trace.xtr");
+            // TODO Is this necessary? I read somewhere that it was basically unreadable.
+            //saveXTRFile(trace, outputDir + "/output_trace.xtr");
 
-            // simple model-checking:
-            //Query query = new Query("E<> Exp1.Final", "can Exp1 finish?");
-            //System.out.println("===== Simple check =====");
-            //System.out.println("Result: "
-            //        + engine.query(sys, options, query, feedback));
-            //
-            //// SMC model-checking:
-            //Query smcq = new Query("Pr[<=30](<> Exp1.Final)", "what is the probability of finishing?");
-            //System.out.println("===== SMC check =====");
-            //System.out.println("Result: "
-            //        + engine.query(sys, options, smcq, feedback));
+            // Model-checking:
+            System.out.println("===== Query verifier =====");
+            List<Query> queryList = new ArrayList<>();
 
-            // Model-checking with customized initial state:
-            SymbolicState state = engine.getInitialState(sys);
-            int vi = -1; // variable v index
-            for (int i = 0; i < sys.getNoOfVariables(); i++) {
-                if ("v".equals(sys.getVariableName(i))) {
-                    vi = i;
-                    break;
+            Query deadlockQuery = new Query("A[] not deadlock", "");
+            queryList.add(deadlockQuery);
+            Query livenessQuery = new Query("controller.start --> controller.End_controller", "");
+            queryList.add(livenessQuery);
+
+            // Create queries and put them in a list to be run.
+            for (UPPTemplate template : doc.getTemplateList()) {
+                String templateName = template.getName();
+
+                if (templateName.contains("Bound")) {
+                    queryList.addAll(getQueryFromTemplate(template, "Bound_done"));
+                } else if (templateName.contains("At")) {
+                    queryList.addAll(getQueryFromTemplate(template, "endAt"));
                 }
             }
 
-            // Verification with custom initial state:
-            int[] vars = state.getVariableValues();
-            if (vi < 0 || vi >= vars.length) {
-                System.err.println("Variable v was not found");
-                return;
+            // Add user queries
+            if (userQueryFileName != null) {
+                List<Query> userQueryList = getUserQueries(userQueryFileName);
+                if (userQueryList != null && !userQueryList.isEmpty()) {
+                    queryList.addAll(userQueryList);
+                    System.out.println("[INFO] Added user queries.");
+                }
             }
 
-            // set variable v to value 2:
-            state.getVariableValues()[vi] = 2;
-            // add constrain "x-0<=5":
-            state.getPolyhedron().addNonStrictConstraint(1, 0, 5);
-            // add constrain "0-x<=-5" (equivalent to "x>=5"):
-            state.getPolyhedron().addNonStrictConstraint(0, 1, -5);
-            // Notice that all other clocks will be constrained too,
-            // because of other (initial) constrains like: x==y, y==z
+            // Run all queries
+            for (Query query : queryList) {
+                // Verify query
+                QueryResult queryResult = engine.query(sys, options, query, feedback);
+                // Check if query succeeded
+                if ("OK".equals(queryResult.getStatusString())) {
+                    System.out.println(ConsoleColors.GREEN + "[SUCCESS] " + query + " === OK" + ConsoleColors.RESET);
+                } else {
+                    queryFailed = true;
+                    System.out.println(ConsoleColors.RED + "[WARNING] " + query + " === FAILED" + ConsoleColors.RESET);
+                }
+            }
 
-            //System.out.println("===== Custom check ===== ");
-            //System.out.println("Result: "
-            //        + engine.query(sys, state, options, query, feedback));
-            //
-            //System.out.println("===== Custom SMC ===== ");
-            //System.out.println("Result: "
-            //        + engine.query(sys, state, options, smcq, feedback));
-            //
-            //Query smcsim = new Query("simulate 1 [<=30] { v, x, y }", "get simulation trajectories");
-            //System.out.println("===== Custom Concrete Simulation ===== ");
-            //System.out.println("Result: "
-            //        + engine.query(sys, state, options, smcsim, feedback));
-            //engine.disconnect();
+            System.out.println("[INFO] Queries verified.\n");
 
-            // TODO: throw exception if UPPAAL fails
-            System.out.println("\n");
+            if (queryFailed)
+                System.out.println(
+                        ConsoleColors.RED +
+                        "[WARNING] One or more queries could not be satisfied. Thus time safety cannot be guaranteed.\n\n" +
+                        ConsoleColors.RESET);
 
-        } catch (CannotEvaluateException | EngineException | IOException ex) {
+            engine.disconnect();
+        } catch (EngineException | IOException ex) {
             ex.printStackTrace(System.err);
             System.exit(1);
         }
+    }
+
+    private List<Query> getQueryFromTemplate(UPPTemplate template, String endStateName) {
+        List<Query> queryList = new ArrayList<>();
+        String templateName = template.getName();
+
+        // Every timed construct should have Reachability tests.
+        List<Location> locationList = template.getLocationList();
+
+        // Find the last location
+        Location lastLocation = null;
+        for (Location location : locationList) {
+            if (endStateName.equals(location.getName())) {
+                lastLocation = location;
+            }
+        }
+
+        // Reachability
+        // Can we reach the end state in the template?
+        if (lastLocation != null) {
+            Query query = new Query("A[] " + templateName + "." + lastLocation.getName(), "");
+            queryList.add(query);
+        }
+
+        return queryList;
+    }
+
+    public List<Query> getUserQueries(String filepath) {
+        File file = new File(filepath);
+        List<Query> queryList = new ArrayList<>();
+        // Check if file extension is a .q as they are special UPPAAL query files containing special characters.
+        boolean qFile = "q".equals(file.getName().split("\\.")[1]);
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+
+            String line = reader.readLine();
+            while (line != null) {
+                if (qFile) {
+                    if (line.isEmpty() || line.startsWith("//") || line.startsWith("/*") || line.startsWith("*/")) {
+                        line = reader.readLine();
+                        continue;
+                    }
+                }
+
+                queryList.add(new Query(line, ""));
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return queryList;
     }
 
     private Engine connectToEngine() throws EngineException, IOException {
         String os = System.getProperty("os.name");
         String here = Main.uppaalDirectory;
 
-        String path = null;
+        String path;
         if ("Linux".equals(os))
             path = here + "/bin-Linux/server";
-        else
+        else if (os.contains("Windows"))
             path = here + "\\bin-Windows\\server.exe";
+        else
+            throw new RuntimeException("OS not supported");
 
         Engine engine = new Engine();
         engine.setServerPath(path);
@@ -145,9 +198,9 @@ public class ModelChecker {
         return engine;
     }
 
-    private UppaalSystem compile(Engine engine, Document doc) throws EngineException, IOException {
+    private UppaalSystem compile(Engine engine, Document doc) throws EngineException {
         // compile the model into system:
-        ArrayList<Problem> problems = new ArrayList<Problem>();
+        ArrayList<Problem> problems = new ArrayList<>();
         UppaalSystem sys = engine.getSystem(doc, problems);
         if (!problems.isEmpty()) {
             boolean fatal = false;
@@ -166,8 +219,8 @@ public class ModelChecker {
     }
 
     private ArrayList<SymbolicTransition> symbolicSimulation(Engine engine, UppaalSystem sys)
-            throws EngineException, IOException, CannotEvaluateException {
-        ArrayList<SymbolicTransition> trace = new ArrayList<SymbolicTransition>();
+            throws EngineException, CannotEvaluateException {
+        ArrayList<SymbolicTransition> trace = new ArrayList<>();
         // compute the initial state:
         SymbolicState state = engine.getInitialState(sys);
         // add the initial transition to the trace:
@@ -228,11 +281,11 @@ public class ModelChecker {
         for (SystemLocation l : s.getLocations()) {
             System.out.print(l.getName() + ", ");
         }
-        int val[] = s.getVariableValues();
+        int[] val = s.getVariableValues();
         for (int i = 0; i < sys.getNoOfVariables(); i++) {
             System.out.print(sys.getVariableName(i) + "=" + val[i] + ", ");
         }
-        List<String> constraints = new ArrayList<String>();
+        List<String> constraints = new ArrayList<>();
         s.getPolyhedron().getAllConstraints(constraints);
         for (String cs : constraints) {
             System.out.print(cs + ", ");

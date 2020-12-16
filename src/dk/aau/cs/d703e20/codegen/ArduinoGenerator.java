@@ -6,6 +6,7 @@ import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.codegen.arduino.code.*;
 import dk.aau.cs.d703e20.codegen.arduino.structure.*;
+import on.B;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +25,8 @@ public class ArduinoGenerator {
     private boolean minutesFuncUsed;
     private boolean hoursFuncUsed;
     private boolean daysFuncUsed;
+
+    private int forLoopCount;
 
     public String GenerateArduino(ProgramNode ast) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -47,6 +50,9 @@ public class ArduinoGenerator {
 
         program.getLoopNode().getBlockNode().getStatementNodes().add(0, new CommentNode(" LOOP CODE"));
 
+        program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" DELTA TIME AND CLOCKS"));
+        program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode("ourClockUpdate();"));
+
         program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" AT STATEMENTS"));
         // handle all at statements
         for (int at = 0; at < atStatements.size(); at++) {
@@ -66,20 +72,24 @@ public class ArduinoGenerator {
                             atBlock));
         }
 
-        program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" DELTA TIME AND CLOCKS"));
+        // CLOCK UPDATE FUNCTION
+        List<StatementNode> clockUpdateStatements = new ArrayList<>();
+
         // get new millis
-        program.getLoopNode().getBlockNode().getStatementNodes().add(
-                new CodeNode("unsigned long newMillis = millis();"));
+        clockUpdateStatements.add(new CodeNode("unsigned long newMillis = millis();"));
         // update delta time and previous millis
-        program.getLoopNode().getBlockNode().getStatementNodes().add(
-                new CodeNode("delta = newMillis - prevMillis;"));
-        program.getLoopNode().getBlockNode().getStatementNodes().add(
-                new CodeNode("prevMillis = newMillis;"));
+        clockUpdateStatements.add(new CodeNode("delta = newMillis - prevMillis;"));
+        clockUpdateStatements.add(new CodeNode("prevMillis = newMillis;"));
         // increment all clocks
         for (String clockName : clockNames) {
             // insert increment statement at the end
-            program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode(clockName + " += delta;"));
+            clockUpdateStatements.add(new CodeNode(clockName + " += delta;"));
         }
+
+        FunctionDeclarationNode clockUpdateFunction = new FunctionDeclarationNode(
+                Enums.DataType.VOID, "ourClockUpdate",
+                new BlockNode(clockUpdateStatements), new ArrayList<>());
+        program.getFunctionDeclarationNodes().add(clockUpdateFunction);
 
         stringBuilder.append(program.prettyPrint(0));
 
@@ -165,7 +175,13 @@ public class ArduinoGenerator {
                 statementNodes.add(visitAtStatement((AtStatementNode) statementNode));
 
             else if (statementNode instanceof BoundStatementNode)
-                visitBoundStatement((BoundStatementNode) statementNode);
+                statementNodes.add(visitBoundStatement((BoundStatementNode) statementNode));
+
+            else if (statementNode instanceof WhileStatementNode)
+                statementNodes.add(visitWhileStatement((WhileStatementNode) statementNode));
+
+            else if (statementNode instanceof ForStatementNode)
+                statementNodes.add(visitForStatement((ForStatementNode) statementNode));
 
             // TODO: handle other statement node types with visitors
             else
@@ -354,6 +370,24 @@ public class ArduinoGenerator {
         return new ElseStatementNode(blockNode);
     }
 
+    private WhileStatementNode visitWhileStatement(WhileStatementNode whileStatementNode) {
+        BlockNode visitedBlock = visitBlockNode(whileStatementNode.getBlockNode());
+        visitedBlock.getStatementNodes().add(new CodeNode("ourClockUpdate();"));
+        return new WhileStatementNode(whileStatementNode.getBoolExpressionNode(), visitedBlock);
+    }
+
+    private BlockStatementNode visitForStatement(ForStatementNode forStatementNode) {
+        BlockNode visitedBlock = visitBlockNode(forStatementNode.getBlockNode());
+
+        String varName = "ourFor" + forLoopCount++;
+        String varInit = varName + " = " + forStatementNode.getArithExpressionNode1().prettyPrint(0);
+        String cond = varName + " <= " + forStatementNode.getArithExpressionNode2().prettyPrint(0);
+        String incr = varName + "++";
+        String forStr = "for (" + varInit + "; " + cond + "; " + incr + ") ";
+
+        return new BlockStatementNode(new CodeNode(forStr), visitedBlock);
+    }
+
     private StatementNode visitAtStatement (AtStatementNode atStatementNode) {
         BlockNode visitedBlock = visitBlockNode(atStatementNode.getBlockNode());
         AtStatementNode visitedAt = new AtStatementNode(atStatementNode.getAtParamsNode(), visitedBlock);
@@ -363,8 +397,39 @@ public class ArduinoGenerator {
         return new CodeNode("scheduled_ats[" + atIndex + "]++;");
     }
 
-    private void visitBoundStatement (BoundStatementNode boundStatementNode) {
+    private BlockStatementNode visitBoundStatement (BoundStatementNode boundStatementNode) {
+        List<StatementNode> statementNodes = new ArrayList<>();
+        List<StatementNode> catchBlockStatements = new ArrayList<>();
 
+        String boundParam = boundStatementNode.getAtParamsNode().prettyPrint(0);
+        String boundComment = "/* bound (" + boundParam + ") */";
+
+        // body
+        statementNodes.addAll(visitBlockNode(boundStatementNode.getBody()).getStatementNodes());
+        statementNodes.add(new CodeNode("ourClockUpdate();"));
+
+        // catch
+        statementNodes.add(new CommentNode(" catch"));
+
+        if (boundStatementNode.getBoolLiteral()) {
+            catchBlockStatements.add(new CommentNode(" execution is blocked"));
+            catchBlockStatements.add(new CodeNode("while (" + boundParam + ") ourClockUpdate();"));
+        }
+        else {
+            catchBlockStatements.add(new CommentNode(" don't block execution"));
+        }
+
+        statementNodes.add(new BlockStatementNode(
+                new CodeNode("if (" + boundParam + ") "), new BlockNode(catchBlockStatements)));
+
+        statementNodes.add(new BlockStatementNode(
+                new CodeNode("else "), visitBlockNode(boundStatementNode.getCatchBlock())));
+
+        // final
+        statementNodes.add(new BlockStatementNode(
+                new CodeNode("/* final */"), visitBlockNode(boundStatementNode.getFinalBlock())));
+
+        return new BlockStatementNode(new CodeNode(boundComment), new BlockNode(statementNodes));
     }
 
 }
