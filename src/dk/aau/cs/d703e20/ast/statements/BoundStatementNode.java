@@ -4,9 +4,9 @@ import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.structure.BlockNode;
 
 public class BoundStatementNode extends StatementNode {
-    private AtParamsNode atParamsNode;
+    private final AtParamsNode atParamsNode;
     private boolean boolLiteral;
-    private BlockNode body;
+    private final BlockNode body;
     private BlockNode catchBlock;
     private BlockNode finalBlock;
 

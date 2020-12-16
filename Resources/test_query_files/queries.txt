@@ -1,0 +1,3 @@
+A[] At0.start imply At0.endAt
+At0.start --> At0.endAt
+A[] not deadlock

@@ -1,10 +1,16 @@
 package dk.aau.cs.d703e20.uppaal;
 
+import com.uppaal.model.core2.Edge;
+import com.uppaal.model.core2.Node;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
 import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static dk.aau.cs.d703e20.resources.Utilities.getNodeFromText;
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,7 +26,7 @@ public class ModelGenTest {
                 ProgramNode.class,
                 OurParser.ProgramContext.class,
                 "program");
-        return modelGen.visitProgram(program);
+        return modelGen.visitProgram(program, null);
     }
 
     private UPPSystem parseProgramLoop(String loopBody) {
@@ -38,6 +44,28 @@ public class ModelGenTest {
         return generateModelFromText(programText);
     }
 
+    /**
+     * // Get a list of all edges in template
+     *
+     * @param inputNode UPPTemplate with edges to return
+     * @return edgeList list of all edges
+     */
+    private List<Edge> getEdges(Node inputNode) {
+        List<Edge> edgeList = new ArrayList<>();
+        // Get first node of inputNode in XML
+        Node node = inputNode.getFirst();
+
+        // Go through XML elements/nodes top down and add edges to list
+        while (node != null) {
+            if (node instanceof Edge)
+                edgeList.add((Edge) node);
+            node = node.getNext();
+        }
+        // Reverse list as it is built from last to first
+        Collections.reverse(edgeList);
+        return edgeList;
+    }
+
     @Test
     void testClockScope() {
         UPPSystem system = parseProgramLoop("clock x; at (x == 10) {}");
@@ -50,28 +78,30 @@ public class ModelGenTest {
 
     @Test
     void testAtTemplate() {
-        UPPSystem system = parseProgramLoop("clock x; at (x < 35) {}");
+        UPPSystem system = parseProgramLoop("clock x; at (x < 35) {} at(x == 1) {}");
 
         UPPTemplate controller = system.getTemplateList().get(0);
         UPPTemplate at0 = system.getTemplateList().get(1);
 
         // Controller template contains a location for having scheduled the at
         assertAll(
-                () -> assertTrue(controller.getLocationList().stream().anyMatch(location -> location.getName().equals("schedAt0"))),
+                () -> assertTrue(controller.getLocationList().stream().anyMatch(location -> location.getName().equals("called_At0"))),
                 () -> assertEquals("At0", at0.getName()),
-                () -> assertEquals("CheckTime", at0.getLocationList().get(1).getName())
+                () -> assertEquals("Sync_done", at0.getLocationList().get(1).getName())
         );
     }
 
     @Test
     void testSetup() {
         String setupString = "ipin input 3;\n" +
-                "    opin output 5;\n" +
-                "    int a = 1;\n" +
-                "    int b = 2;";
+                             "    opin output 5;\n" +
+                             "    int a = 1;\n" +
+                             "    int b = 2;";
         UPPSystem system = parseProgramSetup(setupString);
 
-        assertEquals("// Global declarations\n" + "chan out[1];\n" + "chan in[1];\n",
+        assertEquals("// Global declarations\n" +
+                     "chan outPin[1][2];\n" +
+                     "chan inPin[1][2];\n",
                 system.getProperty("declaration").getValue().toString());
     }
 
@@ -91,5 +121,98 @@ public class ModelGenTest {
         UPPTemplate controller = system.getTemplateList().get(1);
 
         assertTrue(controller.getLocationList().stream().anyMatch(location -> location.getName().equals("called_func")));
+    }
+
+    @Test
+    void testDelayNumber() {
+        String program = "delay(4);";
+        UPPSystem system = parseProgramLoop(program);
+
+        UPPTemplate controller = system.getTemplateList().get(0);
+
+        Edge delayEdge = getEdges(controller).get(1);
+
+
+        assertAll(
+                () -> assertEquals("delayClock > (4)", delayEdge.getProperty("guard").getValue()),
+                () -> assertEquals("reset_local_clock", controller.getLocationList().get(1).getName()),
+                () -> assertEquals("called_delay", controller.getLocationList().get(2).getName())
+        );
+    }
+
+    @Test
+    void testDelayFunctionCall() {
+        String program = "Setup {} Loop { delay(func()); } int func () { int value = 8; return value;}";
+        UPPSystem system = generateModelFromText(program);
+
+        UPPTemplate controller = system.getTemplateList().get(1);
+
+        List<Edge> edgeList = getEdges(controller);
+        Edge delayEdge = edgeList.get(1);
+
+        assertEquals("delayClock > (8)", delayEdge.getProperty("guard").getValue());
+    }
+
+    @Test
+    void testDelaySubscript() {
+        String program = "int[3] myList = {1, 2, 3}; delay(myList[1]);";
+        UPPSystem system = parseProgramLoop(program);
+        UPPTemplate controller = system.getTemplateList().get(0);
+        // Delay has 2 edges, second has the guard
+        Edge delayEdge = getEdges(controller).get(1);
+
+        assertEquals("delayClock > (2)", delayEdge.getProperty("guard").getValue());
+    }
+
+    @Test
+    void testPinAssignment() {
+        String program = "Setup {opin x 2;} Loop {x = true;}";
+        UPPSystem system = generateModelFromText(program);
+        UPPTemplate controller = system.getTemplateList().get(0);
+        Edge syncEdge = getEdges(controller).get(0);
+
+        assertEquals("outPin[0][1]!", syncEdge.getProperty("synchronisation").getValue());
+    }
+
+    @Test
+    void testForLoop() {
+        UPPSystem system = parseProgramLoop("for (0 to 10) {}");
+        // Get forLoop template
+        UPPTemplate forTemplate = system.getTemplateList().get(1);
+        List<Edge> edgeList = getEdges(forTemplate);
+
+        assertAll(
+                () -> assertEquals("loop", forTemplate.getLocationList().get(2).getName()),
+                () -> assertEquals("loopIndex = 0", edgeList.get(1).getProperty("assignment").getValue()),
+                () -> assertEquals("loopIndex != 10", edgeList.get(2).getProperty("guard").getValue()),
+                () -> assertEquals("loopIndex ++", edgeList.get(3).getProperty("assignment").getValue()),
+                () -> assertEquals("loopIndex == 10", edgeList.get(4).getProperty("guard").getValue()),
+                () -> assertEquals("int loopIndex = 0;\n", forTemplate.getProperty("declaration").getValue())
+        );
+    }
+
+    @Test
+    void testSync() {
+        UPPSystem system = parseProgramLoop("clock x; for (0 to 10) {} at (x > 10) {} if (true) {}");
+        UPPTemplate controller = system.getTemplateList().get(0);
+        UPPTemplate forTemplate = system.getTemplateList().get(1);
+        UPPTemplate atTemplate = system.getTemplateList().get(2);
+        UPPTemplate ifTemplate = system.getTemplateList().get(3);
+
+        List<Edge> ctrlEdges = getEdges(controller);
+        Edge syncFor = getEdges(forTemplate).get(0);
+        Edge syncAt = getEdges(atTemplate).get(0);
+        Edge syncIf = getEdges(ifTemplate).get(0);
+
+        assertAll(
+                () -> assertEquals("begin_At0?", syncAt.getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_For0?", syncFor.getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_If0?", syncIf.getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_For0!", ctrlEdges.get(0).getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_At0!", ctrlEdges.get(1).getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_If0!", ctrlEdges.get(2).getProperty("synchronisation").getValue())
+        );
+
+
     }
 }
