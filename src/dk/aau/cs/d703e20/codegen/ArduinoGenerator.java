@@ -50,6 +50,9 @@ public class ArduinoGenerator {
 
         program.getLoopNode().getBlockNode().getStatementNodes().add(0, new CommentNode(" LOOP CODE"));
 
+        program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" DELTA TIME AND CLOCKS"));
+        program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode("ourClockUpdate();"));
+        
         program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" AT STATEMENTS"));
         // handle all at statements
         for (int at = 0; at < atStatements.size(); at++) {
@@ -68,9 +71,6 @@ public class ArduinoGenerator {
                             new CodeNode("if (scheduled_ats[" + at + "] && " + atBool.prettyPrint(0) + ") "),
                             atBlock));
         }
-
-        program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" DELTA TIME AND CLOCKS"));
-        program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode("ourClockUpdate();"));
 
         // CLOCK UPDATE FUNCTION
         List<StatementNode> clockUpdateStatements = new ArrayList<>();
