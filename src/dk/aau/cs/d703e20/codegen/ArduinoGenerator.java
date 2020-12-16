@@ -52,7 +52,7 @@ public class ArduinoGenerator {
 
         program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" DELTA TIME AND CLOCKS"));
         program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode("ourClockUpdate();"));
-        
+
         program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" AT STATEMENTS"));
         // handle all at statements
         for (int at = 0; at < atStatements.size(); at++) {
@@ -372,6 +372,7 @@ public class ArduinoGenerator {
 
     private WhileStatementNode visitWhileStatement(WhileStatementNode whileStatementNode) {
         BlockNode visitedBlock = visitBlockNode(whileStatementNode.getBlockNode());
+        visitedBlock.getStatementNodes().add(new CodeNode("ourClockUpdate();"));
         return new WhileStatementNode(whileStatementNode.getBoolExpressionNode(), visitedBlock);
     }
 
@@ -405,6 +406,7 @@ public class ArduinoGenerator {
 
         // body
         statementNodes.addAll(visitBlockNode(boundStatementNode.getBody()).getStatementNodes());
+        statementNodes.add(new CodeNode("ourClockUpdate();"));
 
         // catch
         statementNodes.add(new CommentNode(" catch"));
