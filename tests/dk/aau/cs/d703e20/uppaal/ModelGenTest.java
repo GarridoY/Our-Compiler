@@ -4,6 +4,7 @@ import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.Node;
 import dk.aau.cs.d703e20.ast.structure.ProgramNode;
 import dk.aau.cs.d703e20.parser.OurParser;
+import dk.aau.cs.d703e20.semantics.SemanticChecker;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
 import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 import org.junit.jupiter.api.Test;
@@ -18,14 +19,23 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ModelGenTest {
     ModelGen modelGen = new ModelGen();
+    private SemanticChecker semanticChecker = new SemanticChecker();
 
 
     private UPPSystem generateModelFromText(String programText) {
-        ProgramNode program = getNodeFromText(
+        ProgramNode program = programNodeFromText(programText);
+        return modelGen.visitProgram(program, null);
+    }
+
+    private ProgramNode programNodeFromText(String programText) {
+        return getNodeFromText(
                 programText,
                 ProgramNode.class,
                 OurParser.ProgramContext.class,
                 "program");
+    }
+
+    private UPPSystem generateModelFromProgramNode(ProgramNode program) {
         return modelGen.visitProgram(program, null);
     }
 
@@ -39,13 +49,13 @@ public class ModelGenTest {
         return generateModelFromText(programText);
     }
 
-    private UPPSystem parseProgramFunction(String func) {
-        String programText = "Setup {} Loop {} " + func;
+    private UPPSystem parseProgramFunction(String func, String call) {
+        String programText = "Setup {} Loop {" + call + "} " + func;
         return generateModelFromText(programText);
     }
 
     /**
-     * // Get a list of all edges in template
+     * Get a list of all edges in template
      *
      * @param inputNode UPPTemplate with edges to return
      * @return edgeList list of all edges
@@ -64,6 +74,10 @@ public class ModelGenTest {
         // Reverse list as it is built from last to first
         Collections.reverse(edgeList);
         return edgeList;
+    }
+
+    private boolean checkAllBoundBreaks(List<Edge> edgeList, String sync, String guard) {
+        return edgeList.stream().allMatch(edge -> edge.getProperty("synchronisation").getValue().equals(sync) && edge.getProperty("guard").getValue().equals(guard));
     }
 
     @Test
@@ -107,10 +121,54 @@ public class ModelGenTest {
 
     @Test
     void testVisitFunctionDecl() {
-        String function = "void func() {}";
-        UPPSystem system = parseProgramFunction(function);
+        String function = "void func() {  }";
+        String call = "func();";
+        UPPSystem system = parseProgramFunction(function, call);
 
-        assertEquals("func", system.getTemplateList().get(0).getName());
+        UPPTemplate funcTemplate = system.getTemplateList().get(0);
+
+        List<Edge> edges = getEdges(funcTemplate);
+
+        assertAll(
+                () -> assertEquals("func", funcTemplate.getName()),
+                () -> assertEquals("begin_func?", edges.get(edges.size() - 1).getProperty("synchronisation").getValue()),
+                () -> assertEquals("sync_done", funcTemplate.getLocationList().get(1).getName()),
+                () -> assertEquals("End_func", funcTemplate.getLocationList().get(2).getName()),
+                () -> assertEquals("bound_kill", funcTemplate.getLocationList().get(3).getName()),
+                () -> assertEquals(3, edges.size())
+        );
+    }
+
+    @Test
+    void testBoundedFunctionTemplate() {
+        String function = "void func() {  }";
+        String call = "clock x; bound (x < 40) { func(); }";
+        String programText = "Setup {} Loop {" + call + "} " + function;
+        ProgramNode programNode = programNodeFromText(programText);
+
+        // Requires semantic check to annotate AST
+        semanticChecker.visitProgram(programNode);
+        UPPSystem system = generateModelFromProgramNode(programNode);
+
+        UPPTemplate funcTemplate = system.getTemplateList().get(0);
+        List<Edge> edges = getEdges(funcTemplate);
+
+        assertAll(
+                () -> assertEquals("begin_func?", edges.get(2).getProperty("synchronisation").getValue()),
+                // Locations
+                () -> assertEquals("sync_done", funcTemplate.getLocationList().get(1).getName()),
+                () -> assertEquals("End_func", funcTemplate.getLocationList().get(2).getName()),
+                () -> assertEquals("bound_kill", funcTemplate.getLocationList().get(3).getName()),
+                // Edge for checking bound time
+                () -> assertEquals("bound_kill→start", edges.get(3).getName()),
+                () -> assertEquals("start→bound_kill", edges.get(4).getName()),
+                () -> assertEquals("kill1!", edges.get(4).getProperty("synchronisation").getValue()),
+                () -> assertEquals("x > 40", edges.get(4).getProperty("guard").getValue()),
+                // Edge for checking bound time
+                () -> assertEquals("sync_done→bound_kill", edges.get(5).getName()),
+                () -> assertEquals("kill1!", edges.get(5).getProperty("synchronisation").getValue()),
+                () -> assertEquals("x > 40", edges.get(5).getProperty("guard").getValue())
+        );
     }
 
     @Test
@@ -212,7 +270,57 @@ public class ModelGenTest {
                 () -> assertEquals("begin_At0!", ctrlEdges.get(1).getProperty("synchronisation").getValue()),
                 () -> assertEquals("begin_If0!", ctrlEdges.get(2).getProperty("synchronisation").getValue())
         );
+    }
 
+    @Test
+    void testIfElseComplete() {
+        String loopBody = "if (a == b) {}\n" +
+                          "    else if (a != b) {}\n" +
+                          "    else {}";
+        UPPSystem system = parseProgramLoop(loopBody);
 
+        UPPTemplate ifTemplate = system.getTemplateList().get(1);
+        List<Edge> edges = getEdges(ifTemplate);
+
+        assertAll(
+                () -> assertEquals("start→Sync_done", edges.get(0).getName()),
+                () -> assertEquals("begin_If0?", edges.get(0).getProperty("synchronisation").getValue()),
+                () -> assertEquals("Sync_done→Start_If", edges.get(1).getName()),
+                () -> assertEquals(false, edges.get(1).getProperty("controllable").getValue()),
+                () -> assertEquals("If_end→start", edges.get(2).getName()),
+                () -> assertEquals("Start_If→If_end", edges.get(3).getName()),
+                () -> assertEquals("Sync_done→Start_ElseIf0", edges.get(4).getName()),
+                () -> assertEquals(false, edges.get(4).getProperty("controllable").getValue()),
+                () -> assertEquals("Start_ElseIf0→If_end", edges.get(5).getName()),
+                () -> assertEquals("Sync_done→Start_Else", edges.get(6).getName()),
+                () -> assertEquals(false, edges.get(6).getProperty("controllable").getValue()),
+                () -> assertEquals("Start_Else→If_end", edges.get(7).getName()),
+                () -> assertEquals("Start_Else→If_end", edges.get(7).getName())
+        );
+    }
+
+    @Test
+    void testWhile() {
+        String loopBody = "clock x; bound (x < 40) { while (true) {} }";
+        String programText = "Setup {} Loop {" + loopBody + "}";
+        ProgramNode programNode = programNodeFromText(programText);
+
+        // Requires semantic check to annotate AST
+        semanticChecker.visitProgram(programNode);
+        UPPSystem system = generateModelFromProgramNode(programNode);
+
+        UPPTemplate whileTemplate = system.getTemplateList().get(2);
+        List<Edge> edges = getEdges(whileTemplate);
+        system.toXML();
+
+        assertAll(
+                () -> assertEquals("While0", whileTemplate.getName()),
+                () -> assertEquals("begin_While0?", edges.get(0).getProperty("synchronisation").getValue()),
+                () -> assertEquals("Sync_done→Start_loop", edges.get(1).getName()),
+                () -> assertEquals("Start_loop→End_loop", edges.get(2).getName()),
+                () -> assertEquals("End_loop→Start_loop", edges.get(3).getName()),
+                () -> assertEquals(false, edges.get(3).getProperty("controllable").getValue()),
+                () -> assertTrue(checkAllBoundBreaks(edges.subList(7, edges.size()), "kill1!", "x > 40"))
+        );
     }
 }

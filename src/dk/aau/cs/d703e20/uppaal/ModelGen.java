@@ -121,6 +121,7 @@ public class ModelGen {
         }
     }
 
+    // Used in functions to avoid multiple identical locations
     private void setBoundBreakEdges(StatementNode statementNode, UPPTemplate template, Location boundKill) {
         if (statementNode.isBounded()) {
             // Make sure template can be reset
@@ -315,7 +316,7 @@ public class ModelGen {
         // Create location to end all if statements
         Location endLoc = ifTemplate.addLocation("If_end");
         // Set looping manual as endLoc is not last in list
-        ifTemplate.addEdge(endLoc, startLoc, null, null, null);
+        ifTemplate.addEdge(endLoc, ifTemplate.getLocationList().get(0), null, null, null);
         // Create edge from last location of if to endLoc
         ifTemplate.addEdge(ifTemplate.getLocationList().get(ifTemplate.getLocationList().size() - 2), endLoc, null, null, null);
 
