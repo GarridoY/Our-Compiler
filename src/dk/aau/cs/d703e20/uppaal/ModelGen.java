@@ -542,7 +542,7 @@ public class ModelGen {
         Location bodyEndLoc = getLast(boundTemplate.getLocationList());
 
         // Check if blocking
-        if (boundStatementNode.getBoolLiteral() != null && boundStatementNode.getBoolLiteral().equals("true")) {
+        if (boundStatementNode.getBoolLiteral()) {
             // Bound param, where '<' is changed to '=='
             String guard = boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0).replaceAll("(<=|<)", "==");
             boundTemplate.edgeFromLastLoc("Time_OK", guard, null, null);
