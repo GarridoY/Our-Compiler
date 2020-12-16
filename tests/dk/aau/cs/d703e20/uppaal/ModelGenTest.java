@@ -311,7 +311,7 @@ public class ModelGenTest {
 
         UPPTemplate whileTemplate = system.getTemplateList().get(2);
         List<Edge> edges = getEdges(whileTemplate);
-        system.toXML();
+        system.toXML(); //TODO: also remove
 
         assertAll(
                 () -> assertEquals("While0", whileTemplate.getName()),

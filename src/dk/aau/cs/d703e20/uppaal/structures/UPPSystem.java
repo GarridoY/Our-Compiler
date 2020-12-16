@@ -105,7 +105,7 @@ public class UPPSystem extends Document {
         // Save model for debugging
         try {
             String path = System.getProperty("user.dir");
-            this.save(path + "/Resources/output/hej.xml");
+            this.save(path + "/Resources/output/debug.xml");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -221,7 +221,7 @@ public class Main {
                 "These flags should be followed by a path argument\n" +
                 "-uppaal, -upp, -u (UPPAAL directory)\n" +
                 "-input, -i (Input .our file)\n" +
-                "-output, -o (Outpul .ino file)\n" +
+                "-output, -o (Output .ino file)\n" +
                 "\n" +
                 "These flags are standalone\n" +
                 "-prettyprint, -pp (Print out the parsed Our code)\n" +
