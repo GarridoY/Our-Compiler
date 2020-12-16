@@ -143,9 +143,9 @@ public class Main {
 
         try {
             System.out.println("Compiling: " + inputFileName);
-            File uppaalFile = new File(inputFileName);
-            String uppaalFileName = uppaalFile.getName();
-            uppaalFileName = uppaalFileName.substring(0, uppaalFileName.lastIndexOf('.'));
+            File programFilePath = new File(inputFileName);
+            String programName = programFilePath.getName();
+            programName = programName.substring(0, programName.lastIndexOf('.'));
 
             // LEXER
             OurLexer lexer = new OurLexer(CharStreams.fromFileName(inputFileName));
@@ -176,7 +176,7 @@ public class Main {
             // VERIFY TIME IN UPPAAL
             if (checkModel) {
                 ModelChecker modelChecker = new ModelChecker();
-                modelChecker.checkProgram(programNode, uppaalFileName, userQueryFileName, userModelFileName);
+                modelChecker.checkProgram(programNode, programName, userQueryFileName, userModelFileName);
                 System.out.println("Time check finished.");
             }
 
@@ -193,7 +193,7 @@ public class Main {
             // Save generated code to file
             try {
                 if (outputFileName == null) {
-                    outputFileName = "output";
+                    outputFileName = programName;
                 }
 
                 String path = System.getProperty("user.dir");
