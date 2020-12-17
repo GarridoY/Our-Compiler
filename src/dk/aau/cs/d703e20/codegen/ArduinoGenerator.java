@@ -378,7 +378,8 @@ public class ArduinoGenerator {
 
     private BlockStatementNode visitForStatement(ForStatementNode forStatementNode) {
         BlockNode visitedBlock = visitBlockNode(forStatementNode.getBlockNode());
-
+        visitedBlock.getStatementNodes().add(new CodeNode("ourClockUpdate();"));
+        
         String varName = "ourFor" + forLoopCount++;
         String varInit = varName + " = " + forStatementNode.getArithExpressionNode1().prettyPrint(0);
         String cond = varName + " <= " + forStatementNode.getArithExpressionNode2().prettyPrint(0);
