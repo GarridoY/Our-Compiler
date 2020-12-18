@@ -71,7 +71,7 @@ public class ArduinoGenerator {
         // define clock names
         for (int i = 0; i < clockNames.size(); i++) {
             stringBuilder.append("#define OUR_CLOCK_");
-            stringBuilder.append(clockNames.get(0));
+            stringBuilder.append(clockNames.get(i));
             stringBuilder.append(" ");
             stringBuilder.append(i);
             stringBuilder.append("\n");
