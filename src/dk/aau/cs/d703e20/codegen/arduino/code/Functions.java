@@ -10,6 +10,11 @@ public class Functions {
             "}\n";
 
 
+    public static String GetClock =
+            "int GetClock(int clock) {\n\t" +
+                "return millis() - ourClocks[clock];\n" +
+            "}\n";
+
     public static String Seconds =
             "int Seconds(double seconds) {\n\t" +
                 "return seconds * 1000;\n" +
