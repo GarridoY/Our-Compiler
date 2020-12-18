@@ -373,13 +373,11 @@ public class ArduinoGenerator {
 
     private WhileStatementNode visitWhileStatement(WhileStatementNode whileStatementNode) {
         BlockNode visitedBlock = visitBlockNode(whileStatementNode.getBlockNode());
-        visitedBlock.getStatementNodes().add(new CodeNode("ourClockUpdate();"));
         return new WhileStatementNode(whileStatementNode.getBoolExpressionNode(), visitedBlock);
     }
 
     private BlockStatementNode visitForStatement(ForStatementNode forStatementNode) {
         BlockNode visitedBlock = visitBlockNode(forStatementNode.getBlockNode());
-        visitedBlock.getStatementNodes().add(new CodeNode("ourClockUpdate();"));
         
         String varName = "ourFor" + forLoopCount++;
         String varInit = varName + " = " + forStatementNode.getArithExpressionNode1().prettyPrint(0);
@@ -412,14 +410,13 @@ public class ArduinoGenerator {
 
         // body
         statementNodes.addAll(visitBlockNode(boundStatementNode.getBody()).getStatementNodes());
-        statementNodes.add(new CodeNode("ourClockUpdate();"));
 
         // catch
         statementNodes.add(new CommentNode(" catch"));
 
         if (boundStatementNode.getBoolLiteral()) {
             catchBlockStatements.add(new CommentNode(" execution is blocked"));
-            catchBlockStatements.add(new CodeNode("while (" + boundParam + ") ourClockUpdate();"));
+            catchBlockStatements.add(new CodeNode("while (" + boundParam + ") delay(1);"));
         }
         else {
             catchBlockStatements.add(new CommentNode(" don't block execution"));
