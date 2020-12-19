@@ -222,12 +222,12 @@ public class Main {
                 "-uppaal, -upp, -u (UPPAAL directory)\n" +
                 "-input, -i (Input .our file)\n" +
                 "-output, -o (Output .ino file)\n" +
+                "-query (Custom queries .q file)\n" +
+                "-model (Custom model of I/O as UPPAAL .xml file)\n" +
                 "\n" +
                 "These flags are standalone\n" +
                 "-prettyprint, -pp (Print out the parsed Our code)\n" +
                 "-check, -verify (Verify the generated UPPAAL model)\n" +
-                "-query (Custom queries .q file)\n" +
-                "-model (Custom model of I/O as UPPAAL .xml file)\n" +
                 "-print, -p (Print the generated arduino code)\n" +
                 "-help, -h (Display help)");
     }
