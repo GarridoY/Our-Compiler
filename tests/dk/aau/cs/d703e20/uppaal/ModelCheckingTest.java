@@ -1,6 +1,7 @@
 package dk.aau.cs.d703e20.uppaal;
 
 import com.uppaal.model.core2.Query;
+import dk.aau.cs.d703e20.semantics.SemanticChecker;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 
@@ -11,7 +12,7 @@ public class ModelCheckingTest {
 
     @Test
     void testGetUserQueries() {
-        ModelChecker modelChecker = new ModelChecker();
+        ModelChecker modelChecker = new ModelChecker(null);
         List<Query> queryList = modelChecker.getUserQueries(System.getProperty("user.dir") + "\\Resources\\test_query_files\\test_imply.q");
 
         assertAll(
@@ -24,7 +25,7 @@ public class ModelCheckingTest {
 
     @Test
     void testGetUserQueries2() {
-        ModelChecker modelChecker = new ModelChecker();
+        ModelChecker modelChecker = new ModelChecker(null);
         List<Query> queryList = modelChecker.getUserQueries(System.getProperty("user.dir") + "\\Resources\\test_query_files\\queries.txt");
 
         assertAll(

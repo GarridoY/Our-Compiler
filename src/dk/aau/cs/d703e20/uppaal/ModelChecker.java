@@ -17,6 +17,7 @@ import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,8 +25,8 @@ public class ModelChecker {
     private final ModelGen modelGen;
     private boolean queryFailed = false;
 
-    public ModelChecker() {
-        modelGen = new ModelGen();
+    public ModelChecker(HashMap<String, Boolean> varConstMap) {
+        modelGen = new ModelGen(varConstMap);
     }
 
     //TODO: figure out which of these we should use

@@ -40,6 +40,8 @@ public class ModelGen {
     // Stack of (guard, sync) used to check time after each statement and return to bound
     Stack<Pair<String, String>> boundGuardKillSync = new Stack<>();
 
+    private final HashMap<String, Boolean> varConstMap;
+
     // Keep count of templates
     int atCount = 0;
     int boundCount = 0;
@@ -53,6 +55,9 @@ public class ModelGen {
     String opinChanName = "outPin";
     String ipinChanName = "inPin";
 
+    public ModelGen(HashMap<String, Boolean> varConstMap) {
+        this.varConstMap = varConstMap;
+    }
 
     /**
      * Find the ID for new templates

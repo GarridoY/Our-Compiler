@@ -7,6 +7,7 @@ import dk.aau.cs.d703e20.parser.OurParser;
 import dk.aau.cs.d703e20.semantics.SemanticChecker;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
 import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -18,12 +19,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 public class ModelGenTest {
-    ModelGen modelGen = new ModelGen();
-    private SemanticChecker semanticChecker = new SemanticChecker();
+    private final SemanticChecker semanticChecker = new SemanticChecker();
+    ModelGen modelGen;
 
 
     private UPPSystem generateModelFromText(String programText) {
         ProgramNode program = programNodeFromText(programText);
+        semanticChecker.visitProgram(program);
+        modelGen = new ModelGen(semanticChecker.getVarConstMap());
         return modelGen.visitProgram(program, null);
     }
 
@@ -36,6 +39,8 @@ public class ModelGenTest {
     }
 
     private UPPSystem generateModelFromProgramNode(ProgramNode program) {
+        semanticChecker.visitProgram(program);
+        modelGen = new ModelGen(semanticChecker.getVarConstMap());
         return modelGen.visitProgram(program, null);
     }
 
@@ -150,7 +155,6 @@ public class ModelGenTest {
         ProgramNode programNode = programNodeFromText(programText);
 
         // Requires semantic check to annotate AST
-        semanticChecker.visitProgram(programNode);
         UPPSystem system = generateModelFromProgramNode(programNode);
 
         UPPTemplate funcTemplate = system.getTemplateList().get(0);
@@ -237,9 +241,9 @@ public class ModelGenTest {
 
     @Test
     void testForLoop() {
-        UPPSystem system = parseProgramLoop("for (0 to 10) {}");
+        UPPSystem system = parseProgramLoop("clock x; bound (x < 20) {for (0 to 10) {}}");
         // Get forLoop template
-        UPPTemplate forTemplate = system.getTemplateList().get(1);
+        UPPTemplate forTemplate = system.getTemplateList().get(2);
         List<Edge> edgeList = getEdges(forTemplate);
 
         assertAll(
@@ -249,28 +253,31 @@ public class ModelGenTest {
                 () -> assertTrue(edgeList.get(3).getProperty("assignment").getValue().toString().contains("loopIndex ++")),
                 () -> assertTrue(edgeList.get(4).getProperty("guard").getValue().toString().contains("loopIndex == 10")),
                 () -> assertTrue(forTemplate.getProperty("declaration").getValue().toString().contains("int loopIndex = 0;"
-))
+                ))
         );
     }
 
     @Test
     void testSync() {
-        UPPSystem system = parseProgramLoop("clock x; for (0 to 10) {} at (x > 10) {} if (true) {}");
-        UPPTemplate controller = system.getTemplateList().get(0);
-        UPPTemplate forTemplate = system.getTemplateList().get(1);
+        String function = "void Func() {}";
+        String loopBody = "clock x; Func(); at (x > 10) {} if (true) {}";
+        UPPSystem system = generateModelFromText("Setup {} Loop {" + loopBody + "} " + function);
+        //UPPSystem system = parseProgramLoop("clock x; at (x > 10) {} if (true) {}");
+        UPPTemplate funcTemplate = system.getTemplateList().get(0);
+        UPPTemplate controller = system.getTemplateList().get(1);
         UPPTemplate atTemplate = system.getTemplateList().get(2);
         UPPTemplate ifTemplate = system.getTemplateList().get(3);
 
         List<Edge> ctrlEdges = getEdges(controller);
-        Edge syncFor = getEdges(forTemplate).get(0);
+        Edge syncFunc = getEdges(funcTemplate).get(getEdges(funcTemplate).size() - 1);
         Edge syncAt = getEdges(atTemplate).get(0);
         Edge syncIf = getEdges(ifTemplate).get(0);
 
         assertAll(
                 () -> assertEquals("begin_At0?", syncAt.getProperty("synchronisation").getValue()),
-                () -> assertEquals("begin_For0?", syncFor.getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_Func?", syncFunc.getProperty("synchronisation").getValue()),
                 () -> assertEquals("begin_If0?", syncIf.getProperty("synchronisation").getValue()),
-                () -> assertEquals("begin_For0!", ctrlEdges.get(0).getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_Func!", ctrlEdges.get(0).getProperty("synchronisation").getValue()),
                 () -> assertEquals("begin_At0!", ctrlEdges.get(2).getProperty("synchronisation").getValue()),
                 () -> assertEquals("begin_If0!", ctrlEdges.get(4).getProperty("synchronisation").getValue())
         );
@@ -278,7 +285,8 @@ public class ModelGenTest {
 
     @Test
     void testIfElseComplete() {
-        String loopBody = "if (a == b) {}\n" +
+        String loopBody = "bool a; bool b;" +
+                          "if (a == b) {}\n" +
                           "    else if (a != b) {}\n" +
                           "    else {}";
         UPPSystem system = parseProgramLoop(loopBody);

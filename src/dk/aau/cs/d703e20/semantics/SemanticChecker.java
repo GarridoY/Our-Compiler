@@ -15,6 +15,8 @@ public class SemanticChecker {
     private final HashMap<String, PinDeclarationNode> pinSymbolTable = new HashMap<>();
     // Stack to keep track of bound scopes
     private final Stack<Boolean> boundScope = new Stack<>();
+    // Map of variableNames and whether they are constant
+    private final HashMap<String, Boolean> varConstMap = new HashMap<>();
 
     public SemanticChecker() {
         HashMap<String, ASTNode> newSymbolTable = new HashMap<>();
@@ -119,6 +121,10 @@ public class SemanticChecker {
             }
         }
         System.out.println("----------------------------------");
+    }
+
+    public HashMap<String, Boolean> getVarConstMap() {
+        return varConstMap;
     }
 
     /*      VISITOR       */
@@ -245,6 +251,9 @@ public class SemanticChecker {
             // Variable name rule
             else
                 enterSymbol(varDeclNode.getVariableName(), varDeclNode);
+
+            // Variable is constant at this point
+            varConstMap.put(variableName, true);
         }
         else
             throw new VariableAlreadyDeclaredException(variableName, varDeclNode.getCodePosition());
@@ -254,10 +263,16 @@ public class SemanticChecker {
         Enums.DataType dataType;
 
         // Arith expression
-        if (assignmentNode.getArithExpressionNode() != null)
+        if (assignmentNode.getArithExpressionNode() != null) {
             dataType = visitArithmeticExpression(assignmentNode.getArithExpressionNode());
+
+            // Check if variableName is re-assigned
+            if (assignmentNode.getArithExpressionNode().getVariableName() != null)
+                // Variable is no longer constant
+                varConstMap.put(assignmentNode.getArithExpressionNode().getVariableName(), false);
+
         // Literal
-        else
+        } else
             dataType = getDataTypeFromLiteral(assignmentNode.getLiteralValue());
 
         return dataType;
