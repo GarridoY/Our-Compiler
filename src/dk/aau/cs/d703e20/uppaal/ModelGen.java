@@ -2,6 +2,7 @@ package dk.aau.cs.d703e20.uppaal;
 
 import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.Location;
+import com.uppaal.model.core2.Node;
 import com.uppaal.model.core2.PrototypeDocument;
 import dk.aau.cs.d703e20.Pair;
 import dk.aau.cs.d703e20.ast.Enums;
@@ -18,6 +19,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.*;
 
+import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.setLabel;
 import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.setNail;
 
 
@@ -392,12 +394,30 @@ public class ModelGen {
 
         // Is variable pin?
         if (pinChanMap.containsKey(assignmentNode.getVariableName())) {
-            if (assignmentNode.getLiteralValue().equals("true")) {
-                // chan! update pin to value 1
-                template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][1]!", null);
-            } else if (assignmentNode.getLiteralValue().equals("false")) {
-                // chan! update pin to value 0
-                template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][0]!", null);
+            int output = 0;
+            if (assignmentNode.getLiteralValue() != null) {
+                if (assignmentNode.getLiteralValue().equals("true")) {
+                    // chan! update pin to value 1
+                    template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][1]!", null);
+                } else if (assignmentNode.getLiteralValue().equals("false")) {
+                    // chan! update pin to value 0
+                    template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][0]!", null);
+                }
+            } else if (assignmentNode.getVariableName() != null) {
+
+                if (varConstMap.get(assignmentNode.getArithExpressionNode().getVariableName())) {
+                    // Var is constant
+                    // lookup if var is true, then 1, else output = 0
+                    if (varValues.get(assignmentNode.getArithExpressionNode().getVariableName()).equals("true"))
+                        output = 1;
+                    template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][" + output + "]!", null);
+                } else {
+                    // Case: var in not constant = use select
+                    template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][e]!", null);
+                    Edge edgeSelectPin = getLast(getEdges(template));
+                    setLabel(edgeSelectPin, UPPTemplate.EKind.select, "e : int[0,1]", 0, 0);
+                }
+
             }
         }
         // Is variable clock?
@@ -483,9 +503,12 @@ public class ModelGen {
      */
     private void visitVarDecl(VariableDeclarationNode varDeclNode) {
         // Save variable name and its value in map for later use
-        if (varDeclNode.getAssignmentNode() != null)
-            varValues.put(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode.getAssignmentNode().getArithExpressionNode().prettyPrint(0));
-        else if (varDeclNode.getAssignArrayNode() != null)
+        if (varDeclNode.getAssignmentNode() != null) {
+            if (varDeclNode.getAssignmentNode().getArithExpressionNode() != null)
+                varValues.put(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode.getAssignmentNode().getArithExpressionNode().prettyPrint(0));
+            else if (varDeclNode.getAssignmentNode().getLiteralValue() != null)
+                varValues.put(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode.getAssignmentNode().getLiteralValue());
+        } else if (varDeclNode.getAssignArrayNode() != null)
             arrayValues.put(varDeclNode.getAssignArrayNode().getVariableName(), varDeclNode.getAssignArrayNode().getParamNodes());
 
         // Only clock types are used in UPPAAL
@@ -696,5 +719,27 @@ public class ModelGen {
      */
     private <T> T getLast(List<T> list) {
         return list.get(list.size() - 1);
+    }
+
+    /**
+     * Get a list of all edges in template
+     *
+     * @param inputNode UPPTemplate with edges to return
+     * @return edgeList list of all edges
+     */
+    private List<Edge> getEdges(Node inputNode) {
+        List<Edge> edgeList = new ArrayList<>();
+        // Get first node of inputNode in XML
+        Node node = inputNode.getFirst();
+
+        // Go through XML elements/nodes top down and add edges to list
+        while (node != null) {
+            if (node instanceof Edge)
+                edgeList.add((Edge) node);
+            node = node.getNext();
+        }
+        // Reverse list as it is built from last to first
+        Collections.reverse(edgeList);
+        return edgeList;
     }
 }
