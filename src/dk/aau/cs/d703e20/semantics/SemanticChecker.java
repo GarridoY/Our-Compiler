@@ -267,9 +267,9 @@ public class SemanticChecker {
             dataType = visitArithmeticExpression(assignmentNode.getArithExpressionNode());
 
             // Check if variableName is re-assigned
-            if (assignmentNode.getArithExpressionNode().getVariableName() != null)
+            if (assignmentNode.getVariableName() != null)
                 // Variable is no longer constant
-                varConstMap.put(assignmentNode.getArithExpressionNode().getVariableName(), false);
+                varConstMap.put(assignmentNode.getVariableName(), false);
 
         // Literal
         } else
