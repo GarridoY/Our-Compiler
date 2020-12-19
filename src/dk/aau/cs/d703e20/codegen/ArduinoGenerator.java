@@ -6,7 +6,6 @@ import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.codegen.arduino.code.*;
 import dk.aau.cs.d703e20.codegen.arduino.structure.*;
-import on.B;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,20 +37,24 @@ public class ArduinoGenerator {
 
         ArduinoProgramNode program = visitProgram(ast);
 
-        // Declare previous millis and delta time
+        // define clock names
+        for (int i = 0; i < clockNames.size(); i++) {
+            stringBuilder.append("#define OUR_CLOCK_");
+            stringBuilder.append(clockNames.get(i));
+            stringBuilder.append(" ");
+            stringBuilder.append(i);
+            stringBuilder.append("\n");
+        }
+
+        // Declare clock array
         program.getVariableDeclarationNodes().add(
-                new ArduinoVarDecl(Enums.DataType.ARDUINO_UNSIGNED_LONG,"prevMillis"));
-        program.getVariableDeclarationNodes().add(
-                new ArduinoVarDecl(Enums.DataType.ARDUINO_UNSIGNED_LONG,"delta"));
+                new ArduinoVarDecl(Enums.DataType.INT_ARRAY, clockNames.size(), "ourClocks"));
 
         // Declare scheduled_ats array
         program.getVariableDeclarationNodes().add(
                 new ArduinoVarDecl(Enums.DataType.INT_ARRAY, atStatements.size(), "scheduled_ats"));
 
         program.getLoopNode().getBlockNode().getStatementNodes().add(0, new CommentNode(" LOOP CODE"));
-
-        program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" DELTA TIME AND CLOCKS"));
-        program.getLoopNode().getBlockNode().getStatementNodes().add(new CodeNode("ourClockUpdate();"));
 
         program.getLoopNode().getBlockNode().getStatementNodes().add(new CommentNode(" AT STATEMENTS"));
         // handle all at statements
@@ -72,28 +75,12 @@ public class ArduinoGenerator {
                             atBlock));
         }
 
-        // CLOCK UPDATE FUNCTION
-        List<StatementNode> clockUpdateStatements = new ArrayList<>();
-
-        // get new millis
-        clockUpdateStatements.add(new CodeNode("unsigned long newMillis = millis();"));
-        // update delta time and previous millis
-        clockUpdateStatements.add(new CodeNode("delta = newMillis - prevMillis;"));
-        clockUpdateStatements.add(new CodeNode("prevMillis = newMillis;"));
-        // increment all clocks
-        for (String clockName : clockNames) {
-            // insert increment statement at the end
-            clockUpdateStatements.add(new CodeNode(clockName + " += delta;"));
-        }
-
-        FunctionDeclarationNode clockUpdateFunction = new FunctionDeclarationNode(
-                Enums.DataType.VOID, "ourClockUpdate",
-                new BlockNode(clockUpdateStatements), new ArrayList<>());
-        program.getFunctionDeclarationNodes().add(clockUpdateFunction);
-
+        // print visited program
         stringBuilder.append(program.prettyPrint(0));
 
         // add custom functions to end of program
+        stringBuilder.append(Functions.GetClock);
+
         if (digitalWriteUsed)
             stringBuilder.append(Functions.dWrite);
 
@@ -118,18 +105,21 @@ public class ArduinoGenerator {
 
         ArrayList<FunctionDeclarationNode> functionDeclarationNodes = new ArrayList<>();
         for (FunctionDeclarationNode fDecl : programNode.getFunctionDeclarationNodes()) {
-            Enums.DataType fType = fDecl.getDataType();
-            String fName = fDecl.getFunctionName();
-            List<FunctionParameterNode> fParams = fDecl.getFunctionParameterNodes();
-            BlockNode fBlock = visitBlockNode(fDecl.getBlockNode());
-
-            FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(fType, fName, fBlock, fParams);
-
+            FunctionDeclarationNode functionDeclaration = visitFunctionDeclaration(fDecl);
             functionDeclarationNodes.add(functionDeclaration);
             functions.add(functionDeclaration);
         }
 
         return new ArduinoProgramNode(globalVariables, setupNode, loopNode, functionDeclarationNodes);
+    }
+
+    private FunctionDeclarationNode visitFunctionDeclaration(FunctionDeclarationNode functionDeclarationNode) {
+        Enums.DataType fType = functionDeclarationNode.getDataType();
+        String fName = functionDeclarationNode.getFunctionName();
+        List<FunctionParameterNode> fParams = functionDeclarationNode.getFunctionParameterNodes();
+        BlockNode fBlock = visitBlockNode(functionDeclarationNode.getBlockNode());
+
+        return new FunctionDeclarationNode(fType, fName, fBlock, fParams);
     }
 
     // Handles setup block
@@ -140,12 +130,13 @@ public class ArduinoGenerator {
         for (StatementNode statementNode : blockNode.getStatementNodes()) {
             if (statementNode instanceof PinDeclarationNode) {
                 PinDeclarationNode pinDeclNode = (PinDeclarationNode)statementNode;
-                pins.put(pinDeclNode.getVariableName(), pinDeclNode);
                 statementNodes.add(visitPinDeclaration(pinDeclNode));
             }
             else if (statementNode instanceof VariableDeclarationNode) {
                 VariableDeclarationNode varDeclNode = (VariableDeclarationNode)statementNode;
-                globalVariables.add(visitVariableDeclaration(varDeclNode));
+                VariableDeclarationNode visitedVarDecl = visitVariableDeclaration(varDeclNode);
+                if (visitedVarDecl != null)
+                    globalVariables.add(visitedVarDecl);
             }
             // else nothing. Only declarations allowed
         }
@@ -162,8 +153,12 @@ public class ArduinoGenerator {
         List<StatementNode> statementNodes = new ArrayList<>();
         for (StatementNode statementNode : blockNode.getStatementNodes()) {
 
-            if (statementNode instanceof VariableDeclarationNode)
-                statementNodes.add(visitVariableDeclaration((VariableDeclarationNode) statementNode));
+            if (statementNode instanceof VariableDeclarationNode) {
+                VariableDeclarationNode visitedVarDecl =
+                        visitVariableDeclaration((VariableDeclarationNode) statementNode);
+                if (visitedVarDecl != null)
+                    statementNodes.add(visitedVarDecl);
+            }
 
             else if (statementNode instanceof AssignmentNode)
                 statementNodes.add(visitAssignment((AssignmentNode) statementNode));
@@ -183,7 +178,12 @@ public class ArduinoGenerator {
             else if (statementNode instanceof ForStatementNode)
                 statementNodes.add(visitForStatement((ForStatementNode) statementNode));
 
-            // TODO: handle other statement node types with visitors
+            else if (statementNode instanceof FunctionCallNode)
+                statementNodes.add(visitFunctionCall((FunctionCallNode) statementNode));
+
+            else if (statementNode instanceof ReturnStatementNode)
+                statementNodes.add(visitReturnStatement((ReturnStatementNode) statementNode));
+
             else
                 statementNodes.add(statementNode);
         }
@@ -196,6 +196,8 @@ public class ArduinoGenerator {
         String varName = pinDeclarationNode.getVariableName();
         String pinNumber = pinDeclarationNode.getPinNumber();
         Enums.PinType pinType = pinDeclarationNode.getPinType();
+
+        pins.put(varName, pinDeclarationNode);
 
         // int pinName = number;
         globalVariables.add(new VariableDeclarationNode(Enums.DataType.INT, new AssignmentNode(varName, pinNumber)));
@@ -219,27 +221,31 @@ public class ArduinoGenerator {
     private VariableDeclarationNode visitVariableDeclaration(VariableDeclarationNode variableDeclarationNode) {
         Enums.DataType dataType = variableDeclarationNode.getDataType();
         AssignmentNode assignmentNode = variableDeclarationNode.getAssignmentNode();
+        AssignArrayNode assignArrayNode = variableDeclarationNode.getAssignArrayNode();
+        int allocatedSize = variableDeclarationNode.getAllocatedSize();
 
-        // If variable is a clock, turn it into an unsigned long instead
+        // If variable is a clock, add it to clock list instead
         if (dataType == Enums.DataType.CLOCK) {
-            String variableName = variableDeclarationNode.getVariableName();
-
-            clockNames.add(variableName);
-            if (assignmentNode != null)
-                return new ArduinoVarDecl(Enums.DataType.ARDUINO_UNSIGNED_LONG, (AssignmentNode)visitAssignment(assignmentNode));
-            else
-                return new ArduinoVarDecl(Enums.DataType.ARDUINO_UNSIGNED_LONG, variableName);
+            clockNames.add(variableDeclarationNode.getVariableName());
+            return null;
         }
         else {
-
-        if (assignmentNode != null)
-            return new VariableDeclarationNode(dataType, (AssignmentNode) visitAssignment(assignmentNode));
-        else
-            return variableDeclarationNode;
+            if (assignmentNode != null)
+                return new VariableDeclarationNode(dataType, (AssignmentNode) visitAssignment(assignmentNode));
+            else if (assignArrayNode != null) {
+                if (allocatedSize > 0)
+                    return new VariableDeclarationNode(dataType, allocatedSize, visitAssignArray(assignArrayNode));
+                else
+                    return new VariableDeclarationNode(dataType, visitAssignArray(assignArrayNode));
+            }
+            else
+                return variableDeclarationNode;
         }
     }
 
+    // will return FunctionCallNode if it assigns to a pin
     private StatementNode visitAssignment(AssignmentNode assignmentNode) {
+        // assigning to an existing pin
         if (pins.containsKey(assignmentNode.getVariableName())) {
             PinDeclarationNode pinDecl = pins.get(assignmentNode.getVariableName());
 
@@ -266,6 +272,10 @@ public class ArduinoGenerator {
 
             return new FunctionCallNode(pinDecl.isAnalog() ? "analogWrite" : "dWrite", functionArgNodes);
         }
+        // assigning to a clock = resetting the clock (setting it to current millis)
+        else if (clockNames.contains(assignmentNode.getVariableName())) {
+            return new CodeNode("ourClocks[OUR_CLOCK_" + assignmentNode.getVariableName() + "] = millis();");
+        }
         else {
             if (assignmentNode.getArithExpressionNode() != null) {
                 return new AssignmentNode(
@@ -277,12 +287,26 @@ public class ArduinoGenerator {
         }
     }
 
+    private AssignArrayNode visitAssignArray(AssignArrayNode assignArrayNode) {
+        List<ArrayParamNode> arrayParamNodes = new ArrayList<>();
+        for (ArrayParamNode arrayParamNode : assignArrayNode.getParamNodes()) {
+            ArithExpressionNode arithExpressionNode = arrayParamNode.getArithExpressionNode();
+            if (arithExpressionNode != null)
+                arrayParamNodes.add(new ArrayParamNode(visitArithExpression(arithExpressionNode)));
+            else
+                arrayParamNodes.add(arrayParamNode);
+        }
+
+        return new AssignArrayNode(assignArrayNode.getVariableName(), arrayParamNodes);
+    }
+
     private ArithExpressionNode visitArithExpression(ArithExpressionNode arithExpressionNode) {
         ArithExpressionNode leftArith = arithExpressionNode.getArithExpressionNode1();
         ArithExpressionNode rightArith = arithExpressionNode.getArithExpressionNode2();
         String number = arithExpressionNode.getNumber();
         String variableName = arithExpressionNode.getVariableName();
         FunctionCallNode functionCallNode = arithExpressionNode.getFunctionCallNode();
+        SubscriptNode subscriptNode = arithExpressionNode.getSubscriptNode();
 
         ArithExpressionNode newArithExpression;
 
@@ -301,42 +325,35 @@ public class ArduinoGenerator {
             newArithExpression = new ArithExpressionNode(number, true);
 
         else if (variableName != null) {
-            if (pins.containsKey(variableName)) {
-                List<FunctionArgNode> fArgs = new ArrayList<>();
-                fArgs.add(new FunctionArgNode(new ArithExpressionNode(variableName, false)));
-                FunctionCallNode readCall = new FunctionCallNode("digitalRead", fArgs);
-
-                newArithExpression = new ArithExpressionNode(readCall);
-            }
-            else
-                newArithExpression = arithExpressionNode;
+            newArithExpression = new ArithExpressionNode(visitVariableName(variableName),false);
         }
 
         else if (functionCallNode != null) {
-            String functionName = functionCallNode.getFunctionName();
-            switch (functionName) {
-                case "Seconds": secondsFuncUsed = true; break;
-                case "Minutes": minutesFuncUsed = true; break;
-                case "Hours": hoursFuncUsed = true; break;
-                case "Days": daysFuncUsed = true; break;
-            }
-
-            List<FunctionArgNode> functionArgNodes = new ArrayList<>();
-            for (FunctionArgNode arg : functionCallNode.getFunctionArgNodes()) {
-                ArithExpressionNode argArith = arg.getArithExpressionNode();
-
-                if (argArith != null)
-                    functionArgNodes.add(new FunctionArgNode(visitArithExpression(argArith)));
-                else
-                    functionArgNodes.add(arg);
-            }
-            FunctionCallNode newFuncCall = new FunctionCallNode(functionName, functionArgNodes);
-            newArithExpression = new ArithExpressionNode(newFuncCall);
+            newArithExpression = new ArithExpressionNode(visitFunctionCall(functionCallNode));
+        }
+        else if (subscriptNode != null) {
+            newArithExpression = new ArithExpressionNode(visitSubscript(subscriptNode));
         }
         else
             newArithExpression = arithExpressionNode;
 
         return newArithExpression;
+    }
+
+    private String visitVariableName(String variableName) {
+        if (pins.containsKey(variableName)) {
+            return "digitalRead(" + variableName + ")";
+        }
+        else if (clockNames.contains(variableName)) {
+            return "GetClock(OUR_CLOCK_" + variableName + ")";
+        }
+        else
+            return variableName;
+    }
+
+    // Could be expanded in the future if relevant
+    private SubscriptNode visitSubscript(SubscriptNode subscriptNode) {
+        return subscriptNode;
     }
 
     private IfElseStatementNode visitIfElseStatement(IfElseStatementNode ifElseStatementNode) {
@@ -355,14 +372,36 @@ public class ArduinoGenerator {
         return new IfElseStatementNode(ifStatementNode, elseIfStatementNodes, elseStatementNode);
     }
 
+    private ConditionalExpressionNode visitCondExpr(ConditionalExpressionNode conditionalExpressionNode) {
+        BoolExpressionNode boolExpressionNode = conditionalExpressionNode.getBoolExpressionNode();
+        String variableName = conditionalExpressionNode.getVariableName();
+        FunctionCallNode functionCallNode = conditionalExpressionNode.getFunctionCallNode();
+        SubscriptNode subscriptNode = conditionalExpressionNode.getSubscriptNode();
+
+        if (boolExpressionNode != null) {
+            return new ConditionalExpressionNode(visitBoolExpression(boolExpressionNode));
+        }
+        else if (variableName != null) {
+            return new ConditionalExpressionNode(
+                    visitVariableName(variableName),
+                    conditionalExpressionNode.isNegated());
+        }
+        else if (functionCallNode != null) {
+            return new ConditionalExpressionNode(visitFunctionCall(functionCallNode));
+        }
+        else {
+            return new ConditionalExpressionNode(visitSubscript(subscriptNode));
+        }
+    }
+
     private IfStatementNode visitIfStatement(IfStatementNode ifStatementNode) {
         BlockNode blockNode = visitBlockNode(ifStatementNode.getBlockNode());
-        return new IfStatementNode(ifStatementNode.getConditionalExpressionNode(), blockNode);
+        return new IfStatementNode(visitCondExpr(ifStatementNode.getConditionalExpressionNode()), blockNode);
     }
 
     private ElseIfStatementNode visitElseIfStatement(ElseIfStatementNode elseIfStatementNode) {
         BlockNode blockNode = visitBlockNode(elseIfStatementNode.getBlockNode());
-        return new ElseIfStatementNode(elseIfStatementNode.getConditionalExpressionNode(), blockNode);
+        return new ElseIfStatementNode(visitCondExpr(elseIfStatementNode.getConditionalExpressionNode()), blockNode);
     }
 
     private ElseStatementNode visitElseStatement(ElseStatementNode elseStatementNode) {
@@ -372,16 +411,20 @@ public class ArduinoGenerator {
 
     private WhileStatementNode visitWhileStatement(WhileStatementNode whileStatementNode) {
         BlockNode visitedBlock = visitBlockNode(whileStatementNode.getBlockNode());
-        visitedBlock.getStatementNodes().add(new CodeNode("ourClockUpdate();"));
         return new WhileStatementNode(whileStatementNode.getBoolExpressionNode(), visitedBlock);
     }
 
     private BlockStatementNode visitForStatement(ForStatementNode forStatementNode) {
         BlockNode visitedBlock = visitBlockNode(forStatementNode.getBlockNode());
 
+        ArithExpressionNode arith1 = visitArithExpression(forStatementNode.getArithExpressionNode1());
+        ArithExpressionNode arith2 = visitArithExpression(forStatementNode.getArithExpressionNode2());
+
+        //TODO: allow for loop to count down depending on arith expressions
+
         String varName = "ourFor" + forLoopCount++;
-        String varInit = varName + " = " + forStatementNode.getArithExpressionNode1().prettyPrint(0);
-        String cond = varName + " <= " + forStatementNode.getArithExpressionNode2().prettyPrint(0);
+        String varInit = varName + " = " + arith1.prettyPrint(0);
+        String cond = varName + " <= " + arith2.prettyPrint(0);
         String incr = varName + "++";
         String forStr = "for (" + varInit + "; " + cond + "; " + incr + ") ";
 
@@ -390,7 +433,9 @@ public class ArduinoGenerator {
 
     private StatementNode visitAtStatement (AtStatementNode atStatementNode) {
         BlockNode visitedBlock = visitBlockNode(atStatementNode.getBlockNode());
-        AtStatementNode visitedAt = new AtStatementNode(atStatementNode.getAtParamsNode(), visitedBlock);
+        AtParamsNode atParamsNode =
+                new AtParamsNode(visitBoolExpression(atStatementNode.getAtParamsNode().getBoolExpressionNode()));
+        AtStatementNode visitedAt = new AtStatementNode(atParamsNode, visitedBlock);
 
         int atIndex = atStatements.size();
         atStatements.add(visitedAt);
@@ -400,20 +445,21 @@ public class ArduinoGenerator {
     private BlockStatementNode visitBoundStatement (BoundStatementNode boundStatementNode) {
         List<StatementNode> statementNodes = new ArrayList<>();
         List<StatementNode> catchBlockStatements = new ArrayList<>();
+        AtParamsNode boundParamsNode =
+                new AtParamsNode(visitBoolExpression(boundStatementNode.getAtParamsNode().getBoolExpressionNode()));
 
-        String boundParam = boundStatementNode.getAtParamsNode().prettyPrint(0);
+        String boundParam = boundParamsNode.prettyPrint(0);
         String boundComment = "/* bound (" + boundParam + ") */";
 
         // body
         statementNodes.addAll(visitBlockNode(boundStatementNode.getBody()).getStatementNodes());
-        statementNodes.add(new CodeNode("ourClockUpdate();"));
 
         // catch
         statementNodes.add(new CommentNode(" catch"));
 
         if (boundStatementNode.getBoolLiteral()) {
             catchBlockStatements.add(new CommentNode(" execution is blocked"));
-            catchBlockStatements.add(new CodeNode("while (" + boundParam + ") ourClockUpdate();"));
+            catchBlockStatements.add(new CodeNode("while (" + boundParam + ") delay(1);"));
         }
         else {
             catchBlockStatements.add(new CommentNode(" don't block execution"));
@@ -430,6 +476,65 @@ public class ArduinoGenerator {
                 new CodeNode("/* final */"), visitBlockNode(boundStatementNode.getFinalBlock())));
 
         return new BlockStatementNode(new CodeNode(boundComment), new BlockNode(statementNodes));
+    }
+
+    private BoolExpressionNode visitBoolExpression (BoolExpressionNode boolExpressionNode) {
+        // boolExprOperand (boolOp boolExprOperand)+
+        if (boolExpressionNode.getBoolExpressionOperators().size() > 0) {
+            List<BoolExprOperandNode> boolExprOperandNodes = new ArrayList<>();
+
+            for (BoolExprOperandNode operandNode : boolExpressionNode.getBoolExprOperandNodes())
+                boolExprOperandNodes.add(visitBoolExprOperand(operandNode));
+
+            return new BoolExpressionNode(boolExprOperandNodes, boolExpressionNode.getBoolExpressionOperators());
+        }
+        // NOT? LEFT_PAREN boolExpr RIGHT_PAREN;
+        else if (boolExpressionNode.getBoolExpressionNode() != null) {
+            BoolExpressionNode nestedBoolExpressionNode =
+                    visitBoolExpression(boolExpressionNode.getBoolExpressionNode());
+            return new BoolExpressionNode(boolExpressionNode.getOptionalNot(), nestedBoolExpressionNode);
+        }
+        else
+            return boolExpressionNode;
+    }
+
+    private BoolExprOperandNode visitBoolExprOperand (BoolExprOperandNode boolExprOperandNode) {
+        if (boolExprOperandNode.getBoolExpressionNode() != null)
+            return new BoolExprOperandNode(visitBoolExpression(boolExprOperandNode.getBoolExpressionNode()));
+        else if (boolExprOperandNode.getArithExpressionNode() != null)
+            return new BoolExprOperandNode(visitArithExpression(boolExprOperandNode.getArithExpressionNode()));
+        else
+            return boolExprOperandNode;
+    }
+
+    private FunctionCallNode visitFunctionCall (FunctionCallNode functionCallNode) {
+        String functionName = functionCallNode.getFunctionName();
+        switch (functionName) {
+            case "Seconds": secondsFuncUsed = true; break;
+            case "Minutes": minutesFuncUsed = true; break;
+            case "Hours": hoursFuncUsed = true; break;
+            case "Days": daysFuncUsed = true; break;
+            case "pinMode" : return functionCallNode;
+        }
+
+        String funcName = functionCallNode.getFunctionName();
+        List<FunctionArgNode> visitedFunctionArgNodes = new ArrayList<>();
+
+        for (FunctionArgNode functionArgNode : functionCallNode.getFunctionArgNodes())
+            visitedFunctionArgNodes.add(visitFunctionArgNode(functionArgNode));
+
+        return new FunctionCallNode(funcName, visitedFunctionArgNodes);
+    }
+
+    private FunctionArgNode visitFunctionArgNode (FunctionArgNode functionArgNode) {
+        if (functionArgNode.getArithExpressionNode() != null)
+            return new FunctionArgNode(visitArithExpression(functionArgNode.getArithExpressionNode()));
+        else
+            return new FunctionArgNode(visitBoolExpression(functionArgNode.getBoolExpressionNode()));
+    }
+
+    private ReturnStatementNode visitReturnStatement (ReturnStatementNode returnStatementNode) {
+        return new ReturnStatementNode(visitVariableName(returnStatementNode.getVariableName()));
     }
 
 }
