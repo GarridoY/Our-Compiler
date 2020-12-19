@@ -150,7 +150,7 @@ public class ModelChecker {
         // Liveness
         // Is it given that if we enter the start state, we also end up in the end state?
         if (endLocation != null && startLocation != null) {
-            Query query = new Query("A<> " +
+            Query query = new Query(
                     templateName + "." + startLocation.getName() +
                     " --> " +
                     templateName + "." + endLocation.getName(),
