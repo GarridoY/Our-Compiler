@@ -75,7 +75,7 @@ public class ModelChecker {
 
             Query deadlockQuery = new Query("E<> not deadlock", "");
             queryList.add(deadlockQuery);
-            Query livenessQuery = new Query("controller.start --> controller.End_controller", "");
+            Query livenessQuery = new Query("P0.start --> P0.End_controller", "");
             queryList.add(livenessQuery);
 
             // Create queries and put them in a list to be run.
@@ -129,7 +129,7 @@ public class ModelChecker {
 
     private List<Query> getQueryFromTemplate(UPPTemplate template, String startStateName, String endStateName) {
         List<Query> queryList = new ArrayList<>();
-        String templateName = template.getName();
+        String templateName = "P" + template.getId();
 
         List<Location> locationList = template.getLocationList();
 

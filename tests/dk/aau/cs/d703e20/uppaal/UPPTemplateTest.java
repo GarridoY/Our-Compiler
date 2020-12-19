@@ -16,7 +16,7 @@ public class UPPTemplateTest {
         // Set up main system
         system = new UPPSystem(new PrototypeDocument());
         // Create a template
-        template = system.createTemplate("template01");
+        template = system.createTemplate("template01", 1);
     }
 
     @Test

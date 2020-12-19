@@ -77,7 +77,7 @@ public class ModelGenTest {
     }
 
     private boolean checkAllBoundBreaks(List<Edge> edgeList, String sync, String guard) {
-        return edgeList.stream().allMatch(edge -> edge.getProperty("synchronisation").getValue().equals(sync) && edge.getProperty("guard").getValue().equals(guard));
+        return edgeList.stream().allMatch(edge -> edge.getProperty("synchronisation").getValue().equals(sync) && edge.getProperty("guard").getValue().toString().contains(guard));
     }
 
     @Test
@@ -115,7 +115,10 @@ public class ModelGenTest {
 
         assertEquals("// Global declarations\n" +
                      "chan outPin[1][2];\n" +
-                     "chan inPin[1][2];\n",
+                     "chan inPin[1][2];\n" +
+                     "int lock = 0;\n" +
+                     "int prevLock = 0;\n" +
+                     "bool atNotRunning = true;\n",
                 system.getProperty("declaration").getValue().toString());
     }
 
@@ -163,11 +166,11 @@ public class ModelGenTest {
                 () -> assertEquals("bound_kill→start", edges.get(3).getName()),
                 () -> assertEquals("start→bound_kill", edges.get(4).getName()),
                 () -> assertEquals("kill1!", edges.get(4).getProperty("synchronisation").getValue()),
-                () -> assertEquals("x > 40", edges.get(4).getProperty("guard").getValue()),
+                () -> assertTrue(edges.get(4).getProperty("guard").getValue().toString().contains("x > 40")),
                 // Edge for checking bound time
                 () -> assertEquals("sync_done→bound_kill", edges.get(5).getName()),
                 () -> assertEquals("kill1!", edges.get(5).getProperty("synchronisation").getValue()),
-                () -> assertEquals("x > 40", edges.get(5).getProperty("guard").getValue())
+                () -> assertTrue(edges.get(5).getProperty("guard").getValue().toString().contains("x > 40"))
         );
     }
 
@@ -192,9 +195,9 @@ public class ModelGenTest {
 
 
         assertAll(
-                () -> assertEquals("delayClock > (4)", delayEdge.getProperty("guard").getValue()),
+                () -> assertTrue(delayEdge.getProperty("guard").getValue().toString().contains("delayClock > (4)")),
                 () -> assertEquals("reset_local_clock", controller.getLocationList().get(1).getName()),
-                () -> assertEquals("called_delay", controller.getLocationList().get(2).getName())
+                () -> assertEquals("finished_delay", controller.getLocationList().get(2).getName())
         );
     }
 
@@ -208,7 +211,7 @@ public class ModelGenTest {
         List<Edge> edgeList = getEdges(controller);
         Edge delayEdge = edgeList.get(1);
 
-        assertEquals("delayClock > (8)", delayEdge.getProperty("guard").getValue());
+        assertTrue(delayEdge.getProperty("guard").getValue().toString().contains("delayClock > (8)"));
     }
 
     @Test
@@ -219,7 +222,7 @@ public class ModelGenTest {
         // Delay has 2 edges, second has the guard
         Edge delayEdge = getEdges(controller).get(1);
 
-        assertEquals("delayClock > (2)", delayEdge.getProperty("guard").getValue());
+        assertTrue(delayEdge.getProperty("guard").getValue().toString().contains("delayClock > (2)"));
     }
 
     @Test
@@ -241,11 +244,12 @@ public class ModelGenTest {
 
         assertAll(
                 () -> assertEquals("loop", forTemplate.getLocationList().get(2).getName()),
-                () -> assertEquals("loopIndex = 0", edgeList.get(1).getProperty("assignment").getValue()),
-                () -> assertEquals("loopIndex != 10", edgeList.get(2).getProperty("guard").getValue()),
-                () -> assertEquals("loopIndex ++", edgeList.get(3).getProperty("assignment").getValue()),
-                () -> assertEquals("loopIndex == 10", edgeList.get(4).getProperty("guard").getValue()),
-                () -> assertEquals("int loopIndex = 0;\n", forTemplate.getProperty("declaration").getValue())
+                () -> assertTrue(edgeList.get(1).getProperty("assignment").getValue().toString().contains("loopIndex = 0")),
+                () -> assertTrue(edgeList.get(2).getProperty("guard").getValue().toString().contains("loopIndex != 10")),
+                () -> assertTrue(edgeList.get(3).getProperty("assignment").getValue().toString().contains("loopIndex ++")),
+                () -> assertTrue(edgeList.get(4).getProperty("guard").getValue().toString().contains("loopIndex == 10")),
+                () -> assertTrue(forTemplate.getProperty("declaration").getValue().toString().contains("int loopIndex = 0;"
+))
         );
     }
 
@@ -267,8 +271,8 @@ public class ModelGenTest {
                 () -> assertEquals("begin_For0?", syncFor.getProperty("synchronisation").getValue()),
                 () -> assertEquals("begin_If0?", syncIf.getProperty("synchronisation").getValue()),
                 () -> assertEquals("begin_For0!", ctrlEdges.get(0).getProperty("synchronisation").getValue()),
-                () -> assertEquals("begin_At0!", ctrlEdges.get(1).getProperty("synchronisation").getValue()),
-                () -> assertEquals("begin_If0!", ctrlEdges.get(2).getProperty("synchronisation").getValue())
+                () -> assertEquals("begin_At0!", ctrlEdges.get(2).getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_If0!", ctrlEdges.get(4).getProperty("synchronisation").getValue())
         );
     }
 

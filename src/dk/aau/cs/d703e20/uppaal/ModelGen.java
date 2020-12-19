@@ -54,13 +54,23 @@ public class ModelGen {
     String ipinChanName = "inPin";
 
 
+    /**
+     * Find the ID for new templates
+     *
+     * @return all counts + 1
+     */
+    private int getID() {
+        // Controller = 0, IO = 1
+        return templateChanMap.size() + 2;
+    }
+
     // Create template to handle world input/output
     private void createNaiveWorldModel() {
-        UPPTemplate template = system.createTemplate("Naive_World");
+        UPPTemplate template = system.createTemplate("Naive_World", 1);
 
         // New edge from/to init for input chan
         if (ipinCount > 0) {
-            Edge inputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "inPin[i][1]!", null);
+            Edge inputHandler = template.addFreeEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "inPin[i][1]!", null);
             UPPTemplate.setLabel(inputHandler, UPPTemplate.EKind.select, "i : int[0," + (ipinCount - 1) + "]", 0, 0);
             setNail(inputHandler, -10, -5);
             setNail(inputHandler, -10, 5);
@@ -68,7 +78,7 @@ public class ModelGen {
 
         // New edge from/to init for output
         if (opinCount > 0) {
-            Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "outPin[i][j]?", null);
+            Edge outputHandler = template.addFreeEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "outPin[i][j]?", null);
             UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + (opinCount - 1) + "], j : int[0,1]", 0, 0);
             setNail(outputHandler, 10, -5);
             setNail(outputHandler, 10, 5);
@@ -82,21 +92,34 @@ public class ModelGen {
      * @param prevTemplate template where this statement is called
      * @return the new template
      */
-    private UPPTemplate newSyncedTemplate(String templateName, UPPTemplate prevTemplate) {
+    private UPPTemplate syncIntoNewTemplate(String templateName, UPPTemplate prevTemplate) {
         // Create new template
-        UPPTemplate template = system.createTemplate(templateName);
+        UPPTemplate newTemplate = system.createTemplate(templateName, getID());
 
         // Create channel for synchronisation
         String chan = "begin_" + templateName;
-        templateChanMap.put(template, chan);
+        templateChanMap.put(newTemplate, chan);
 
-        // Add edge to sync into new template
-        template.edgeFromLastLoc("Sync_done", null, chan + "?", null);
+        // Add edge to new template for sync
+        Location tempLastLoc = getLast(newTemplate.getLocationList());
+        Location syncDone = newTemplate.addLocation("Sync_done");
+        newTemplate.addFreeEdge(tempLastLoc, syncDone, null, chan + "?", "returnLock = prevLock");
+        //template.edgeFromLastLoc("Sync_done", null, chan + "?", null);
 
-        // Add edge to sync previous template into new one
-        prevTemplate.edgeFromLastLoc("called_" + template.getName(), null, chan + "!", null);
+        // Add edge to previous template to sync into new one
+        Location prevTempLastLoc = getLast(prevTemplate.getLocationList());
+        Location called = prevTemplate.addLocation("called_" + newTemplate.getName());
+        if (!newTemplate.getName().startsWith("At"))
+            prevTemplate.addFreeEdge(prevTempLastLoc, called, "atNotRunning", chan + "!", "lock = " + newTemplate.getId() + ", prevLock = " + prevTemplate.getId());
+        else
+            prevTemplate.addFreeEdge(prevTempLastLoc, called, null, chan + "!", "prevLock = " + prevTemplate.getId());
 
-        return template;
+        // Add edge to wait for template to finish
+        prevTemplate.edgeFromLastLoc(newTemplate.getName() + "_done", null, null, null);
+
+        //prevTemplate.edgeFromLastLoc("called_" + template.getName(), null, chan + "!", null);
+
+        return newTemplate;
     }
 
     // Adds declaration from pair to global scope
@@ -158,13 +181,14 @@ public class ModelGen {
         }
 
         // Set system declaration (processes)
-        system.setDeclaration();
+        system.setSysDeclaration();
         system.toXML(); //TODO: remove
         return system;
     }
 
     private void visitLoop(LoopNode loopNode) {
-        UPPTemplate template = system.createTemplate("controller");
+        UPPTemplate template = system.createTemplate("controller", 0);
+        template.setLocalReturnLock("int returnLock = 0; ");
         visitBlock(loopNode.getBlockNode(), template);
         template.edgeFromLastLoc("End_controller", null, null, null);
         template.setLooping();
@@ -242,7 +266,7 @@ public class ModelGen {
     }
 
     private void visitForStatement(ForStatementNode forLoopNode, UPPTemplate prevTemplate) {
-        UPPTemplate forTemplate = newSyncedTemplate("For" + forCount, prevTemplate);
+        UPPTemplate forTemplate = syncIntoNewTemplate("For" + forCount, prevTemplate);
         forCount++;
 
         // Loop location, requires var
@@ -269,13 +293,12 @@ public class ModelGen {
         Location endFor = forTemplate.addLocation("end_for");
         forTemplate.addEdge(loopLoc, endFor, loopVar + " == " + getValueArithExpr(forLoopNode.getArithExpressionNode2()), null, null);
         forTemplate.setLooping();
-        forTemplate.setDeclaration();
 
         setBoundBreakEdges(forLoopNode, forTemplate);
     }
 
     private void visitWhileStatement(WhileStatementNode whileStatementNode, UPPTemplate prevTemplate) {
-        UPPTemplate whileTemplate = newSyncedTemplate("While" + whileCount, prevTemplate);
+        UPPTemplate whileTemplate = syncIntoNewTemplate("While" + whileCount, prevTemplate);
         whileCount++;
 
         // Setup start loop location for looping
@@ -300,7 +323,7 @@ public class ModelGen {
     private void visitIfElseStatement(IfElseStatementNode ifElseStatementNode, UPPTemplate prevTemplate) {
         final int locationCoord = 75;
         // Create new template and sync with previous
-        UPPTemplate ifTemplate = newSyncedTemplate("If" + ifCount, prevTemplate);
+        UPPTemplate ifTemplate = syncIntoNewTemplate("If" + ifCount, prevTemplate);
         ifCount++;
 
         // Save location to start each if/elseIf/else
@@ -315,8 +338,7 @@ public class ModelGen {
 
         // Create location to end all if statements
         Location endLoc = ifTemplate.addLocation("If_end");
-        // Set looping manual as endLoc is not last in list
-        ifTemplate.addEdge(endLoc, ifTemplate.getLocationList().get(0), null, null, null);
+        ifTemplate.setLooping();
         // Create edge from last location of if to endLoc
         ifTemplate.addEdge(ifTemplate.getLocationList().get(ifTemplate.getLocationList().size() - 2), endLoc, null, null, null);
 
@@ -405,10 +427,13 @@ public class ModelGen {
             // Get chan name for starting function template
             functionChan = templateChanMap.get(functionTemplate);
             // Add sync edge to current template, sync starts the function template
-            currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), null, functionChan + "!", null);
+            currentTemplate.addFreeEdge(getLast(currentTemplate.getLocationList()), currentTemplate.addLocation("called_" + functionCallNode.getFunctionName()), null, functionChan + "!", "lock = " + functionTemplate.getId() + ", prevLock = " + currentTemplate.getId());
+            // Add edge to wait for template to finish
+            currentTemplate.edgeFromLastLoc(functionTemplate.getName() + "_done", null, null, null);
+
             // Add sync edge to function template to receive sync from the call
             if (functionSyncSet.add(functionChan))
-                functionTemplate.addEdge(functionTemplate.getLocationList().get(0), functionTemplate.getLocationList().get(1), null, functionChan + "?", null);
+                functionTemplate.addFreeEdge(functionTemplate.getLocationList().get(0), functionTemplate.getLocationList().get(1), null, functionChan + "?", "returnLock = prevLock");
 
             // Set the function template to be able to break bound
             setBoundBreakEdges(functionCallNode, functionTemplate, getLast(functionTemplate.getLocationList()));
@@ -425,8 +450,7 @@ public class ModelGen {
         // Edge to reset local clock
         currentTemplate.edgeFromLastLoc("reset_local_clock", null, null, localClockName + " = 0");
         // Guard template to wait the given amount
-        currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), localClockName + " > (" + delay + ")", null, null);
-        currentTemplate.setDeclaration();
+        currentTemplate.edgeFromLastLoc("finished_" + functionCallNode.getFunctionName(), localClockName + " > (" + delay + ")", null, null);
     }
 
     /**
@@ -496,7 +520,7 @@ public class ModelGen {
 
     private void visitAtStatement(AtStatementNode atStatementNode, UPPTemplate prevTemplate) {
         // Create new template and sync with previous
-        UPPTemplate atTemplate = newSyncedTemplate("At" + atCount, prevTemplate);
+        UPPTemplate atTemplate = syncIntoNewTemplate("At" + atCount, prevTemplate);
         atCount++;
 
         //TODO: add invariant
@@ -504,7 +528,7 @@ public class ModelGen {
         // Edge and location for starting at (when atParam is ready)
         Location startAt = atTemplate.addLocation("startAt");
         String guard = atStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0);
-        atTemplate.addEdge(atTemplate.getLocationList().get(1), startAt, guard, null, null);
+        atTemplate.addFreeEdge(atTemplate.getLocationList().get(1), startAt, guard, null, "lock = " + atTemplate.getId() + ", returnLock = prevLock, atNotRunning = false");
 
         visitBlock(atStatementNode.getBlockNode(), atTemplate);
 
@@ -519,7 +543,7 @@ public class ModelGen {
     // Run body, check if time is exceeded, then run catch and final or just final
     private void visitBoundStatement(BoundStatementNode boundStatementNode, UPPTemplate prevTemplate) {
         // Create new template and sync with previous
-        UPPTemplate boundTemplate = newSyncedTemplate("Bound" + boundCount, prevTemplate);
+        UPPTemplate boundTemplate = syncIntoNewTemplate("Bound" + boundCount, prevTemplate);
         boundCount++;
 
         // Add guard and sync to stack used to kill statements within bound scope
@@ -582,12 +606,12 @@ public class ModelGen {
         Location startFinal = null;
         // visit Catch
         if (boundStatementNode.getCatchBlock() != null) {
-            startCatch = visitBoundBlock(boundStatementNode.getCatchBlock(), boundTemplate, "Catch", timeExceedLoc, endLocation);
+            startCatch = visitBoundBlock(boundStatementNode.getCatchBlock(), boundTemplate, "Catch", timeExceedLoc);
             endCatch = getLast(boundTemplate.getLocationList());
         }
         // visit Final
         if (boundStatementNode.getFinalBlock() != null) {
-            startFinal = visitBoundBlock(boundStatementNode.getFinalBlock(), boundTemplate, "Final", timeOKLoc, endLocation);
+            startFinal = visitBoundBlock(boundStatementNode.getFinalBlock(), boundTemplate, "Final", timeOKLoc);
             // Last location in final goes to end of bound
             boundTemplate.addEdge(getLast(boundTemplate.getLocationList()), endLocation, null, null, null);
         }
@@ -610,7 +634,7 @@ public class ModelGen {
     }
 
     // Returns location for starting block
-    private Location visitBoundBlock(BlockNode block, UPPTemplate template, String name, Location prevLocation, Location endLocation) {
+    private Location visitBoundBlock(BlockNode block, UPPTemplate template, String name, Location prevLocation) {
 
         // Create location for starting block
         Location startBlock = template.addLocation("Start_" + name, prevLocation.getX() + 75, prevLocation.getY());
@@ -629,7 +653,7 @@ public class ModelGen {
 
     private void visitFuncDecl(FunctionDeclarationNode functionDeclarationNode) {
         // Create new template
-        UPPTemplate template = system.createTemplate(functionDeclarationNode.getFunctionName());
+        UPPTemplate template = system.createTemplate(functionDeclarationNode.getFunctionName(), getID());
         // Create channel to start new template
         templateChanMap.put(template, "begin_" + functionDeclarationNode.getFunctionName());
         // New location for starting body, functionCall will join this location with the initial one
@@ -639,8 +663,8 @@ public class ModelGen {
         template.edgeFromLastLoc("End_" + functionDeclarationNode.getFunctionName(), null, null, null);
         template.setLooping();
 
-        //Setup location for breaking bounds as last location in list, might not be used
-        Location boundKill = template.addLocation("bound_kill", 75, -100);
+        // Setup location for breaking bounds as last location in list, used in functionCall if bounded
+        template.addLocation("bound_kill", 75, -100);
 
         // Add function name and return value to map of varValues
         findReturnValue(functionDeclarationNode);

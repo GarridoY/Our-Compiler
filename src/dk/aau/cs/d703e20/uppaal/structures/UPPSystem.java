@@ -42,25 +42,31 @@ public class UPPSystem extends Document {
      * @param name name of new template
      * @return new UPPTemplate
      */
-    public UPPTemplate createTemplate(String name) {
+    public UPPTemplate createTemplate(String name, int id) {
         UPPTemplate t = createTemplate();
         // Set template name (UPPAAL) then (JAVA)
         t.setProperty("name", name);
         t.setName(name);
+        t.setId(id);
+        t.setProperty("parameter", "const int id");
         // Insert template into UPPAAL model
         this.insert(t, null);
         templateList.add(t);
         return t;
     }
 
-    public void setDeclaration() {
-        StringBuilder sb = new StringBuilder("system");
+    public void setSysDeclaration() {
+        StringBuilder procBuilder = new StringBuilder();
+        StringBuilder sysBuilder = new StringBuilder("system");
         for (UPPTemplate template : templateList) {
-            sb.append(" ").append(template.getName()).append(",");
+            // P + ID = Name(ID)
+            procBuilder.append("P").append(template.getId()).append(" = ").append(template.toString()).append("; ");
+            sysBuilder.append(" ").append("P").append(template.getId()).append(",");
         }
         // End with ; rather than ,
-        sb.setCharAt(sb.length() - 1, ';');
-        this.setProperty("system", (sb.toString()));
+        sysBuilder.setCharAt(sysBuilder.length() - 1, ';');
+
+        this.setProperty("system", (procBuilder.toString() + "\n" + sysBuilder.toString()));
     }
 
     public List<UPPTemplate> getTemplateList() {
@@ -76,6 +82,12 @@ public class UPPSystem extends Document {
      * Set all global variables
      */
     public void setGlobalDecl() {
+        String lockDecl = "int lock = 0;\n";
+        String prevLockDecl = "int prevLock = 0;\n";
+        String scopeLock = "bool atNotRunning = true;\n";
+        globalDeclSB.append(lockDecl);
+        globalDeclSB.append(prevLockDecl);
+        globalDeclSB.append(scopeLock);
         this.setProperty("declaration", globalDeclSB.toString());
     }
 

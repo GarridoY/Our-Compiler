@@ -54,7 +54,7 @@ public class UserModelTranslator {
         document.getDocumentElement().normalize();
 
         /* Translate XML file to Locations, Transitions and add to the system we are making. */
-        UPPTemplate template = system.createTemplate("IO_Model");
+        UPPTemplate template = system.createTemplate("IO_Model", 1);
 
         // Get start location
         Element start = (Element) document.getElementsByTagName("init").item(0);
