@@ -111,7 +111,6 @@ public class ModelGen {
         Location tempLastLoc = getLast(newTemplate.getLocationList());
         Location syncDone = newTemplate.addLocation("Sync_done");
         newTemplate.addFreeEdge(tempLastLoc, syncDone, null, chan + "?", "returnLock = prevLock");
-        //template.edgeFromLastLoc("Sync_done", null, chan + "?", null);
 
         // Add edge to previous template to sync into new one
         Location prevTempLastLoc = getLast(prevTemplate.getLocationList());
@@ -122,9 +121,8 @@ public class ModelGen {
             prevTemplate.addFreeEdge(prevTempLastLoc, called, null, chan + "!", "prevLock = " + prevTemplate.getId());
 
         // Add edge to wait for template to finish
-        prevTemplate.edgeFromLastLoc(newTemplate.getName() + "_done", null, null, null);
+        prevTemplate.chainLoc(newTemplate.getName() + "_done", null, null, null);
 
-        //prevTemplate.edgeFromLastLoc("called_" + template.getName(), null, chan + "!", null);
 
         return newTemplate;
     }
@@ -197,7 +195,7 @@ public class ModelGen {
         UPPTemplate template = system.createTemplate("controller", 0);
         template.setLocalReturnLock("int returnLock = 0; ");
         visitBlock(loopNode.getBlockNode(), template);
-        template.edgeFromLastLoc("End_controller", null, null, null);
+        template.chainLoc("End_controller", null, null, null);
         template.setLooping();
     }
 
@@ -280,13 +278,11 @@ public class ModelGen {
         String loopVar = "loopIndex";
         forTemplate.addVar("int " + loopVar + " = 0");
         // initialize loop template by setting loopVar
-        forTemplate.edgeFromLastLoc("loop", null, null, loopVar + " = " + getValueArithExpr(forLoopNode.getArithExpressionNode1()));
-        // Get the location of main loop node
-        Location loopLoc = getLast(forTemplate.getLocationList());
+        Location loopLoc = forTemplate.chainLoc("loop", null, null, loopVar + " = " + getValueArithExpr(forLoopNode.getArithExpressionNode1()));
         // TODO: consider making loop location urgent
 
         // First location of loop iteration
-        forTemplate.edgeFromLastLoc("iterate", loopVar + " != " + getValueArithExpr(forLoopNode.getArithExpressionNode2()), null, null);
+        forTemplate.chainLoc("iterate", loopVar + " != " + getValueArithExpr(forLoopNode.getArithExpressionNode2()), null, null);
 
         // Add body of loop to template
         visitBlock(forLoopNode.getBlockNode(), forTemplate);
@@ -317,11 +313,11 @@ public class ModelGen {
         visitBlock(whileStatementNode.getBlockNode(), whileTemplate);
 
         // Add end location
-        whileTemplate.edgeFromLastLoc("End_loop", null, null, null);
+        whileTemplate.chainLoc("End_loop", null, null, null);
         // Add uncontrollable edge from "End_loop" to "Start_loop" locations, used to simulate the while loop
         whileTemplate.addEdge(getLast(whileTemplate.getLocationList()), startLoop, null, null, null).setProperty("controllable", false);
 
-        whileTemplate.edgeFromLastLoc("While_end", null, null, null);
+        whileTemplate.chainLoc("While_end", null, null, null);
         whileTemplate.setLooping();
 
         setBoundBreakEdges(whileStatementNode, whileTemplate);
@@ -398,10 +394,10 @@ public class ModelGen {
             if (assignmentNode.getLiteralValue() != null) {
                 if (assignmentNode.getLiteralValue().equals("true")) {
                     // chan! update pin to value 1
-                    template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][1]!", null);
+                    template.chainLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][1]!", null);
                 } else if (assignmentNode.getLiteralValue().equals("false")) {
                     // chan! update pin to value 0
-                    template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][0]!", null);
+                    template.chainLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][0]!", null);
                 }
             } else if (assignmentNode.getVariableName() != null) {
 
@@ -410,10 +406,10 @@ public class ModelGen {
                     // lookup if var is true, then 1, else output = 0
                     if (varValues.get(assignmentNode.getArithExpressionNode().getVariableName()).equals("true"))
                         output = 1;
-                    template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][" + output + "]!", null);
+                    template.chainLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][" + output + "]!", null);
                 } else {
                     // Case: var in not constant = use select
-                    template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][e]!", null);
+                    template.chainLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][e]!", null);
                     Edge edgeSelectPin = getLast(getEdges(template));
                     setLabel(edgeSelectPin, UPPTemplate.EKind.select, "e : int[0,1]", 0, 0);
                 }
@@ -454,7 +450,7 @@ public class ModelGen {
             // Add sync edge to current template, sync starts the function template
             currentTemplate.addFreeEdge(getLast(currentTemplate.getLocationList()), currentTemplate.addLocation("called_" + functionCallNode.getFunctionName()), null, functionChan + "!", "lock = " + functionTemplate.getId() + ", prevLock = " + currentTemplate.getId());
             // Add edge to wait for template to finish
-            currentTemplate.edgeFromLastLoc(functionTemplate.getName() + "_done", null, null, null);
+            currentTemplate.chainLoc(functionTemplate.getName() + "_done", null, null, null);
 
             // Add sync edge to function template to receive sync from the call
             if (functionSyncSet.add(functionChan))
@@ -473,9 +469,9 @@ public class ModelGen {
         // Declare local clock
         currentTemplate.addVar("clock " + localClockName);
         // Edge to reset local clock
-        currentTemplate.edgeFromLastLoc("reset_local_clock", null, null, localClockName + " = 0");
+        currentTemplate.chainLoc("reset_local_clock", null, null, localClockName + " = 0");
         // Guard template to wait the given amount
-        currentTemplate.edgeFromLastLoc("finished_" + functionCallNode.getFunctionName(), localClockName + " > (" + delay + ")", null, null);
+        currentTemplate.chainLoc("finished_" + functionCallNode.getFunctionName(), localClockName + " > (" + delay + ")", null, null);
     }
 
     /**
@@ -561,7 +557,7 @@ public class ModelGen {
         visitBlock(atStatementNode.getBlockNode(), atTemplate);
 
         // Edge and location for ending 'at' for model verification.
-        atTemplate.edgeFromLastLoc("endAt", null, null, null);
+        atTemplate.chainLoc("endAt", null, null, null);
 
         atTemplate.setLooping();
 
@@ -588,21 +584,18 @@ public class ModelGen {
         // Pop stack as we exit bound body
         boundGuardKillSync.pop();
 
-        // Done location
-        boundTemplate.edgeFromLastLoc("body_done", null, null, null);
-        // save the location for body end, as we branch out
-        Location bodyEndLoc = getLast(boundTemplate.getLocationList());
+        // Done location, save the location for body end, as we branch out
+        Location bodyEndLoc = boundTemplate.chainLoc("body_done", null, null, null);
 
+        Location timeOKLoc;
         // Check if blocking
         if (boundStatementNode.getBoolLiteral()) {
             // Bound param, where '<' is changed to '=='
             String guard = boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0).replaceAll("(<=|<)", "==");
-            boundTemplate.edgeFromLastLoc("Time_OK", guard, null, null);
+            timeOKLoc = boundTemplate.chainLoc("Time_OK", guard, null, null);
         } else
-            boundTemplate.edgeFromLastLoc("Time_OK", boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0), null, null);
+            timeOKLoc = boundTemplate.chainLoc("Time_OK", boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0), null, null);
 
-        // TODO: create variable before, and set it to return of edgefromlastloc
-        Location timeOKLoc = getLast(boundTemplate.getLocationList());
         Location timeExceedLoc = boundTemplate.addLocation("Time_exceeded", getLast(boundTemplate.getLocationList()).getX(), 75);
         // Add edge with guard for exceeding time
         boundTemplate.addEdge(bodyEndLoc, timeExceedLoc, exceedGuard, null, null);
@@ -674,7 +667,7 @@ public class ModelGen {
         // visit block
         visitBlock(block, template);
         // End location for block
-        template.edgeFromLastLoc(name + "_done", null, null, null);
+        template.chainLoc(name + "_done", null, null, null);
 
         return startBlock;
     }
@@ -688,7 +681,7 @@ public class ModelGen {
         template.addLocation("sync_done");
 
         visitBlock(functionDeclarationNode.getBlockNode(), template);
-        template.edgeFromLastLoc("End_" + functionDeclarationNode.getFunctionName(), null, null, null);
+        template.chainLoc("End_" + functionDeclarationNode.getFunctionName(), null, null, null);
         template.setLooping();
 
         // Setup location for breaking bounds as last location in list, used in functionCall if bounded

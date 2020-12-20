@@ -211,21 +211,21 @@ public class UPPTemplate extends Template {
 
 
     /**
-     * Adds new locked edge from last location to new location
+     * Chains a new location to the previous with a locked edge
      *
      * @param newLocName name of the new location
      * @param guard      guard expression
      * @param sync       sync expression
      * @param update     update expression
+     * @return newLoc the new location
      */
-    public void edgeFromLastLoc(String newLocName, String guard, String sync, String update) {
-        //TODO: This should prop return new location
-
+    public Location chainLoc(String newLocName, String guard, String sync, String update) {
         // Save current last location of template
         Location lastLoc = this.locationList.get(this.getLocationList().size() - 1);
         // Add edge to new location
         Location newLoc = this.addLocation(newLocName, lastLoc.getX() + locationCoordIncr, lastLoc.getY());
         this.addEdge(lastLoc, newLoc, guard, sync, update);
+        return newLoc;
     }
 
     @Override
