@@ -12,6 +12,8 @@ public class VariableDeclarationNode extends StatementNode {
     protected AssignmentNode assignmentNode;
     protected AssignArrayNode assignArrayNode;
 
+    private boolean inSetup;
+
     protected CodePosition codePosition;
 
     public VariableDeclarationNode(Enums.DataType dataType, AssignmentNode assignmentNode) {
@@ -61,6 +63,14 @@ public class VariableDeclarationNode extends StatementNode {
 
     public AssignArrayNode getAssignArrayNode() {
         return assignArrayNode;
+    }
+
+    public boolean isInSetup() {
+        return inSetup;
+    }
+
+    public void setInSetup(boolean inSetup) {
+        this.inSetup = inSetup;
     }
 
     @Override

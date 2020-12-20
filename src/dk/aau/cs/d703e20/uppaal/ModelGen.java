@@ -207,7 +207,7 @@ public class ModelGen {
         for (StatementNode statementNode : setupNode.getBlockNode().getStatementNodes()) {
             if (statementNode instanceof VariableDeclarationNode) {
                 // Declare clocks
-                visitVarDecl((VariableDeclarationNode) statementNode);
+                visitVarDecl((VariableDeclarationNode) statementNode, null);
             } else if (statementNode instanceof PinDeclarationNode) {
                 // Declare pins
                 visitPinDecl((PinDeclarationNode) statementNode);
@@ -251,7 +251,7 @@ public class ModelGen {
         if (statementNode instanceof PinDeclarationNode)
             visitPinDecl((PinDeclarationNode) statementNode);
         else if (statementNode instanceof VariableDeclarationNode)
-            visitVarDecl((VariableDeclarationNode) statementNode);
+            visitVarDecl((VariableDeclarationNode) statementNode, template);
         else if (statementNode instanceof AtStatementNode)
             visitAtStatement((AtStatementNode) statementNode, template);
         else if (statementNode instanceof BoundStatementNode)
@@ -417,7 +417,8 @@ public class ModelGen {
         // Is variable clock?
         else if (clockList.contains(assignmentNode.getVariableName())) {
             // Update string
-            String updateStmt = assignmentNode.getArithExpressionNode().prettyPrint(0);
+            String updateStmt = assignmentNode.getVariableName() + " = " + getValueArithExpr(assignmentNode.getArithExpressionNode());
+                    assignmentNode.getArithExpressionNode().prettyPrint(0);
 
             // New location for update edge
             Location prevLoc = getLast(template.getLocationList());
@@ -495,7 +496,7 @@ public class ModelGen {
      *
      * @param varDeclNode Source StatementNode
      */
-    private void visitVarDecl(VariableDeclarationNode varDeclNode) {
+    private void visitVarDecl(VariableDeclarationNode varDeclNode, UPPTemplate template) {
         // Save variable name and its value in map for later use
         if (varDeclNode.getAssignmentNode() != null) {
             if (varDeclNode.getAssignmentNode().getArithExpressionNode() != null)
@@ -510,6 +511,8 @@ public class ModelGen {
         if (varDeclNode.getDataType() == Enums.DataType.CLOCK) {
             system.addClockDecl(varDeclNode);
             clockList.add(varDeclNode.getVariableName());
+            if (!varDeclNode.isInSetup())
+                template.chainLoc("", null, null, varDeclNode.getVariableName() + " = 0");
         }
     }
 
