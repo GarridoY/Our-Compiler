@@ -4,7 +4,7 @@ import dk.aau.cs.d703e20.ast.CodePosition;
 import dk.aau.cs.d703e20.ast.expressions.BoolExpressionNode;
 
 public class AtParamsNode extends StatementNode {
-    private BoolExpressionNode boolExpressionNode;
+    private final BoolExpressionNode boolExpressionNode;
 
     private CodePosition codePosition;
 

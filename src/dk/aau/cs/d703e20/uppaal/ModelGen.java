@@ -6,9 +6,7 @@ import com.uppaal.model.core2.Node;
 import com.uppaal.model.core2.PrototypeDocument;
 import dk.aau.cs.d703e20.Pair;
 import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
-import dk.aau.cs.d703e20.ast.expressions.ArrayParamNode;
-import dk.aau.cs.d703e20.ast.expressions.SubscriptNode;
+import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
@@ -33,7 +31,7 @@ public class ModelGen {
     HashMap<String, Integer> pinChanMap = new HashMap<>();
     // List of used clocks
     List<String> clockList = new ArrayList<>();
-    // Map of varName and values, also stores return value of function
+    // Map of varName and values, also stores return value of function. TODO: Use another map for return values
     HashMap<String, String> varValues = new HashMap<>();
     HashMap<String, List<ArrayParamNode>> arrayValues = new HashMap<>();
 
@@ -501,7 +499,7 @@ public class ModelGen {
         // Save variable name and its value in map for later use
         if (varDeclNode.getAssignmentNode() != null) {
             if (varDeclNode.getAssignmentNode().getArithExpressionNode() != null)
-                varValues.put(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode.getAssignmentNode().getArithExpressionNode().prettyPrint(0));
+                varValues.put(varDeclNode.getAssignmentNode().getVariableName(), getValueArithExpr(varDeclNode.getAssignmentNode().getArithExpressionNode()));
             else if (varDeclNode.getAssignmentNode().getLiteralValue() != null)
                 varValues.put(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode.getAssignmentNode().getLiteralValue());
         } else if (varDeclNode.getAssignArrayNode() != null)
@@ -526,33 +524,122 @@ public class ModelGen {
         return getValueArithExpr(arithNodeOfList);
     }
 
+    private String calcTimeFunc(ArithExpressionNode arithExpressionNode, int timeUnit) {
+        // Cast argument to double, calculate the value, cast it back to string for printing to UPPAAL
+        return Integer.toString((int) (Double.parseDouble(getValueArithExpr(arithExpressionNode.getFunctionCallNode().getFunctionArgNodes().get(0).getArithExpressionNode())) * timeUnit));
+    }
+
     private String getValueArithExpr(ArithExpressionNode arithExpressionNode) {
-        String delay;
+        String value;
         // If arg is a variable name, get its value from map
         if (arithExpressionNode.getVariableName() != null) {
-            delay = varValues.get(arithExpressionNode.getVariableName());
+            if (clockList.contains(arithExpressionNode.getVariableName())) {
+                value = arithExpressionNode.getVariableName();
+            } else
+                value = varValues.get(arithExpressionNode.getVariableName());
         }
         // If arg is a function call get the value of its return
         else if (arithExpressionNode.getFunctionCallNode() != null) {
-            delay = varValues.get(arithExpressionNode.getFunctionCallNode().getFunctionName());
-        } else if (arithExpressionNode.getSubscriptNode() != null)
-            delay = getValueSubscript(arithExpressionNode.getSubscriptNode());
-        else
-            delay = arithExpressionNode.prettyPrint(0);
-        return delay;
+            // Check for time specific functions
+            value = switch (arithExpressionNode.getFunctionCallNode().getFunctionName()) {
+                case "Seconds" -> calcTimeFunc(arithExpressionNode, 1000);
+                case "Minutes" -> calcTimeFunc(arithExpressionNode, 1000 * 60);
+                case "Hours" -> calcTimeFunc(arithExpressionNode, 1000 * 60 * 60);
+                case "Days" -> calcTimeFunc(arithExpressionNode, 1000 * 60 * 60 * 24);
+                default -> varValues.get(arithExpressionNode.getFunctionCallNode().getFunctionName());
+            };
+        } else if (arithExpressionNode.getSubscriptNode() != null) {
+            value = getValueSubscript(arithExpressionNode.getSubscriptNode());
+        } else if (arithExpressionNode.getArithExpressionNode1() != null) {
+            // arithExpr arithOp arithExpr
+            value = '(' + getValueArithExpr(arithExpressionNode.getArithExpressionNode1()) + arithExpressionNode.getArithExpressionOperator() + getValueArithExpr(arithExpressionNode.getArithExpressionNode2()) + ')';
+        } else
+            // Handles number case
+            value = arithExpressionNode.prettyPrint(0);
+        return value;
+    }
+
+    private List<String> getOperandValues(List<BoolExprOperandNode> operands) {
+        List<String> guardOperands = new ArrayList<>();
+        // Handle operand by finding value and casting to string
+        for (BoolExprOperandNode operand : operands) {
+            if (operand.getBoolExpressionNode() != null)
+                guardOperands.add('(' + findGuard(operand.getBoolExpressionNode()) + ')');
+            else
+                guardOperands.add(getValueArithExpr(operand.getArithExpressionNode()));
+        }
+        return guardOperands;
+    }
+
+    private String findGuard(BoolExpressionNode boolExpressionNode) {
+        StringBuilder guardBuilder = new StringBuilder();
+        int index = 0;
+
+        if (!boolExpressionNode.getBoolExprOperandNodes().isEmpty()) {
+            // Cast all operand values to string
+            List<String> guardOperands = getOperandValues(boolExpressionNode.getBoolExprOperandNodes());
+            for (String guardOperand : guardOperands) {
+                guardBuilder.append(guardOperand);
+                // Add operator, but avoid NullPointer from last operand, since there is 1 more operand than operator
+                if (index <= boolExpressionNode.getBoolExpressionOperators().size() - 1)
+                    guardBuilder.append(" ").append(Enums.stringFromBoolOperator(boolExpressionNode.getBoolExpressionOperators().get(index))).append(" ");
+                index++;
+            }
+            return guardBuilder.toString();
+        }
+        if (boolExpressionNode.getOptionalNot()) {
+            return "!(" + findGuard(boolExpressionNode.getBoolExpressionNode()) + ")";
+        }
+        throw new RuntimeException("Guard was not found");
+    }
+
+    private String findInvariant(BoolExpressionNode boolExpressionNode) {
+        StringBuilder invariantBuilder = new StringBuilder();
+        int operandIndex = 0;
+
+        // Handle lower bounds of guard
+        if (!boolExpressionNode.getBoolExprOperandNodes().isEmpty()) {
+            // Cast all operand values to string
+            List<String> invarOperands = getOperandValues(boolExpressionNode.getBoolExprOperandNodes());
+
+            for (Enums.BoolOperator operator : boolExpressionNode.getBoolExpressionOperators()) {
+                if ((operator == Enums.BoolOperator.LESS_THAN || operator == Enums.BoolOperator.LESS_OR_EQUAL) && clockList.contains(invarOperands.get(operandIndex))) {
+                    invariantBuilder.append(invarOperands.get(operandIndex)).append(" <= ").append(invarOperands.get(operandIndex + 1));
+                } else if ((operator == Enums.BoolOperator.GREATER_THAN || operator == Enums.BoolOperator.GREATER_OR_EQUAL) && clockList.contains(invarOperands.get(operandIndex + 1))) {
+                    invariantBuilder.append(invarOperands.get(operandIndex + 1)).append(" <= ").append(invarOperands.get(operandIndex));
+                } else if (operator == Enums.BoolOperator.EQUAL) {
+                    if (clockList.contains(invarOperands.get(operandIndex)))
+                        invariantBuilder.append(invarOperands.get(operandIndex)).append(" <= ").append(invarOperands.get(operandIndex + 1));
+                    else if (clockList.contains(invarOperands.get(operandIndex + 1)))
+                        invariantBuilder.append(invarOperands.get(operandIndex + 1)).append(" <= ").append(invarOperands.get(operandIndex));
+                } else if (operator == Enums.BoolOperator.OR || operator == Enums.BoolOperator.AND) {
+                    invariantBuilder.append("(").append(invarOperands.get(operandIndex)).append(")").append(" ").append(operator).append(" ").append("(").append(invarOperands.get(operandIndex + 1)).append(")");
+                }
+
+                operandIndex++;
+            }
+            return invariantBuilder.toString();
+        }
+
+        if (boolExpressionNode.getOptionalNot()) {
+            return "!(" + findInvariant(boolExpressionNode.getBoolExpressionNode()) + ")";
+        }
+
+        throw new RuntimeException("Could not find proper invariant");
     }
 
     private void visitAtStatement(AtStatementNode atStatementNode, UPPTemplate prevTemplate) {
         // Create new template and sync with previous
         UPPTemplate atTemplate = syncIntoNewTemplate("At" + atCount, prevTemplate);
         atCount++;
-
-        //TODO: add invariant
+        Location syncDone = getLast(atTemplate.getLocationList());
+        // Add invariant
+        setLabel(syncDone, UPPTemplate.LKind.invariant, findInvariant(atStatementNode.getAtParamsNode().getBoolExpressionNode()), syncDone.getX(), syncDone.getY());
 
         // Edge and location for starting at (when atParam is ready)
         Location startAt = atTemplate.addLocation("startAt");
-        String guard = atStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0);
-        atTemplate.addFreeEdge(atTemplate.getLocationList().get(1), startAt, guard, null, "lock = " + atTemplate.getId() + ", returnLock = prevLock, atNotRunning = false");
+        String guard = findGuard(atStatementNode.getAtParamsNode().getBoolExpressionNode());
+        atTemplate.addFreeEdge(syncDone, startAt, guard, null, "lock = " + atTemplate.getId() + ", returnLock = prevLock, atNotRunning = false");
 
         visitBlock(atStatementNode.getBlockNode(), atTemplate);
 
@@ -571,7 +658,7 @@ public class ModelGen {
         boundCount++;
 
         // Add guard and sync to stack used to kill statements within bound scope
-        String exceedGuard = boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0).replaceAll("(<=|<)", ">");
+        String exceedGuard = findGuard(boundStatementNode.getAtParamsNode().getBoolExpressionNode()).replaceAll("(<=|<)", ">");
         String killSync = "kill" + boundCount;
         utilChan.add(killSync);
         boundGuardKillSync.push(new Pair<>(exceedGuard, killSync));
@@ -591,10 +678,10 @@ public class ModelGen {
         // Check if blocking
         if (boundStatementNode.getBoolLiteral()) {
             // Bound param, where '<' is changed to '=='
-            String guard = boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0).replaceAll("(<=|<)", "==");
+            String guard = findGuard(boundStatementNode.getAtParamsNode().getBoolExpressionNode()).replaceAll("(<=|<)", "==");
             timeOKLoc = boundTemplate.chainLoc("Time_OK", guard, null, null);
         } else
-            timeOKLoc = boundTemplate.chainLoc("Time_OK", boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0), null, null);
+            timeOKLoc = boundTemplate.chainLoc("Time_OK", findGuard(boundStatementNode.getAtParamsNode().getBoolExpressionNode()), null, null);
 
         Location timeExceedLoc = boundTemplate.addLocation("Time_exceeded", getLast(boundTemplate.getLocationList()).getX(), 75);
         // Add edge with guard for exceeding time
