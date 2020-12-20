@@ -119,7 +119,7 @@ public class ModelGen {
             prevTemplate.addFreeEdge(prevTempLastLoc, called, null, chan + "!", "prevLock = " + prevTemplate.getId());
 
         // Add edge to wait for template to finish
-        prevTemplate.chainLoc(newTemplate.getName() + "_done", null, null, null);
+        prevTemplate.chainLoc(newTemplate.getName() + "_done", null, null, "prevLock = id");
 
 
         return newTemplate;
