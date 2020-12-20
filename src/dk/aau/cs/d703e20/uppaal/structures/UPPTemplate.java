@@ -8,12 +8,15 @@ import java.util.List;
 public class UPPTemplate extends Template {
     // Store all local declarations before setting them, TODO: consider using this for mutex
     private final StringBuilder declSB = new StringBuilder();
-    // 0 is always start TODO: consider hashmap
+    // 0 is always start
     private final List<Location> locationList = new ArrayList<>();
     String Name;
     int locationX = 75;
     int locationY = 0;
-    int locationCoordIncr = 75;
+    int locationCoordIncr = 140;
+    // ID of template, used in conjunction with lock
+    int id;
+    String localReturnLock = "int returnLock; ";
 
     public UPPTemplate(Element prototype) {
         super(prototype);
@@ -77,6 +80,18 @@ public class UPPTemplate extends Template {
         Name = name;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setLocalReturnLock(String localReturnLock) {
+        this.localReturnLock = localReturnLock;
+    }
+
     public void addVar(String varDecl) {
         declSB.append(varDecl).append(";\n");
     }
@@ -84,20 +99,27 @@ public class UPPTemplate extends Template {
     /**
      * Flush StringBuilder into property for template. Required to set variable declarations.
      */
-    public void setDeclaration() {
+    private void setDeclaration() {
+        declSB.append(localReturnLock);
         this.setProperty("declaration", declSB.toString());
     }
 
     public void setLooping() {
         Location firstLoc = locationList.get(0);
         Location lastLoc = locationList.get(locationList.size() - 1);
-        Edge e = addEdge(lastLoc, firstLoc, null, null, null);
-        setNail(e, lastLoc.getX(), lastLoc.getY() - 30);
-        setNail(e, firstLoc.getX(), firstLoc.getY() - 30);
+        Edge e;
+        if (Name.startsWith("At"))
+            e = addFreeEdge(lastLoc, firstLoc, null, null, "lock = returnLock, atNotRunning = true");
+        else
+            e = addFreeEdge(lastLoc, firstLoc, null, null, "lock = returnLock");
+        setNail(e, lastLoc.getX(), lastLoc.getY() - 70);
+        setNail(e, firstLoc.getX(), firstLoc.getY() - 70);
+
+        setDeclaration();
     }
 
     /**
-     * Adds an edge to the template
+     * Adds an edge to the template, this edge will have a lock guard
      *
      * @param source the source location
      * @param target the target location
@@ -114,7 +136,9 @@ public class UPPTemplate extends Template {
         int x = (source.getX() + target.getX()) / 2;
         int y = (source.getY() + target.getY()) / 2;
         if (guard != null) {
-            setLabel(e, EKind.guard, guard, x - 15, y - 28);
+            setLabel(e, EKind.guard, guard + " && id == lock", x - 15, y - 28);
+        } else {
+            setLabel(e, EKind.guard, "id == lock", x - 15, y - 28);
         }
         if (sync != null) {
             setLabel(e, EKind.synchronisation, sync, x - 15, y - 14);
@@ -122,6 +146,27 @@ public class UPPTemplate extends Template {
         if (update != null) {
             setLabel(e, EKind.assignment, update, x - 15, y);
         }
+        return e;
+    }
+
+    /**
+     * Adds an edge without a lock to the template
+     *
+     * @param source the source location
+     * @param target the target location
+     * @param guard  guard expression
+     * @param sync   synchronization expression
+     * @param update update expression
+     * @return e     the edge
+     */
+    public Edge addFreeEdge(Location source, Location target, String guard, String sync, String update) {
+        Edge e = addEdge(source, target, null, sync, update);
+        if (guard != null) {
+            // Set the new guard
+            setLabel(e, EKind.guard, guard, ((source.getX() + target.getX()) / 2) - 15, ((source.getY() + target.getY()) / 2) - 28);
+        } else
+            // Remove lock guard
+            e.setProperty("guard", " ");
         return e;
     }
 
@@ -166,21 +211,26 @@ public class UPPTemplate extends Template {
 
 
     /**
-     * Adds new edge from last location to new location
+     * Chains a new location to the previous with a locked edge
      *
      * @param newLocName name of the new location
      * @param guard      guard expression
      * @param sync       sync expression
      * @param update     update expression
+     * @return newLoc the new location
      */
-    public void edgeFromLastLoc(String newLocName, String guard, String sync, String update) {
-        //TODO: This should prop return new location
-
+    public Location chainLoc(String newLocName, String guard, String sync, String update) {
         // Save current last location of template
         Location lastLoc = this.locationList.get(this.getLocationList().size() - 1);
         // Add edge to new location
         Location newLoc = this.addLocation(newLocName, lastLoc.getX() + locationCoordIncr, lastLoc.getY());
         this.addEdge(lastLoc, newLoc, guard, sync, update);
+        return newLoc;
+    }
+
+    @Override
+    public String toString() {
+        return Name + "(" + id + ')';
     }
 
     /**

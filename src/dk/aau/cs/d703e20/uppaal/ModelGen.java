@@ -2,12 +2,11 @@ package dk.aau.cs.d703e20.uppaal;
 
 import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.Location;
+import com.uppaal.model.core2.Node;
 import com.uppaal.model.core2.PrototypeDocument;
 import dk.aau.cs.d703e20.Pair;
 import dk.aau.cs.d703e20.ast.Enums;
-import dk.aau.cs.d703e20.ast.expressions.ArithExpressionNode;
-import dk.aau.cs.d703e20.ast.expressions.ArrayParamNode;
-import dk.aau.cs.d703e20.ast.expressions.SubscriptNode;
+import dk.aau.cs.d703e20.ast.expressions.*;
 import dk.aau.cs.d703e20.ast.statements.*;
 import dk.aau.cs.d703e20.ast.structure.*;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
@@ -18,6 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.*;
 
+import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.setLabel;
 import static dk.aau.cs.d703e20.uppaal.structures.UPPTemplate.setNail;
 
 
@@ -31,7 +31,7 @@ public class ModelGen {
     HashMap<String, Integer> pinChanMap = new HashMap<>();
     // List of used clocks
     List<String> clockList = new ArrayList<>();
-    // Map of varName and values, also stores return value of function
+    // Map of varName and values, also stores return value of function. TODO: Use another map for return values
     HashMap<String, String> varValues = new HashMap<>();
     HashMap<String, List<ArrayParamNode>> arrayValues = new HashMap<>();
 
@@ -39,6 +39,8 @@ public class ModelGen {
 
     // Stack of (guard, sync) used to check time after each statement and return to bound
     Stack<Pair<String, String>> boundGuardKillSync = new Stack<>();
+
+    private final HashMap<String, Boolean> varConstMap;
 
     // Keep count of templates
     int atCount = 0;
@@ -53,14 +55,27 @@ public class ModelGen {
     String opinChanName = "outPin";
     String ipinChanName = "inPin";
 
+    public ModelGen(HashMap<String, Boolean> varConstMap) {
+        this.varConstMap = varConstMap;
+    }
+
+    /**
+     * Find the ID for new templates
+     *
+     * @return all counts + 1
+     */
+    private int getID() {
+        // Controller = 0, IO = 1
+        return templateChanMap.size() + 2;
+    }
 
     // Create template to handle world input/output
     private void createNaiveWorldModel() {
-        UPPTemplate template = system.createTemplate("Naive_World");
+        UPPTemplate template = system.createTemplate("Naive_World", 1);
 
         // New edge from/to init for input chan
         if (ipinCount > 0) {
-            Edge inputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "inPin[i][1]!", null);
+            Edge inputHandler = template.addFreeEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "inPin[i][1]!", null);
             UPPTemplate.setLabel(inputHandler, UPPTemplate.EKind.select, "i : int[0," + (ipinCount - 1) + "]", 0, 0);
             setNail(inputHandler, -10, -5);
             setNail(inputHandler, -10, 5);
@@ -68,7 +83,7 @@ public class ModelGen {
 
         // New edge from/to init for output
         if (opinCount > 0) {
-            Edge outputHandler = template.addEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "outPin[i][j]?", null);
+            Edge outputHandler = template.addFreeEdge(template.getLocationList().get(0), template.getLocationList().get(0), null, "outPin[i][j]?", null);
             UPPTemplate.setLabel(outputHandler, UPPTemplate.EKind.select, "i : int[0," + (opinCount - 1) + "], j : int[0,1]", 0, 0);
             setNail(outputHandler, 10, -5);
             setNail(outputHandler, 10, 5);
@@ -82,21 +97,32 @@ public class ModelGen {
      * @param prevTemplate template where this statement is called
      * @return the new template
      */
-    private UPPTemplate newSyncedTemplate(String templateName, UPPTemplate prevTemplate) {
+    private UPPTemplate syncIntoNewTemplate(String templateName, UPPTemplate prevTemplate) {
         // Create new template
-        UPPTemplate template = system.createTemplate(templateName);
+        UPPTemplate newTemplate = system.createTemplate(templateName, getID());
 
         // Create channel for synchronisation
         String chan = "begin_" + templateName;
-        templateChanMap.put(template, chan);
+        templateChanMap.put(newTemplate, chan);
 
-        // Add edge to sync into new template
-        template.edgeFromLastLoc("Sync_done", null, chan + "?", null);
+        // Add edge to new template for sync
+        Location tempLastLoc = getLast(newTemplate.getLocationList());
+        Location syncDone = newTemplate.addLocation("Sync_done");
+        newTemplate.addFreeEdge(tempLastLoc, syncDone, null, chan + "?", "returnLock = prevLock");
 
-        // Add edge to sync previous template into new one
-        prevTemplate.edgeFromLastLoc("called_" + template.getName(), null, chan + "!", null);
+        // Add edge to previous template to sync into new one
+        Location prevTempLastLoc = getLast(prevTemplate.getLocationList());
+        Location called = prevTemplate.addLocation("called_" + newTemplate.getName());
+        if (!newTemplate.getName().startsWith("At"))
+            prevTemplate.addFreeEdge(prevTempLastLoc, called, "atNotRunning", chan + "!", "lock = " + newTemplate.getId() + ", prevLock = " + prevTemplate.getId());
+        else
+            prevTemplate.addFreeEdge(prevTempLastLoc, called, null, chan + "!", "prevLock = " + prevTemplate.getId());
 
-        return template;
+        // Add edge to wait for template to finish
+        prevTemplate.chainLoc(newTemplate.getName() + "_done", null, null, "prevLock = id");
+
+
+        return newTemplate;
     }
 
     // Adds declaration from pair to global scope
@@ -158,15 +184,16 @@ public class ModelGen {
         }
 
         // Set system declaration (processes)
-        system.setDeclaration();
+        system.setSysDeclaration();
         system.toXML(); //TODO: remove
         return system;
     }
 
     private void visitLoop(LoopNode loopNode) {
-        UPPTemplate template = system.createTemplate("controller");
+        UPPTemplate template = system.createTemplate("controller", 0);
+        template.setLocalReturnLock("int returnLock = 0; ");
         visitBlock(loopNode.getBlockNode(), template);
-        template.edgeFromLastLoc("End_controller", null, null, null);
+        template.chainLoc("End_controller", null, null, null);
         template.setLooping();
     }
 
@@ -180,7 +207,7 @@ public class ModelGen {
         for (StatementNode statementNode : setupNode.getBlockNode().getStatementNodes()) {
             if (statementNode instanceof VariableDeclarationNode) {
                 // Declare clocks
-                visitVarDecl((VariableDeclarationNode) statementNode);
+                visitVarDecl((VariableDeclarationNode) statementNode, null);
             } else if (statementNode instanceof PinDeclarationNode) {
                 // Declare pins
                 visitPinDecl((PinDeclarationNode) statementNode);
@@ -224,7 +251,7 @@ public class ModelGen {
         if (statementNode instanceof PinDeclarationNode)
             visitPinDecl((PinDeclarationNode) statementNode);
         else if (statementNode instanceof VariableDeclarationNode)
-            visitVarDecl((VariableDeclarationNode) statementNode);
+            visitVarDecl((VariableDeclarationNode) statementNode, template);
         else if (statementNode instanceof AtStatementNode)
             visitAtStatement((AtStatementNode) statementNode, template);
         else if (statementNode instanceof BoundStatementNode)
@@ -242,20 +269,18 @@ public class ModelGen {
     }
 
     private void visitForStatement(ForStatementNode forLoopNode, UPPTemplate prevTemplate) {
-        UPPTemplate forTemplate = newSyncedTemplate("For" + forCount, prevTemplate);
+        UPPTemplate forTemplate = syncIntoNewTemplate("For" + forCount, prevTemplate);
         forCount++;
 
         // Loop location, requires var
         String loopVar = "loopIndex";
         forTemplate.addVar("int " + loopVar + " = 0");
         // initialize loop template by setting loopVar
-        forTemplate.edgeFromLastLoc("loop", null, null, loopVar + " = " + getValueArithExpr(forLoopNode.getArithExpressionNode1()));
-        // Get the location of main loop node
-        Location loopLoc = getLast(forTemplate.getLocationList());
+        Location loopLoc = forTemplate.chainLoc("loop", null, null, loopVar + " = " + getValueArithExpr(forLoopNode.getArithExpressionNode1()));
         // TODO: consider making loop location urgent
 
         // First location of loop iteration
-        forTemplate.edgeFromLastLoc("iterate", loopVar + " != " + getValueArithExpr(forLoopNode.getArithExpressionNode2()), null, null);
+        forTemplate.chainLoc("iterate", loopVar + " != " + getValueArithExpr(forLoopNode.getArithExpressionNode2()), null, null);
 
         // Add body of loop to template
         visitBlock(forLoopNode.getBlockNode(), forTemplate);
@@ -269,13 +294,12 @@ public class ModelGen {
         Location endFor = forTemplate.addLocation("end_for");
         forTemplate.addEdge(loopLoc, endFor, loopVar + " == " + getValueArithExpr(forLoopNode.getArithExpressionNode2()), null, null);
         forTemplate.setLooping();
-        forTemplate.setDeclaration();
 
         setBoundBreakEdges(forLoopNode, forTemplate);
     }
 
     private void visitWhileStatement(WhileStatementNode whileStatementNode, UPPTemplate prevTemplate) {
-        UPPTemplate whileTemplate = newSyncedTemplate("While" + whileCount, prevTemplate);
+        UPPTemplate whileTemplate = syncIntoNewTemplate("While" + whileCount, prevTemplate);
         whileCount++;
 
         // Setup start loop location for looping
@@ -287,11 +311,11 @@ public class ModelGen {
         visitBlock(whileStatementNode.getBlockNode(), whileTemplate);
 
         // Add end location
-        whileTemplate.edgeFromLastLoc("End_loop", null, null, null);
+        whileTemplate.chainLoc("End_loop", null, null, null);
         // Add uncontrollable edge from "End_loop" to "Start_loop" locations, used to simulate the while loop
         whileTemplate.addEdge(getLast(whileTemplate.getLocationList()), startLoop, null, null, null).setProperty("controllable", false);
 
-        whileTemplate.edgeFromLastLoc("While_end", null, null, null);
+        whileTemplate.chainLoc("While_end", null, null, null);
         whileTemplate.setLooping();
 
         setBoundBreakEdges(whileStatementNode, whileTemplate);
@@ -300,7 +324,7 @@ public class ModelGen {
     private void visitIfElseStatement(IfElseStatementNode ifElseStatementNode, UPPTemplate prevTemplate) {
         final int locationCoord = 75;
         // Create new template and sync with previous
-        UPPTemplate ifTemplate = newSyncedTemplate("If" + ifCount, prevTemplate);
+        UPPTemplate ifTemplate = syncIntoNewTemplate("If" + ifCount, prevTemplate);
         ifCount++;
 
         // Save location to start each if/elseIf/else
@@ -315,8 +339,7 @@ public class ModelGen {
 
         // Create location to end all if statements
         Location endLoc = ifTemplate.addLocation("If_end");
-        // Set looping manual as endLoc is not last in list
-        ifTemplate.addEdge(endLoc, ifTemplate.getLocationList().get(0), null, null, null);
+        ifTemplate.setLooping();
         // Create edge from last location of if to endLoc
         ifTemplate.addEdge(ifTemplate.getLocationList().get(ifTemplate.getLocationList().size() - 2), endLoc, null, null, null);
 
@@ -365,18 +388,37 @@ public class ModelGen {
 
         // Is variable pin?
         if (pinChanMap.containsKey(assignmentNode.getVariableName())) {
-            if (assignmentNode.getLiteralValue().equals("true")) {
-                // chan! update pin to value 1
-                template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][1]!", null);
-            } else if (assignmentNode.getLiteralValue().equals("false")) {
-                // chan! update pin to value 0
-                template.edgeFromLastLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][0]!", null);
+            int output = 0;
+            if (assignmentNode.getLiteralValue() != null) {
+                if (assignmentNode.getLiteralValue().equals("true")) {
+                    // chan! update pin to value 1
+                    template.chainLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][1]!", null);
+                } else if (assignmentNode.getLiteralValue().equals("false")) {
+                    // chan! update pin to value 0
+                    template.chainLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][0]!", null);
+                }
+            } else if (assignmentNode.getVariableName() != null) {
+
+                if (varConstMap.get(assignmentNode.getArithExpressionNode().getVariableName())) {
+                    // Var is constant
+                    // lookup if var is true, then 1, else output = 0
+                    if (varValues.get(assignmentNode.getArithExpressionNode().getVariableName()).equals("true"))
+                        output = 1;
+                    template.chainLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][" + output + "]!", null);
+                } else {
+                    // Case: var in not constant = use select
+                    template.chainLoc("", null, opinChanName + "[" + pinChanMap.get(assignmentNode.getVariableName()) + "][e]!", null);
+                    Edge edgeSelectPin = getLast(getEdges(template));
+                    setLabel(edgeSelectPin, UPPTemplate.EKind.select, "e : int[0,1]", 0, 0);
+                }
+
             }
         }
         // Is variable clock?
         else if (clockList.contains(assignmentNode.getVariableName())) {
             // Update string
-            String updateStmt = assignmentNode.getArithExpressionNode().prettyPrint(0);
+            String updateStmt = assignmentNode.getVariableName() + " = " + getValueArithExpr(assignmentNode.getArithExpressionNode());
+                    assignmentNode.getArithExpressionNode().prettyPrint(0);
 
             // New location for update edge
             Location prevLoc = getLast(template.getLocationList());
@@ -405,10 +447,13 @@ public class ModelGen {
             // Get chan name for starting function template
             functionChan = templateChanMap.get(functionTemplate);
             // Add sync edge to current template, sync starts the function template
-            currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), null, functionChan + "!", null);
+            currentTemplate.addFreeEdge(getLast(currentTemplate.getLocationList()), currentTemplate.addLocation("called_" + functionCallNode.getFunctionName()), null, functionChan + "!", "lock = " + functionTemplate.getId() + ", prevLock = " + currentTemplate.getId());
+            // Add edge to wait for template to finish
+            currentTemplate.chainLoc(functionTemplate.getName() + "_done", null, null, null);
+
             // Add sync edge to function template to receive sync from the call
             if (functionSyncSet.add(functionChan))
-                functionTemplate.addEdge(functionTemplate.getLocationList().get(0), functionTemplate.getLocationList().get(1), null, functionChan + "?", null);
+                functionTemplate.addFreeEdge(functionTemplate.getLocationList().get(0), functionTemplate.getLocationList().get(1), null, functionChan + "?", "returnLock = prevLock");
 
             // Set the function template to be able to break bound
             setBoundBreakEdges(functionCallNode, functionTemplate, getLast(functionTemplate.getLocationList()));
@@ -423,10 +468,9 @@ public class ModelGen {
         // Declare local clock
         currentTemplate.addVar("clock " + localClockName);
         // Edge to reset local clock
-        currentTemplate.edgeFromLastLoc("reset_local_clock", null, null, localClockName + " = 0");
+        currentTemplate.chainLoc("reset_local_clock", null, null, localClockName + " = 0");
         // Guard template to wait the given amount
-        currentTemplate.edgeFromLastLoc("called_" + functionCallNode.getFunctionName(), localClockName + " > (" + delay + ")", null, null);
-        currentTemplate.setDeclaration();
+        currentTemplate.chainLoc("finished_" + functionCallNode.getFunctionName(), localClockName + " > (" + delay + ")", null, null);
     }
 
     /**
@@ -452,11 +496,14 @@ public class ModelGen {
      *
      * @param varDeclNode Source StatementNode
      */
-    private void visitVarDecl(VariableDeclarationNode varDeclNode) {
+    private void visitVarDecl(VariableDeclarationNode varDeclNode, UPPTemplate template) {
         // Save variable name and its value in map for later use
-        if (varDeclNode.getAssignmentNode() != null)
-            varValues.put(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode.getAssignmentNode().getArithExpressionNode().prettyPrint(0));
-        else if (varDeclNode.getAssignArrayNode() != null)
+        if (varDeclNode.getAssignmentNode() != null) {
+            if (varDeclNode.getAssignmentNode().getArithExpressionNode() != null)
+                varValues.put(varDeclNode.getAssignmentNode().getVariableName(), getValueArithExpr(varDeclNode.getAssignmentNode().getArithExpressionNode()));
+            else if (varDeclNode.getAssignmentNode().getLiteralValue() != null)
+                varValues.put(varDeclNode.getAssignmentNode().getVariableName(), varDeclNode.getAssignmentNode().getLiteralValue());
+        } else if (varDeclNode.getAssignArrayNode() != null)
             arrayValues.put(varDeclNode.getAssignArrayNode().getVariableName(), varDeclNode.getAssignArrayNode().getParamNodes());
 
         // Only clock types are used in UPPAAL
@@ -464,6 +511,8 @@ public class ModelGen {
         if (varDeclNode.getDataType() == Enums.DataType.CLOCK) {
             system.addClockDecl(varDeclNode);
             clockList.add(varDeclNode.getVariableName());
+            if (!varDeclNode.isInSetup())
+                template.chainLoc("", null, null, varDeclNode.getVariableName() + " = 0");
         }
     }
 
@@ -478,38 +527,127 @@ public class ModelGen {
         return getValueArithExpr(arithNodeOfList);
     }
 
+    private String calcTimeFunc(ArithExpressionNode arithExpressionNode, int timeUnit) {
+        // Cast argument to double, calculate the value, cast it back to string for printing to UPPAAL
+        return Integer.toString((int) (Double.parseDouble(getValueArithExpr(arithExpressionNode.getFunctionCallNode().getFunctionArgNodes().get(0).getArithExpressionNode())) * timeUnit));
+    }
+
     private String getValueArithExpr(ArithExpressionNode arithExpressionNode) {
-        String delay;
+        String value;
         // If arg is a variable name, get its value from map
         if (arithExpressionNode.getVariableName() != null) {
-            delay = varValues.get(arithExpressionNode.getVariableName());
+            if (clockList.contains(arithExpressionNode.getVariableName())) {
+                value = arithExpressionNode.getVariableName();
+            } else
+                value = varValues.get(arithExpressionNode.getVariableName());
         }
         // If arg is a function call get the value of its return
         else if (arithExpressionNode.getFunctionCallNode() != null) {
-            delay = varValues.get(arithExpressionNode.getFunctionCallNode().getFunctionName());
-        } else if (arithExpressionNode.getSubscriptNode() != null)
-            delay = getValueSubscript(arithExpressionNode.getSubscriptNode());
-        else
-            delay = arithExpressionNode.prettyPrint(0);
-        return delay;
+            // Check for time specific functions
+            value = switch (arithExpressionNode.getFunctionCallNode().getFunctionName()) {
+                case "Seconds" -> calcTimeFunc(arithExpressionNode, 1000);
+                case "Minutes" -> calcTimeFunc(arithExpressionNode, 1000 * 60);
+                case "Hours" -> calcTimeFunc(arithExpressionNode, 1000 * 60 * 60);
+                case "Days" -> calcTimeFunc(arithExpressionNode, 1000 * 60 * 60 * 24);
+                default -> varValues.get(arithExpressionNode.getFunctionCallNode().getFunctionName());
+            };
+        } else if (arithExpressionNode.getSubscriptNode() != null) {
+            value = getValueSubscript(arithExpressionNode.getSubscriptNode());
+        } else if (arithExpressionNode.getArithExpressionNode1() != null) {
+            // arithExpr arithOp arithExpr
+            value = '(' + getValueArithExpr(arithExpressionNode.getArithExpressionNode1()) + arithExpressionNode.getArithExpressionOperator() + getValueArithExpr(arithExpressionNode.getArithExpressionNode2()) + ')';
+        } else
+            // Handles number case
+            value = arithExpressionNode.prettyPrint(0);
+        return value;
+    }
+
+    private List<String> getOperandValues(List<BoolExprOperandNode> operands) {
+        List<String> guardOperands = new ArrayList<>();
+        // Handle operand by finding value and casting to string
+        for (BoolExprOperandNode operand : operands) {
+            if (operand.getBoolExpressionNode() != null)
+                guardOperands.add('(' + findGuard(operand.getBoolExpressionNode()) + ')');
+            else
+                guardOperands.add(getValueArithExpr(operand.getArithExpressionNode()));
+        }
+        return guardOperands;
+    }
+
+    private String findGuard(BoolExpressionNode boolExpressionNode) {
+        StringBuilder guardBuilder = new StringBuilder();
+        int index = 0;
+
+        if (!boolExpressionNode.getBoolExprOperandNodes().isEmpty()) {
+            // Cast all operand values to string
+            List<String> guardOperands = getOperandValues(boolExpressionNode.getBoolExprOperandNodes());
+            for (String guardOperand : guardOperands) {
+                guardBuilder.append(guardOperand);
+                // Add operator, but avoid NullPointer from last operand, since there is 1 more operand than operator
+                if (index <= boolExpressionNode.getBoolExpressionOperators().size() - 1)
+                    guardBuilder.append(" ").append(Enums.stringFromBoolOperator(boolExpressionNode.getBoolExpressionOperators().get(index))).append(" ");
+                index++;
+            }
+            return guardBuilder.toString();
+        }
+        if (boolExpressionNode.getOptionalNot()) {
+            return "!(" + findGuard(boolExpressionNode.getBoolExpressionNode()) + ")";
+        }
+        throw new RuntimeException("Guard was not found");
+    }
+
+    private String findInvariant(BoolExpressionNode boolExpressionNode) {
+        StringBuilder invariantBuilder = new StringBuilder();
+        int operandIndex = 0;
+
+        // Handle lower bounds of guard
+        if (!boolExpressionNode.getBoolExprOperandNodes().isEmpty()) {
+            // Cast all operand values to string
+            List<String> invarOperands = getOperandValues(boolExpressionNode.getBoolExprOperandNodes());
+
+            for (Enums.BoolOperator operator : boolExpressionNode.getBoolExpressionOperators()) {
+                if ((operator == Enums.BoolOperator.LESS_THAN || operator == Enums.BoolOperator.LESS_OR_EQUAL) && clockList.contains(invarOperands.get(operandIndex))) {
+                    invariantBuilder.append(invarOperands.get(operandIndex)).append(" <= ").append(invarOperands.get(operandIndex + 1));
+                } else if ((operator == Enums.BoolOperator.GREATER_THAN || operator == Enums.BoolOperator.GREATER_OR_EQUAL) && clockList.contains(invarOperands.get(operandIndex + 1))) {
+                    invariantBuilder.append(invarOperands.get(operandIndex + 1)).append(" <= ").append(invarOperands.get(operandIndex));
+                } else if (operator == Enums.BoolOperator.EQUAL) {
+                    if (clockList.contains(invarOperands.get(operandIndex)))
+                        invariantBuilder.append(invarOperands.get(operandIndex)).append(" <= ").append(invarOperands.get(operandIndex + 1));
+                    else if (clockList.contains(invarOperands.get(operandIndex + 1)))
+                        invariantBuilder.append(invarOperands.get(operandIndex + 1)).append(" <= ").append(invarOperands.get(operandIndex));
+                } else if (operator == Enums.BoolOperator.OR || operator == Enums.BoolOperator.AND) {
+                    invariantBuilder.append("(").append(invarOperands.get(operandIndex)).append(")").append(" ").append(operator).append(" ").append("(").append(invarOperands.get(operandIndex + 1)).append(")");
+                }
+
+                operandIndex++;
+            }
+            return invariantBuilder.toString();
+        }
+
+        if (boolExpressionNode.getOptionalNot()) {
+            return "!(" + findInvariant(boolExpressionNode.getBoolExpressionNode()) + ")";
+        }
+
+        throw new RuntimeException("Could not find proper invariant");
     }
 
     private void visitAtStatement(AtStatementNode atStatementNode, UPPTemplate prevTemplate) {
         // Create new template and sync with previous
-        UPPTemplate atTemplate = newSyncedTemplate("At" + atCount, prevTemplate);
+        UPPTemplate atTemplate = syncIntoNewTemplate("At" + atCount, prevTemplate);
         atCount++;
-
-        //TODO: add invariant
+        Location syncDone = getLast(atTemplate.getLocationList());
+        // Add invariant
+        setLabel(syncDone, UPPTemplate.LKind.invariant, findInvariant(atStatementNode.getAtParamsNode().getBoolExpressionNode()), syncDone.getX(), syncDone.getY());
 
         // Edge and location for starting at (when atParam is ready)
         Location startAt = atTemplate.addLocation("startAt");
-        String guard = atStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0);
-        atTemplate.addEdge(atTemplate.getLocationList().get(1), startAt, guard, null, null);
+        String guard = findGuard(atStatementNode.getAtParamsNode().getBoolExpressionNode());
+        atTemplate.addFreeEdge(syncDone, startAt, guard, null, "lock = " + atTemplate.getId() + ", returnLock = prevLock, atNotRunning = false");
 
         visitBlock(atStatementNode.getBlockNode(), atTemplate);
 
         // Edge and location for ending 'at' for model verification.
-        atTemplate.edgeFromLastLoc("endAt", null, null, null);
+        atTemplate.chainLoc("endAt", null, null, null);
 
         atTemplate.setLooping();
 
@@ -519,11 +657,11 @@ public class ModelGen {
     // Run body, check if time is exceeded, then run catch and final or just final
     private void visitBoundStatement(BoundStatementNode boundStatementNode, UPPTemplate prevTemplate) {
         // Create new template and sync with previous
-        UPPTemplate boundTemplate = newSyncedTemplate("Bound" + boundCount, prevTemplate);
+        UPPTemplate boundTemplate = syncIntoNewTemplate("Bound" + boundCount, prevTemplate);
         boundCount++;
 
         // Add guard and sync to stack used to kill statements within bound scope
-        String exceedGuard = boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0).replaceAll("(<=|<)", ">");
+        String exceedGuard = findGuard(boundStatementNode.getAtParamsNode().getBoolExpressionNode()).replaceAll("(<=|<)", ">");
         String killSync = "kill" + boundCount;
         utilChan.add(killSync);
         boundGuardKillSync.push(new Pair<>(exceedGuard, killSync));
@@ -536,21 +674,18 @@ public class ModelGen {
         // Pop stack as we exit bound body
         boundGuardKillSync.pop();
 
-        // Done location
-        boundTemplate.edgeFromLastLoc("body_done", null, null, null);
-        // save the location for body end, as we branch out
-        Location bodyEndLoc = getLast(boundTemplate.getLocationList());
+        // Done location, save the location for body end, as we branch out
+        Location bodyEndLoc = boundTemplate.chainLoc("body_done", null, null, null);
 
+        Location timeOKLoc;
         // Check if blocking
         if (boundStatementNode.getBoolLiteral()) {
             // Bound param, where '<' is changed to '=='
-            String guard = boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0).replaceAll("(<=|<)", "==");
-            boundTemplate.edgeFromLastLoc("Time_OK", guard, null, null);
+            String guard = findGuard(boundStatementNode.getAtParamsNode().getBoolExpressionNode()).replaceAll("(<=|<)", "==");
+            timeOKLoc = boundTemplate.chainLoc("Time_OK", guard, null, null);
         } else
-            boundTemplate.edgeFromLastLoc("Time_OK", boundStatementNode.getAtParamsNode().getBoolExpressionNode().prettyPrint(0), null, null);
+            timeOKLoc = boundTemplate.chainLoc("Time_OK", findGuard(boundStatementNode.getAtParamsNode().getBoolExpressionNode()), null, null);
 
-        // TODO: create variable before, and set it to return of edgefromlastloc
-        Location timeOKLoc = getLast(boundTemplate.getLocationList());
         Location timeExceedLoc = boundTemplate.addLocation("Time_exceeded", getLast(boundTemplate.getLocationList()).getX(), 75);
         // Add edge with guard for exceeding time
         boundTemplate.addEdge(bodyEndLoc, timeExceedLoc, exceedGuard, null, null);
@@ -582,12 +717,12 @@ public class ModelGen {
         Location startFinal = null;
         // visit Catch
         if (boundStatementNode.getCatchBlock() != null) {
-            startCatch = visitBoundBlock(boundStatementNode.getCatchBlock(), boundTemplate, "Catch", timeExceedLoc, endLocation);
+            startCatch = visitBoundBlock(boundStatementNode.getCatchBlock(), boundTemplate, "Catch", timeExceedLoc);
             endCatch = getLast(boundTemplate.getLocationList());
         }
         // visit Final
         if (boundStatementNode.getFinalBlock() != null) {
-            startFinal = visitBoundBlock(boundStatementNode.getFinalBlock(), boundTemplate, "Final", timeOKLoc, endLocation);
+            startFinal = visitBoundBlock(boundStatementNode.getFinalBlock(), boundTemplate, "Final", timeOKLoc);
             // Last location in final goes to end of bound
             boundTemplate.addEdge(getLast(boundTemplate.getLocationList()), endLocation, null, null, null);
         }
@@ -610,7 +745,7 @@ public class ModelGen {
     }
 
     // Returns location for starting block
-    private Location visitBoundBlock(BlockNode block, UPPTemplate template, String name, Location prevLocation, Location endLocation) {
+    private Location visitBoundBlock(BlockNode block, UPPTemplate template, String name, Location prevLocation) {
 
         // Create location for starting block
         Location startBlock = template.addLocation("Start_" + name, prevLocation.getX() + 75, prevLocation.getY());
@@ -622,25 +757,25 @@ public class ModelGen {
         // visit block
         visitBlock(block, template);
         // End location for block
-        template.edgeFromLastLoc(name + "_done", null, null, null);
+        template.chainLoc(name + "_done", null, null, null);
 
         return startBlock;
     }
 
     private void visitFuncDecl(FunctionDeclarationNode functionDeclarationNode) {
         // Create new template
-        UPPTemplate template = system.createTemplate(functionDeclarationNode.getFunctionName());
+        UPPTemplate template = system.createTemplate(functionDeclarationNode.getFunctionName(), getID());
         // Create channel to start new template
         templateChanMap.put(template, "begin_" + functionDeclarationNode.getFunctionName());
         // New location for starting body, functionCall will join this location with the initial one
         template.addLocation("sync_done");
 
         visitBlock(functionDeclarationNode.getBlockNode(), template);
-        template.edgeFromLastLoc("End_" + functionDeclarationNode.getFunctionName(), null, null, null);
+        template.chainLoc("End_" + functionDeclarationNode.getFunctionName(), null, null, null);
         template.setLooping();
 
-        //Setup location for breaking bounds as last location in list, might not be used
-        Location boundKill = template.addLocation("bound_kill", 75, -100);
+        // Setup location for breaking bounds as last location in list, used in functionCall if bounded
+        template.addLocation("bound_kill", 75, -100);
 
         // Add function name and return value to map of varValues
         findReturnValue(functionDeclarationNode);
@@ -667,5 +802,27 @@ public class ModelGen {
      */
     private <T> T getLast(List<T> list) {
         return list.get(list.size() - 1);
+    }
+
+    /**
+     * Get a list of all edges in template
+     *
+     * @param inputNode UPPTemplate with edges to return
+     * @return edgeList list of all edges
+     */
+    private List<Edge> getEdges(Node inputNode) {
+        List<Edge> edgeList = new ArrayList<>();
+        // Get first node of inputNode in XML
+        Node node = inputNode.getFirst();
+
+        // Go through XML elements/nodes top down and add edges to list
+        while (node != null) {
+            if (node instanceof Edge)
+                edgeList.add((Edge) node);
+            node = node.getNext();
+        }
+        // Reverse list as it is built from last to first
+        Collections.reverse(edgeList);
+        return edgeList;
     }
 }

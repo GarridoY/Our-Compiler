@@ -6,8 +6,6 @@ import dk.aau.cs.d703e20.ast.statements.VariableDeclarationNode;
 import dk.aau.cs.d703e20.uppaal.structures.UPPSystem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,7 +21,7 @@ public class UPPSystemTest {
     @Test
     void testCreateTemplate() {
         // Create template with name and initial location
-        system.createTemplate("test01");
+        system.createTemplate("test01", 1);
 
         // Assert that there is a template, with an initial location
         assertNotNull(system.getTemplateList().get(0).getLocationList().get(0).getProperty("init"));
@@ -32,12 +30,12 @@ public class UPPSystemTest {
     @Test
     void testSetDeclaration() {
         // Create templates
-        system.createTemplate("test01");
-        system.createTemplate("test02");
+        system.createTemplate("test01", 1);
+        system.createTemplate("test02", 2);
         // Set system declaration
-        system.setDeclaration();
+        system.setSysDeclaration();
         // Assert that property was set
-        assertEquals("system test01, test02;", system.getProperty("system").getValue().toString());
+        assertEquals("P1 = test01(1); P2 = test02(2); \nsystem P1, P2;", system.getProperty("system").getValue().toString());
     }
 
     @Test
@@ -48,7 +46,10 @@ public class UPPSystemTest {
         system.setGlobalDecl();
 
         assertEquals("// Global declarations\n" +
-                     "chan startTemp;\n",
+                     "chan startTemp;\n" +
+                     "int lock = 0;\n" +
+                     "int prevLock = 0;\n" +
+                     "bool atNotRunning = true;\n",
                 system.getProperty("declaration").getValue().toString());
     }
 
@@ -58,9 +59,7 @@ public class UPPSystemTest {
         // Set global declarations (Channels)
         system.setGlobalDecl();
 
-        assertEquals("// Global declarations\n" +
-                     "chan in[3][2];\n",
-                system.getProperty("declaration").getValue().toString());
+        assertTrue(system.getProperty("declaration").getValue().toString().contains("chan in[3][2];\n"));
     }
 
     @Test
@@ -72,8 +71,6 @@ public class UPPSystemTest {
         // Set global declarations (Clocks)
         system.setGlobalDecl();
 
-        assertEquals("// Global declarations\n" +
-                     "clock x;\n",
-                system.getProperty("declaration").getValue().toString());
+        assertTrue(system.getProperty("declaration").getValue().toString().contains("clock x;\n"));
     }
 }

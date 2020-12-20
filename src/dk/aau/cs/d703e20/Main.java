@@ -175,7 +175,7 @@ public class Main {
 
             // VERIFY TIME IN UPPAAL
             if (checkModel) {
-                ModelChecker modelChecker = new ModelChecker();
+                ModelChecker modelChecker = new ModelChecker(semanticChecker.getVarConstMap());
                 modelChecker.checkProgram(programNode, programName, userQueryFileName, userModelFileName);
                 System.out.println("Time check finished.");
             }

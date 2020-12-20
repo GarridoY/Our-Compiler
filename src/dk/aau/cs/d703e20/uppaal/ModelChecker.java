@@ -17,6 +17,7 @@ import dk.aau.cs.d703e20.uppaal.structures.UPPTemplate;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,8 +25,8 @@ public class ModelChecker {
     private final ModelGen modelGen;
     private boolean queryFailed = false;
 
-    public ModelChecker() {
-        modelGen = new ModelGen();
+    public ModelChecker(HashMap<String, Boolean> varConstMap) {
+        modelGen = new ModelGen(varConstMap);
     }
 
     //TODO: figure out which of these we should use
@@ -73,26 +74,27 @@ public class ModelChecker {
             System.out.println("===== Query verifier =====");
             List<Query> queryList = new ArrayList<>();
 
-            Query deadlockQuery = new Query("A[] not deadlock", "");
+            Query deadlockQuery = new Query("E<> not deadlock", "");
             queryList.add(deadlockQuery);
-            Query livenessQuery = new Query("controller.start --> controller.End_controller", "");
+            Query livenessQuery = new Query("P0.start --> P0.End_controller", "");
             queryList.add(livenessQuery);
 
             // Create queries and put them in a list to be run.
             for (UPPTemplate template : doc.getTemplateList()) {
                 String templateName = template.getName();
 
+                // Every timed construct should have Reachability and Liveness tests.
                 if (templateName.contains("Bound")) {
-                    queryList.addAll(getQueryFromTemplate(template, "Bound_done"));
+                    queryList.addAll(getQueryFromTemplate(template, "Sync_done", "Bound_done"));
                 } else if (templateName.contains("At")) {
-                    queryList.addAll(getQueryFromTemplate(template, "endAt"));
+                    queryList.addAll(getQueryFromTemplate(template, "startAt", "endAt"));
                 }
             }
 
             // Add user queries
             if (userQueryFileName != null) {
                 List<Query> userQueryList = getUserQueries(userQueryFileName);
-                if (userQueryList != null && !userQueryList.isEmpty()) {
+                if (!userQueryList.isEmpty()) {
                     queryList.addAll(userQueryList);
                     System.out.println("[INFO] Added user queries.");
                 }
@@ -126,25 +128,41 @@ public class ModelChecker {
         }
     }
 
-    private List<Query> getQueryFromTemplate(UPPTemplate template, String endStateName) {
+    private List<Query> getQueryFromTemplate(UPPTemplate template, String startStateName, String endStateName) {
         List<Query> queryList = new ArrayList<>();
-        String templateName = template.getName();
+        String templateName = "P" + template.getId();
 
-        // Every timed construct should have Reachability tests.
         List<Location> locationList = template.getLocationList();
 
         // Find the last location
-        Location lastLocation = null;
+        Location endLocation = null;
+        Location startLocation = null;
         for (Location location : locationList) {
-            if (endStateName.equals(location.getName())) {
-                lastLocation = location;
-            }
+            if (startStateName.equals(location.getName()))
+                startLocation = location;
+            if (endStateName.equals(location.getName()))
+                endLocation = location;
+
+            // If we have found both states - just stop searching.
+            if (startLocation != null && endLocation != null)
+                break;
+        }
+
+        // Liveness
+        // Is it given that if we enter the start state, we also end up in the end state?
+        if (endLocation != null && startLocation != null) {
+            Query query = new Query(
+                    templateName + "." + startLocation.getName() +
+                    " --> " +
+                    templateName + "." + endLocation.getName(),
+                    "");
+            queryList.add(query);
         }
 
         // Reachability
         // Can we reach the end state in the template?
-        if (lastLocation != null) {
-            Query query = new Query("A[] " + templateName + "." + lastLocation.getName(), "");
+        if (endLocation != null) {
+            Query query = new Query("A<> " + templateName + "." + endLocation.getName(), "");
             queryList.add(query);
         }
 
