@@ -277,9 +277,9 @@ public class ModelGenTest {
                 () -> assertEquals("begin_At0?", syncAt.getProperty("synchronisation").getValue()),
                 () -> assertEquals("begin_Func?", syncFunc.getProperty("synchronisation").getValue()),
                 () -> assertEquals("begin_If0?", syncIf.getProperty("synchronisation").getValue()),
-                () -> assertEquals("begin_Func!", ctrlEdges.get(0).getProperty("synchronisation").getValue()),
-                () -> assertEquals("begin_At0!", ctrlEdges.get(2).getProperty("synchronisation").getValue()),
-                () -> assertEquals("begin_If0!", ctrlEdges.get(4).getProperty("synchronisation").getValue())
+                () -> assertEquals("begin_Func!", ctrlEdges.get(1).getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_At0!", ctrlEdges.get(3).getProperty("synchronisation").getValue()),
+                () -> assertEquals("begin_If0!", ctrlEdges.get(5).getProperty("synchronisation").getValue())
         );
     }
 
