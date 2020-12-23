@@ -17,6 +17,8 @@ public class SemanticChecker {
     private final Stack<Boolean> boundScope = new Stack<>();
     // Map of variableNames and whether they are constant
     private final HashMap<String, Boolean> varConstMap = new HashMap<>();
+    // Map of ID's and datatype
+    private  final HashMap<String, Enums.DataType> idTypeMap = new HashMap<>();
 
     public SemanticChecker() {
         HashMap<String, ASTNode> newSymbolTable = new HashMap<>();
@@ -206,6 +208,7 @@ public class SemanticChecker {
     public void visitVariableDeclaration(VariableDeclarationNode varDeclNode) {
         Enums.DataType dataType = varDeclNode.getDataType();
         String variableName = varDeclNode.getVariableName();
+        idTypeMap.put(variableName, dataType);
 
         // Check if variable is already in symbol table
         if (retrieveSymbol(variableName) == null) {
@@ -234,6 +237,8 @@ public class SemanticChecker {
             // Array assignment rule
             else if (varDeclNode.getAssignArrayNode() != null) {
                 Enums.DataType arrayDataType = visitAssignArray(varDeclNode.getAssignArrayNode());
+                String arrayVarName = varDeclNode.getAssignArrayNode().getVariableName();
+                idTypeMap.put(arrayVarName, arrayDataType);
 
                 if (arrayDataType != Enums.singleDataTypeFromArrayDatatype(dataType))
                     throw new InconsistentTypeException(
@@ -316,6 +321,13 @@ public class SemanticChecker {
                         dataType1, dataType2);
             else
                 return dataType1;
+        }
+
+        else if (arithExpressionNode.getSubscriptNode() != null) {
+            if (idTypeMap.get(arithExpressionNode.getSubscriptNode().getVariableName()) != null)
+                return idTypeMap.get(arithExpressionNode.getSubscriptNode().getVariableName());
+            else
+                throw new UndeclaredVariableException("ID of subscript", arithExpressionNode.getCodePosition());
         }
 
         // NOT? (arithExpr)
