@@ -195,12 +195,17 @@ public class Main {
 
             // Save generated code to file
             try {
-                if (outputFileName == null) {
-                    outputFileName = programName;
-                }
+                String pathToOutputFile = outputFileName;
 
-                String path = System.getProperty("user.dir");
-                FileWriter writer = new FileWriter(new File(path + "\\Resources\\output\\" + outputFileName + ".ino"));
+                // if output path is null, default to program name
+                if (pathToOutputFile == null)
+                    pathToOutputFile = programName;
+
+                // if output path is not a full path, use default path with given file name
+                if (!pathToOutputFile.contains(":"))
+                    pathToOutputFile = System.getProperty("user.dir") + "\\Resources\\output\\" + pathToOutputFile + ".ino";
+
+                FileWriter writer = new FileWriter(pathToOutputFile);
                 writer.write(generatedCode);
                 writer.close();
                 System.out.println("Saved to output file.");
