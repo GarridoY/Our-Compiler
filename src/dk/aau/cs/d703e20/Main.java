@@ -77,10 +77,12 @@ public class Main {
                             break;
 
                         case "-query":
+                        case "-q":
                             nextArg = ArgumentType.QueryFile;
                             break;
 
                         case "-model":
+                        case "-m":
                             nextArg = ArgumentType.ModelFile;
                             break;
 
@@ -91,6 +93,7 @@ public class Main {
 
                         case "-check":
                         case "-verify":
+                        case "-v":
                             checkModel = true;
                             break;
 
@@ -222,12 +225,12 @@ public class Main {
                 "-uppaal, -upp, -u (UPPAAL directory)\n" +
                 "-input, -i (Input .our file)\n" +
                 "-output, -o (Output .ino file)\n" +
-                "-query (Custom queries .q file)\n" +
-                "-model (Custom model of I/O as UPPAAL .xml file)\n" +
+                "-query, -q (Custom queries .q file)\n" +
+                "-model, -m (Custom model of I/O as UPPAAL .xml file)\n" +
                 "\n" +
                 "These flags are standalone\n" +
                 "-prettyprint, -pp (Print out the parsed Our code)\n" +
-                "-check, -verify (Verify the generated UPPAAL model)\n" +
+                "-check, -verify, -v (Verify the generated UPPAAL model)\n" +
                 "-print, -p (Print the generated arduino code)\n" +
                 "-help, -h (Display help)");
     }
