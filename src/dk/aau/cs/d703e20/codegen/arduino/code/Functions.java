@@ -9,6 +9,10 @@ public class Functions {
                     "digitalWrite(pin, value ? HIGH : LOW);\n" +
             "}\n";
 
+    public static String ResetClock =
+            "int ResetClock(int clock) {\n\t" +
+                    "ourClocks[clock] = millis();\n" +
+                    "}\n";
 
     public static String GetClock =
             "int GetClock(int clock) {\n\t" +

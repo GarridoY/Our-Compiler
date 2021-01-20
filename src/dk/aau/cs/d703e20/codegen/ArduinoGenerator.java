@@ -79,6 +79,7 @@ public class ArduinoGenerator {
         stringBuilder.append(program.prettyPrint(0));
 
         // add custom functions to end of program
+        stringBuilder.append(Functions.ResetClock);
         stringBuilder.append(Functions.GetClock);
 
         if (digitalWriteUsed)
@@ -274,7 +275,7 @@ public class ArduinoGenerator {
         }
         // assigning to a clock = resetting the clock (setting it to current millis)
         else if (clockNames.contains(assignmentNode.getVariableName())) {
-            return new CodeNode("ourClocks[OUR_CLOCK_" + assignmentNode.getVariableName() + "] = millis();");
+            return new CodeNode("ResetClock(OUR_CLOCK_" + assignmentNode.getVariableName() + ");");
         }
         else {
             if (assignmentNode.getArithExpressionNode() != null) {
