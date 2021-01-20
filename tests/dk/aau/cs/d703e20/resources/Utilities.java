@@ -35,7 +35,7 @@ public class Utilities {
 
             // ASTBuilder.visitParseRuleName(contextClass)
             Method visitorMethod = ASTBuilder.class.getMethod(
-                    "visit" + parseRuleName.toUpperCase().substring(0,1) + parseRuleName.substring(1),
+                    "visit" + parseRuleName.toUpperCase().charAt(0) + parseRuleName.substring(1),
                     contextClass);
 
             // Get OurParser.parseRuleNameContext from parser
