@@ -141,7 +141,8 @@ public class ModelGen {
         if (statementNode.isBounded()) {
             Location boundKill = template.addLocation("bound_kill", 50, 100);
             // Make sure template can be reset
-            template.setLooping();
+            //template.setLooping();
+            template.addFreeEdge(getLast(template.getLocationList()), template.getLocationList().get(0), null, null, null);
             // Add an extra edge for every location, to break out of template
             template.getLocationList().subList(0, template.getLocationList().size() - 2).forEach(location -> template.addEdge(location, boundKill, boundGuardKillSync.peek().getFirst(), boundGuardKillSync.peek().getSecond() + "!", null));
         }
@@ -151,7 +152,8 @@ public class ModelGen {
     private void setBoundBreakEdges(StatementNode statementNode, UPPTemplate template, Location boundKill) {
         if (statementNode.isBounded()) {
             // Make sure template can be reset
-            template.setLooping();
+            //template.setLooping();
+            template.addFreeEdge(getLast(template.getLocationList()), template.getLocationList().get(0), null, null, null);
             // Add an extra edge for every location, to break out of template
             template.getLocationList().subList(0, template.getLocationList().size() - 2).forEach(location -> template.addEdge(location, boundKill, boundGuardKillSync.peek().getFirst(), boundGuardKillSync.peek().getSecond() + "!", null));
         }
