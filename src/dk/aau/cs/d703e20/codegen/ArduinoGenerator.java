@@ -465,15 +465,20 @@ public class ArduinoGenerator {
             catchBlockStatements.add(new CommentNode(" don't block execution"));
         }
 
-        statementNodes.add(new BlockStatementNode(
-                new CodeNode("if (" + boundParam + ") "), new BlockNode(catchBlockStatements)));
+        if (boundStatementNode.getCatchBlock() != null) {
 
-        statementNodes.add(new BlockStatementNode(
-                new CodeNode("else "), visitBlockNode(boundStatementNode.getCatchBlock())));
+            statementNodes.add(new BlockStatementNode(
+                    new CodeNode("if (" + boundParam + ") "), new BlockNode(catchBlockStatements)));
+
+            statementNodes.add(new BlockStatementNode(
+                    new CodeNode("else "), visitBlockNode(boundStatementNode.getCatchBlock())));
+        }
 
         // final
-        statementNodes.add(new BlockStatementNode(
-                new CodeNode("/* final */"), visitBlockNode(boundStatementNode.getFinalBlock())));
+        if (boundStatementNode.getFinalBlock() != null) {
+            statementNodes.add(new BlockStatementNode(
+                    new CodeNode("/* final */"), visitBlockNode(boundStatementNode.getFinalBlock())));
+        }
 
         return new BlockStatementNode(new CodeNode(boundComment), new BlockNode(statementNodes));
     }
