@@ -1,0 +1,21 @@
+// unsafe program stuck in while
+Setup{
+    clock time = 0;
+    
+    ipin button 0;
+    opin greenLight 1;
+}
+
+Loop{
+    bound(time < 200) {
+            while (greenLight == false){
+                time = 0;
+                if(button == true){
+                    greenLight = true;
+                }
+            }
+    }
+    catch{
+        greenLight = true;
+    }
+}
